@@ -222,7 +222,28 @@ int cerca(char stringa[], char c) {
 
 ---
 
-## 7. Criteri per la scelta degli esempi e dei problemi reali
+## 7. Vincoli per capitolo
+
+Ogni capitolo introduce solo i costrutti già trattati nei capitoli precedenti.
+I vincoli seguenti definiscono cosa **non** è ancora disponibile in ciascun
+capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specifici.
+
+| Capitolo | Costrutti NON ancora disponibili |
+|----------|----------------------------------|
+| `01-introduzione` | array, stringhe (char[]), puntatori, funzioni definite dall'utente, struct |
+| `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct |
+| `03-funzioni` | array (tranne scalari passati per valore), stringhe, puntatori, struct |
+| `04-array-e-stringhe` | puntatori espliciti, struct, allocazione dinamica |
+| `05-puntatori` | struct, allocazione dinamica |
+| `06-memoria-dinamica` | struct complesse, liste concatenate |
+
+**Principio generale:** se un costrutto non è ancora stato introdotto nel
+percorso didattico, non deve comparire negli esempi del capitolo corrente,
+nemmeno in forma implicita o semplificata.
+
+---
+
+## 8. Criteri per la scelta degli esempi e dei problemi reali
 
 ### Principi generali
 - Ogni esempio deve essere **autonomo e compilabile** senza dipendenze esterne.
@@ -260,7 +281,7 @@ Per rendere gli esempi concreti si privilegiano questi ambiti:
 
 ---
 
-## 8. Configurazione CMake per CLion
+## 9. Configurazione CMake per CLion
 
 Il progetto viene sviluppato ed eseguito con **CLion** (JetBrains), che utilizza
 **CMake** come sistema di build. Per far apparire il tasto play accanto a ogni
@@ -317,7 +338,7 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 
 ---
 
-## 9. Lingua
+## 10. Lingua
 
 - **Tutto in italiano**: commenti, messaggi a schermo, nomi di variabili,
   testo del README e dell'analisi.
@@ -326,7 +347,7 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 
 ---
 
-## 10. Checklist prima di considerare un esempio completo
+## 11. Checklist prima di considerare un esempio completo
 
 - [ ] `CMakeLists.txt` della cartella esempio aggiornato con i nuovi target
 - [ ] `CMakeLists.txt` radice aggiornato con `add_subdirectory`
@@ -337,7 +358,8 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 - [ ] Nessun `break` fuori da `switch/case`
 - [ ] Nessun `continue`
 - [ ] Una sola `return` per funzione
+- [ ] Rispettati i vincoli per capitolo (sezione 7)
 - [ ] `README.md` con tutte le sezioni obbligatorie
 - [ ] Output atteso verificato ed esatto
 - [ ] File `<nome-esercizio>-analisi.md` presente se l'esercizio è di tipo "problema specifico"
-- [ ] Almeno 3 esercizi proposti nel README
+- [ ] Almeno 3 problemi specifici per sezione

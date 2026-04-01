@@ -9,6 +9,20 @@ add_compile_options(-Wall -Wextra)
 
 # Inclusione delle sottocartelle degli esempi.
 # Ogni cartella esempio ha il proprio CMakeLists.txt.
+
+# ── 01 - Introduzione ────────────────────────────────────────────────────────
+add_subdirectory(01-introduzione/01-hello-world)
+add_subdirectory(01-introduzione/02-variabili-e-tipi)
+add_subdirectory(01-introduzione/03-input-output)
+add_subdirectory(01-introduzione/04-operatori)
+
+# ── 03 - Funzioni ───────────────────────────────────────────────────────────
+add_subdirectory(03-funzioni/01-definizione-e-chiamata)
+add_subdirectory(03-funzioni/02-parametri-e-return)
+add_subdirectory(03-funzioni/03-passaggio-per-riferimento)
+add_subdirectory(03-funzioni/04-scope-e-visibilita)
+
+# ── 04 - Array e stringhe ────────────────────────────────────────────────────
 add_subdirectory(04-array-e-stringhe/01-array-monodimensionali/01-dichiarazione-e-inizializzazione)
 add_subdirectory(04-array-e-stringhe/01-array-monodimensionali/02-accesso-e-scorrimento)
 add_subdirectory(04-array-e-stringhe/01-array-monodimensionali/03-operazioni-su-array)
