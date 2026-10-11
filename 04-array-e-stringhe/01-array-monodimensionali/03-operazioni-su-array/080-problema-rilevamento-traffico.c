@@ -5,7 +5,7 @@
  *
  * Scenario: un sistema di rilevamento del traffico monitora 8 strade
  * e conta i veicoli transitati in un'ora. Il programma identifica le
- * strade congestioniate (sopra soglia), trova le tre strade più trafficate
+ * strade congestionate (sopra soglia), trova le tre strade più trafficate
  * tramite ricerca ripetuta del massimo (senza algoritmo di ordinamento
  * formale) e calcola la densità media.
  *
@@ -61,11 +61,11 @@ int main(void) {
     printf("\n");
 
     /* ------------------------------------------------------------------ */
-    /* Strade congestioniate e densità media */
+    /* Strade congestionate e densità media */
     int somma = 0;
     int congestionate = 0;
 
-    printf("Strade congestioniate (> %d veicoli/h):\n", SOGLIA_CONGESTIONE);
+    printf("Strade congestionate (> %d veicoli/h):\n", SOGLIA_CONGESTIONE);
     for (i = 0; i < STRADE; i++) {
         somma = somma + veicoli[i];
         if (veicoli[i] > SOGLIA_CONGESTIONE) {
@@ -77,7 +77,7 @@ int main(void) {
         printf("  Nessuna strada congestionata.\n");
     }
     printf("\nDensita' media : %.0f veicoli/h\n", (double)somma / STRADE);
-    printf("Congestioniate : %d su %d strade\n\n", congestionate, STRADE);
+    printf("Congestionate  : %d su %d strade\n\n", congestionate, STRADE);
 
     /* ------------------------------------------------------------------ */
     /* Top-3 strade più trafficate: ricerca ripetuta del massimo.

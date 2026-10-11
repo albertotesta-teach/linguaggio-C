@@ -34,8 +34,10 @@ int main(void) {
     }
 
     printf("\n--- DASHBOARD IMPIANTO ---\n");
-    printf("  %-10s | %-10s | Stato\n", "Sensore", "Temp (°C)");
-    printf("  -----------|------------|-------\n");
+    /* Intestazione scritta per esteso: il carattere '°' occupa 2 byte,
+     * quindi %-10s lo allineerebbe con uno spazio in meno */
+    printf("  Sensore    | Temp (°C)   | Stato\n");
+    printf("  -----------|-------------|-------\n");
 
     for (i = 0; i < NUM_SENSORI; i++) {
         char stato[10];

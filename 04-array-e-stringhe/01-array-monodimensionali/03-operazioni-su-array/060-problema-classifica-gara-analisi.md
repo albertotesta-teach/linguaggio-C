@@ -2,8 +2,8 @@
 
 ## 1. Problema
 
-Otto atleti partecipano a una gara di corsa. Il programma deve identificare il
-vincitore, stampare la classifica con il distacco dal primo in secondi, calcolare
+Otto atleti partecipano a una gara di corsa. Il programma deve stabilire
+l'ordine di arrivo, stampare la classifica con il distacco dal primo in secondi, calcolare
 il tempo medio e indicare quanti atleti hanno corso sotto la media.
 
 ---
@@ -14,7 +14,9 @@ il tempo medio e indicare quanti atleti hanno corso sotto la media.
 |--------------------|------------|------------|----------------------------------------------------|
 | `nomi`             | `char[][]` | 8 × 20     | Nome e cognome di ogni atleta                      |
 | `tempi`            | `int[]`    | 8          | Tempo in secondi; indice parallelo a `nomi`        |
-| `indice_vincitore` | `int`      | —          | Posizione dell'atleta con tempo minimo             |
+| `ordine`           | `int[]`    | 8          | `ordine[p]` = indice dell'atleta in posizione p+1  |
+| `classificato`     | `int[]`    | 8          | Flag: 1 se l'atleta è già stato inserito in `ordine` |
+| `indice_vincitore` | `int`      | —          | Indice dell'atleta con tempo minimo (`ordine[0]`)  |
 | `somma`            | `int`      | —          | Accumulatore per il calcolo della media            |
 | `media`            | `double`   | —          | Tempo medio del gruppo                             |
 | `sotto_media`      | `int`      | —          | Contatore atleti più veloci della media            |
@@ -37,33 +39,46 @@ Array `nomi`, `tempi`, variabile `indice_vincitore`.
   Pos. | Nome                | Tempo       | Distacco
   -----|---------------------|-------------|----------
    1°  | Verdi Paolo         | 2'55"       | --
-    -  | Rossi Marco         | 3'03"       | +8"
+   2°  | Conti Matteo        | 2'58"       | +3"
+   3°  | Rossi Marco         | 3'03"       | +8"
   ...
 ```
 
 **c) Variabili di supporto**
+- `migliore` (`int`): indice del candidato con tempo minimo tra i non classificati
+  (-1 finché non se ne trova uno).
+- `atleta` (`int`): `ordine[pos]`, indice dell'atleta da stampare.
 - `minuti` (`int`): `tempi[i] / 60`.
 - `secondi` (`int`): `tempi[i] % 60`.
 - `distacco` (`int`): `tempi[i] - tempi[indice_vincitore]`.
 
 **d) Vincoli**
-- Il vincitore viene identificato prima del ciclo di stampa.
+- L'ordine di arrivo viene costruito prima del ciclo di stampa.
+- Ogni atleta compare in `ordine` una sola volta: dopo essere stato scelto
+  il suo flag in `classificato` vale 1 e non è più candidabile.
 - Il distacco è sempre positivo o zero (il vincitore ha distacco zero).
 - Il formato `%02d` garantisce due cifre per i secondi (es. `3'05"` non `3'5"`).
 
 **e) Assunzioni**
 - I tempi sono espressi in secondi interi.
-- Non ci sono pareggi: se due atleti hanno lo stesso tempo minimo, viene
-  mostrato solo il primo trovato come vincitore.
+- Non ci sono pareggi: a parità di tempo precede l'atleta inserito per primo
+  negli array, perché il confronto usa `<` e non `<=`.
 
 **f) Algoritmo in linguaggio naturale**
 ```
-1. Trovare indice_vincitore (ricerca del minimo su tempi[]).
-2. Per i da 0 a ATLETI - 1:
-   a. Calcolare minuti = tempi[i] / 60, secondi = tempi[i] % 60.
-   b. distacco = tempi[i] - tempi[indice_vincitore].
-   c. Se i == indice_vincitore: stampare "1°" e "--".
-      Altrimenti: stampare "-" e "+distacco".
+1. Porre classificato[i] = 0 per ogni atleta.
+2. Per pos da 0 a ATLETI - 1:
+   a. migliore = -1.
+   b. Per i da 0 a ATLETI - 1: se classificato[i] == 0 e
+      (migliore == -1 oppure tempi[i] < tempi[migliore]): migliore = i.
+   c. ordine[pos] = migliore, classificato[migliore] = 1.
+3. indice_vincitore = ordine[0].
+4. Per pos da 0 a ATLETI - 1:
+   a. atleta = ordine[pos].
+   b. Calcolare minuti e secondi da tempi[atleta].
+   c. distacco = tempi[atleta] - tempi[indice_vincitore].
+   d. Stampare la posizione pos + 1; se pos == 0 stampare "--",
+      altrimenti "+distacco".
 ```
 
 ---
@@ -99,7 +114,8 @@ Totale: 4 atleti su 8
 ```
 1. somma = 0. Per i da 0 a ATLETI-1: somma += tempi[i].
 2. media = (double)somma / ATLETI.
-3. Per i da 0 a ATLETI-1:
-   a. Se (double)tempi[i] < media: stampare e incrementare sotto_media.
+3. Per pos da 0 a ATLETI-1 (in ordine di arrivo):
+   a. atleta = ordine[pos].
+   b. Se (double)tempi[atleta] < media: stampare e incrementare sotto_media.
 4. Stampare totale.
 ```

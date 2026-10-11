@@ -49,20 +49,20 @@ int main(void) {
     printf("=== ANDAMENTO TITOLO ===\n");
     printf("  Giorno | Prezzo   | Variazione\n");
     printf("  -------|----------|------------\n");
-    printf("     1   | %7.2f€ | --\n", prezzi[0]);
+    printf("     %-4d| %7.2f€ | --\n", 1, prezzi[0]);
 
     for (i = 1; i < GIORNI; i++) {
         double variazione = prezzi[i] - prezzi[i - 1];
         double perc       = variazione / prezzi[i - 1] * 100.0;
 
         if (variazione > 0.0) {
-            printf("     %2d  | %7.2f€ | +%.2f€ (+%.2f%%)\n",
+            printf("     %-4d| %7.2f€ | +%.2f€ (+%.2f%%)\n",
                    i + 1, prezzi[i], variazione, perc);
         } else if (variazione < 0.0) {
-            printf("     %2d  | %7.2f€ | %.2f€ (%.2f%%)\n",
+            printf("     %-4d| %7.2f€ | %.2f€ (%.2f%%)\n",
                    i + 1, prezzi[i], variazione, perc);
         } else {
-            printf("     %2d  | %7.2f€ | invariato\n", i + 1, prezzi[i]);
+            printf("     %-4d| %7.2f€ | invariato\n", i + 1, prezzi[i]);
         }
     }
     printf("\n");

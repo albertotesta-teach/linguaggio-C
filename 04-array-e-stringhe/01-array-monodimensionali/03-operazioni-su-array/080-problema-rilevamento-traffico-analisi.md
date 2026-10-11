@@ -4,7 +4,7 @@
 
 Un sistema di rilevamento monitora il traffico su 8 strade urbane nell'arco di
 un'ora. Il programma deve stampare un riepilogo con lo stato di ogni strada,
-identificare le strade congestioniate sopra una soglia, calcolare la densità
+identificare le strade congestionate sopra una soglia, calcolare la densità
 media e trovare le 3 strade più trafficate tramite ricerca ripetuta del massimo.
 
 ---
@@ -66,25 +66,25 @@ Per i da 0 a STRADE - 1:
 
 ---
 
-### Caso d'uso 2 – Strade congestioniate e media
+### Caso d'uso 2 – Strade congestionate e media
 
 **a) Input**
 Array `veicoli`.
 
 **b) Output**
 ```
-Strade congestioniate (> 800 veicoli/h):
+Strade congestionate (> 800 veicoli/h):
   [!] Corso Italia       : 950 veicoli/h
   [!] Viale Europa       : 1120 veicoli/h
   [!] Corso Vittorio     : 870 veicoli/h
   [!] Piazza Duomo       : 1050 veicoli/h
 
 Densita' media : 766 veicoli/h
-Congestioniate : 4 su 8 strade
+Congestionate  : 4 su 8 strade
 ```
 
 **c) Variabili di supporto**
-- `somma` (`int`): calcolato nello stesso ciclo delle strade congestioniate.
+- `somma` (`int`): calcolato nello stesso ciclo delle strade congestionate.
 - `congestionate` (`int`): contatore.
 
 **d) Vincoli**

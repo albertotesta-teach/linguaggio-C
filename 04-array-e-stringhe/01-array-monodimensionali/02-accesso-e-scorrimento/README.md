@@ -61,14 +61,18 @@ prima di usarlo.
 | File | Contenuto |
 |------|-----------|
 | `010-accesso-per-indice.c` | Lettura e scrittura tramite indice costante, variabile ed espressione; accesso sicuro con controllo dei limiti |
-| `020-scorrimento-con-cicli.c` | Scorrimento con `for`, `while` e `do-while`; ordine inverso, passo 2, scorrimento parziale |
-| `030-lettura-da-tastiera.c` | Acquisizione di valori da tastiera con validazione; barra grafica ASCII proporzionale al valore |
-| `040-problema-rubrica-telefonica.c` | Rubrica 6 contatti: stampa, ricerca per prefisso del nome, filtro per prefisso telefonico |
-| `040-problema-rubrica-telefonica-analisi.md` | Analisi di `040-problema-rubrica-telefonica.c` |
-| `050-problema-sensori-industriali.c` | 8 sensori temperatura: dashboard con stato OK/ALLARME, elenco fuori soglia, media impianto |
-| `050-problema-sensori-industriali-analisi.md` | Analisi di `050-problema-sensori-industriali.c` |
-| `060-problema-questionario.c` | Questionario 10 domande A/B/C/D: input con validazione, correzione parallela, punteggio finale |
-| `060-problema-questionario-analisi.md` | Analisi di `060-problema-questionario.c` |
+| `020-scorrimento-con-cicli.c` | Scorrimento con `for`, `while` e `do-while`; ordine inverso, scorrimento parziale, passo 2 |
+| `030-lettura-da-tastiera.c` | Acquisizione di voti da tastiera con validazione; media e barra grafica ASCII proporzionale al valore |
+| `040-problema-rilevazioni-pluviometriche.c` | Precipitazioni dei 12 mesi: istogramma, totale e media, mese più piovoso e più secco, mesi siccitosi |
+| `040-problema-rilevazioni-pluviometriche-analisi.md` | Analisi di `040-problema-rilevazioni-pluviometriche.c` |
+| `050-problema-cassa-automatica.c` | Calcolo del resto con il minor numero di monete (algoritmo greedy) e array parallelo dei contatori |
+| `050-problema-cassa-automatica-analisi.md` | Analisi di `050-problema-cassa-automatica.c` |
+| `060-problema-rubrica-telefonica.c` | Rubrica di 6 contatti: stampa, ricerca per prefisso del nome, filtro per prefisso telefonico |
+| `060-problema-rubrica-telefonica-analisi.md` | Analisi di `060-problema-rubrica-telefonica.c` |
+| `070-problema-sensori-industriali.c` | 8 sensori di temperatura: dashboard con stato OK/ALLARME, elenco fuori soglia, media impianto |
+| `070-problema-sensori-industriali-analisi.md` | Analisi di `070-problema-sensori-industriali.c` |
+| `080-problema-questionario.c` | Questionario di 10 domande A/B/C/D: input con validazione, correzione con la chiave, punteggio finale |
+| `080-problema-questionario-analisi.md` | Analisi di `080-problema-questionario.c` |
 
 ---
 
@@ -84,14 +88,20 @@ gcc -Wall -Wextra -o 020-scorrimento-con-cicli 020-scorrimento-con-cicli.c
 gcc -Wall -Wextra -o 030-lettura-da-tastiera 030-lettura-da-tastiera.c
 ./030-lettura-da-tastiera
 
-gcc -Wall -Wextra -o 040-problema-rubrica-telefonica 040-problema-rubrica-telefonica.c
-./040-problema-rubrica-telefonica
+gcc -Wall -Wextra -o 040-problema-rilevazioni-pluviometriche 040-problema-rilevazioni-pluviometriche.c
+./040-problema-rilevazioni-pluviometriche
 
-gcc -Wall -Wextra -o 050-problema-sensori-industriali 050-problema-sensori-industriali.c
-./050-problema-sensori-industriali
+gcc -Wall -Wextra -o 050-problema-cassa-automatica 050-problema-cassa-automatica.c
+./050-problema-cassa-automatica
 
-gcc -Wall -Wextra -o 060-problema-questionario 060-problema-questionario.c
-./060-problema-questionario
+gcc -Wall -Wextra -o 060-problema-rubrica-telefonica 060-problema-rubrica-telefonica.c
+./060-problema-rubrica-telefonica
+
+gcc -Wall -Wextra -o 070-problema-sensori-industriali 070-problema-sensori-industriali.c
+./070-problema-sensori-industriali
+
+gcc -Wall -Wextra -o 080-problema-questionario 080-problema-questionario.c
+./080-problema-questionario
 ```
 
 ---
@@ -140,15 +150,33 @@ Scorrimento con for (da sinistra a destra):
   valori[7] = 14
 
 Scorrimento con while:
-  [stessa sequenza]
+  valori[0] = 5
+  valori[1] = 12
+  valori[2] = 3
+  valori[3] = 18
+  valori[4] = 7
+  valori[5] = 25
+  valori[6] = 9
+  valori[7] = 14
 
 Scorrimento con do-while:
-  [stessa sequenza]
+  valori[0] = 5
+  valori[1] = 12
+  valori[2] = 3
+  valori[3] = 18
+  valori[4] = 7
+  valori[5] = 25
+  valori[6] = 9
+  valori[7] = 14
 
 Scorrimento in ordine inverso:
   valori[7] = 14
   valori[6] = 9
-  ...
+  valori[5] = 25
+  valori[4] = 7
+  valori[3] = 18
+  valori[2] = 3
+  valori[1] = 12
   valori[0] = 5
 
 Scorrimento parziale (solo i primi 4 elementi):
@@ -165,7 +193,7 @@ Scorrimento con passo 2 (elementi pari):
 ```
 
 ### 030-lettura-da-tastiera
-*(output dipendente dai valori inseriti – esempio con input 7 8 6 9 5)*
+*(output dipendente dall'input – esempio con i voti 7 8 6 9 5)*
 ```
 === Inserimento voti ===
 Inserisci 5 voti (da 1 a 10):
@@ -193,10 +221,67 @@ Distribuzione:
   Studente 5 [ 5]: *****
 ```
 
-### 040-problema-rubrica-telefonica
+### 040-problema-rilevazioni-pluviometriche
+```
+=========================================
+   PRECIPITAZIONI ANNUALI - RIEPILOGO    
+=========================================
+  Gennaio    |  42.0 mm | ||||||||
+  Febbraio   |  35.5 mm | |||||||
+  Marzo      |  28.0 mm | |||||
+  Aprile     |  55.0 mm | |||||||||||
+  Maggio     |  68.5 mm | |||||||||||||
+  Giugno     |  18.0 mm | |||
+  Luglio     |  12.5 mm | ||
+  Agosto     |  22.0 mm | ||||
+  Settembre  |  48.0 mm | |||||||||
+  Ottobre    |  75.0 mm | |||||||||||||||
+  Novembre   |  60.5 mm | ||||||||||||
+  Dicembre   |  38.0 mm | |||||||
+=========================================
+
+Precipitazione totale annua : 503.0 mm
+Precipitazione media mensile: 41.9 mm
+
+Mese piu' piovoso : Ottobre (75.0 mm)
+Mese piu' secco   : Luglio (12.5 mm)
+
+Mesi siccitosi (< 30 mm):
+  Marzo: 28.0 mm
+  Giugno: 18.0 mm
+  Luglio: 12.5 mm
+  Agosto: 22.0 mm
+
+Totale mesi siccitosi: 4 su 12
+```
+
+### 050-problema-cassa-automatica
+*(output dipendente dall'input – esempio con prezzo 1265 e importo pagato 2000 centesimi)*
+```
+=== CASSA AUTOMATICA ===
+
+Prezzo articolo (in centesimi, es. 135 per 1,35 euro): 1265
+Importo pagato  (in centesimi): 2000
+
+Prezzo  : 12,65 euro
+Pagato  : 20,00 euro
+Resto   : 7,35 euro
+
+Composizione del resto:
+  200 cent  x 3 moneta/e
+  100 cent  x 1 moneta/e
+   20 cent  x 1 moneta/e
+   10 cent  x 1 moneta/e
+    5 cent  x 1 moneta/e
+
+Resto restituito correttamente.
+Totale monete restituite: 7
+```
+
+### 060-problema-rubrica-telefonica
 ```
 ======================================
-           RUBRICA TELEFONICA
+           RUBRICA TELEFONICA         
 ======================================
   Rossi Marco          3471234567
   Bianchi Sara         0212345678
@@ -216,51 +301,76 @@ Contatti con numero di cellulare (prefisso '3'):
 Totale cellulari in rubrica: 3 su 6
 ```
 
-### 050-problema-sensori-industriali
-*(output dipendente dall'input – esempio)*
+### 070-problema-sensori-industriali
+*(output dipendente dall'input – esempio con le letture 65.0 5.0 42.5 85.3 71.2 38.9 12.0 55.7)*
 ```
 === SISTEMA DI MONITORAGGIO SENSORI ===
 
 Inserisci la temperatura rilevata per ciascun sensore (°C):
   Sensore S01: 65.0
   Sensore S02: 5.0
-  ...
+  Sensore S03: 42.5
+  Sensore S04: 85.3
+  Sensore S05: 71.2
+  Sensore S06: 38.9
+  Sensore S07: 12.0
+  Sensore S08: 55.7
 
 --- DASHBOARD IMPIANTO ---
-  Sensore    | Temp (°C)  | Stato
-  -----------|------------|-------
+  Sensore    | Temp (°C)   | Stato
+  -----------|-------------|-------
   S01        |     65.0 °C | OK
   S02        |      5.0 °C | ALLARME
-  ...
+  S03        |     42.5 °C | OK
+  S04        |     85.3 °C | ALLARME
+  S05        |     71.2 °C | OK
+  S06        |     38.9 °C | OK
+  S07        |     12.0 °C | OK
+  S08        |     55.7 °C | OK
 
 Sensori fuori soglia [10°C - 80°C]:
   [!] S02: 5.0°C - TEMPERATURA TROPPO BASSA
+  [!] S04: 85.3°C - TEMPERATURA TROPPO ALTA
 
-Temperatura media impianto: 48.3°C
-Sensori in allarme: 1 su 8
+Temperatura media impianto: 46.9°C
+Sensori in allarme: 2 su 8
 ```
 
-### 060-problema-questionario
-*(output dipendente dall'input – esempio con risposte A C B D A C B A D C)*
+### 080-problema-questionario
+*(output dipendente dall'input – esempio con le risposte A C B D A B B A C C)*
 ```
 === QUESTIONARIO A RISPOSTA MULTIPLA ===
 Inserisci la risposta (A/B/C/D) per ciascuna domanda:
 
   Domanda  1: A
-  ...
+  Domanda  2: C
+  Domanda  3: B
+  Domanda  4: D
+  Domanda  5: A
+  Domanda  6: B
+  Domanda  7: B
+  Domanda  8: A
+  Domanda  9: C
   Domanda 10: C
 
 === CORREZIONE ===
   Dom. | Risposta | Corretta | Esito
   -----|----------|----------|------
-     1 |    A     |    A     | OK
-     2 |    C     |    C     | OK
-  ...
+    1  |    A     |    A     | OK
+    2  |    C     |    C     | OK
+    3  |    B     |    B     | OK
+    4  |    D     |    D     | OK
+    5  |    A     |    A     | OK
+    6  |    B     |    C     | ERRATA
+    7  |    B     |    B     | OK
+    8  |    A     |    A     | OK
+    9  |    C     |    D     | ERRATA
+   10  |    C     |    C     | OK
 
 === RISULTATO ===
-  Risposte corrette : 10 su 10
-  Risposte errate   : 0 su 10
-  Punteggio         : 100%
+  Risposte corrette : 8 su 10
+  Risposte errate   : 2 su 10
+  Punteggio         : 80%
   Esito             : PROMOSSO
 ```
 
@@ -323,9 +433,9 @@ scanf(" %c", &c);  /* corretto: lo spazio consuma tutti gli spazi e newline */
 3. Partendo da `030-lettura-da-tastiera.c`, aggiungi la stampa del numero
    di voti sufficienti (>= 6) e insufficienti (< 6) inseriti dall'utente.
 
-4. Modifica `040-problema-rubrica-telefonica.c` per cercare un contatto
+4. Modifica `060-problema-rubrica-telefonica.c` per cercare un contatto
    leggendo il nome da tastiera invece di usare una stringa fissa.
 
-5. (Avanzato) Estendi `060-problema-questionario.c` per gestire più
+5. (Avanzato) Estendi `080-problema-questionario.c` per gestire più
    studenti: inserisci le risposte di 3 studenti e stampa la classifica
    dal punteggio più alto al più basso.

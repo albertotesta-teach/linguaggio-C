@@ -15,7 +15,10 @@ int main(void)
     int valore;   /* commento su riga singola: a fianco del codice */
 
     /* ── COMMENTO SU PIÙ RIGHE (stile C classico) ─────────────────────────
-     * Inizia con  /*  e termina con  */
+     * Inizia con barra-asterisco e termina con asterisco-barra.
+     * Attenzione: i due simboli non si possono scrivere per esteso
+     * dentro un commento, perché asterisco-barra lo chiuderebbe subito
+     * e il testo seguente verrebbe compilato come codice.
      * Può estendersi su quante righe si vuole.
      * Usato per intestazioni, spiegazioni lunghe e sezioni di codice. */
 

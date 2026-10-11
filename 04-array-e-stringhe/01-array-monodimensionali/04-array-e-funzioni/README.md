@@ -101,10 +101,6 @@ gcc -Wall -Wextra -o 080-problema-registro-presenze 080-problema-registro-presen
 ./080-problema-registro-presenze
 ```
 
-> Nota: `010-passaggio-array-a-funzione.c` genera due warning con `-Wall -Wextra`,
-> legati proprio ai comportamenti che il file illustra: la funzione
-> `tenta_modifica_scalare` assegna un parametro che poi non usa, e `sizeof(arr)`
-> su un parametro array restituisce la dimensione di un indirizzo.
 
 ---
 
@@ -121,12 +117,13 @@ Dopo  raddoppia(): [ 6 14 2 18 8 12 ]
 
 === Passaggio per valore (scalare) ===
 Prima di tenta_modifica_scalare(): scalare = 42
+Dentro la funzione:             x       = 999  (copia modificata)
 Dopo  tenta_modifica_scalare(): scalare = 42  (invariato)
 
 === Dimensione dell'array ===
   sizeof(valori) nel main: 24 byte (6 elementi)
   n ricevuto come parametro : 6 elementi
-  sizeof(arr) dentro funzione: 8 byte (dimensione del puntatore)
+  sizeof(&arr[0]) nella funzione: 8 byte (dimensione di un indirizzo)
 
 === Passaggio di una porzione dell'array ===
 Ultimi 3 elementi: [ 18 8 12 ]

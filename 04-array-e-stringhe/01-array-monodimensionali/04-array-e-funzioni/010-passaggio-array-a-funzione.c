@@ -46,16 +46,22 @@ void raddoppia(int arr[], int n) {
  * La modifica dentro la funzione NON si propaga al chiamante. */
 void tenta_modifica_scalare(int x) {
     x = 999;   /* modifica solo la copia locale */
+    printf("Dentro la funzione:             x       = %d  (copia modificata)\n", x);
 }
 
 /* ------------------------------------------------------------------ */
 /* Dimostrazione: la dimensione va passata esplicitamente.
- * sizeof(arr) dentro una funzione restituisce la dimensione del
- * PUNTATORE (tipicamente 8 byte), non quella dell'array originale. */
+ * Dentro la funzione arr non è un array ma l'INDIRIZZO del primo
+ * elemento: sizeof(arr) restituirebbe la dimensione di un indirizzo
+ * (tipicamente 8 byte), non quella dell'array originale.
+ *
+ * Scrivere sizeof(arr) qui è un errore così comune che gcc lo segnala
+ * con un warning (-Wsizeof-array-argument). Per mostrare il valore
+ * senza warning usiamo &arr[0], che è esattamente lo stesso indirizzo. */
 void mostra_dimensione(const int arr[], int n) {
     printf("  n ricevuto come parametro : %d elementi\n", n);
-    printf("  sizeof(arr) dentro funzione: %lu byte (dimensione del puntatore)\n",
-           sizeof(arr));
+    printf("  sizeof(&arr[0]) nella funzione: %lu byte (dimensione di un indirizzo)\n",
+           sizeof(&arr[0]));
 }
 
 int main(void) {

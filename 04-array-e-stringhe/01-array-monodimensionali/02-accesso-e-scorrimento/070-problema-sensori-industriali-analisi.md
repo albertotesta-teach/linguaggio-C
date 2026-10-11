@@ -45,7 +45,8 @@ Per i da 0 a NUM_SENSORI - 1: leggere letture[i].
 **b) Output**
 ```
 --- DASHBOARD IMPIANTO ---
-  Sensore    | Temp (°C)  | Stato
+  Sensore    | Temp (°C)   | Stato
+  -----------|-------------|-------
   S01        |     65.0 °C | OK
   S02        |      5.0 °C | ALLARME
 ```

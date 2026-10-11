@@ -332,7 +332,7 @@ Playlist iniziale:
   Durata totale: 17:44
 Brano piu' lungo: ID 1003 (245 secondi)
 
-Inserimento brano 1006 (230 sec) in posizione 2:
+Inserimento brano 1006 (230 sec) come brano n. 3 (indice 2):
   OK -> 6 brani in playlist
 
   N. | ID    | Durata

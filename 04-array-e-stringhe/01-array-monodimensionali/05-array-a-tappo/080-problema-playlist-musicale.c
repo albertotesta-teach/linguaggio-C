@@ -145,8 +145,9 @@ int main(void) {
            durate[brano_piu_lungo(durate, id)]);
 
     /* ---------------------------------------------------------------- */
-    /* Inserimento in posizione 2 (terzo posto) */
-    printf("Inserimento brano 1006 (230 sec) in posizione 2:\n");
+    /* Inserimento all'indice 2: il brano diventa il n. 3 della playlist.
+     * Le funzioni lavorano con indici 0-based, la stampa numera da 1. */
+    printf("Inserimento brano 1006 (230 sec) come brano n. 3 (indice 2):\n");
     int esito = inserisci_in_posizione(id, durate, 2, 1006, 230);
     if (esito == 1) {
         printf("  OK -> %d brani in playlist\n\n", conta_brani(id));

@@ -175,14 +175,14 @@ Copia modificata     :   999   -1    7   -4    9    2   -6    5
   Giorno | Prezzo   | Variazione
   -------|----------|------------
      1   |  142.50€ | --
-      2  |  145.20€ | +2.70€ (+1.89%)
-      3  |  143.80€ | -1.40€ (-0.96%)
-      4  |  148.60€ | +4.80€ (+3.34%)
-      5  |  151.30€ | +2.70€ (+1.82%)
-      6  |  149.70€ | -1.60€ (-1.06%)
-      7  |  147.20€ | -2.50€ (-1.67%)
-      8  |  152.40€ | +5.20€ (+3.53%)
-      9  |  155.10€ | +2.70€ (+1.77%)
+     2   |  145.20€ | +2.70€ (+1.89%)
+     3   |  143.80€ | -1.40€ (-0.96%)
+     4   |  148.60€ | +4.80€ (+3.34%)
+     5   |  151.30€ | +2.70€ (+1.82%)
+     6   |  149.70€ | -1.60€ (-1.06%)
+     7   |  147.20€ | -2.50€ (-1.67%)
+     8   |  152.40€ | +5.20€ (+3.53%)
+     9   |  155.10€ | +2.70€ (+1.77%)
      10  |  153.80€ | -1.30€ (-0.84%)
 
 Prezzo medio del periodo: 148.96€
@@ -235,22 +235,22 @@ Lettere distinte usate : 17 su 26
 === CLASSIFICA GARA ===
   Pos. | Nome                | Tempo       | Distacco
   -----|---------------------|-------------|----------
-    -  | Rossi Marco         | 3'03"       | +8"
-    -  | Bianchi Luca        | 3'17"       | +22"
    1°  | Verdi Paolo         | 2'55"       | --
-    -  | Ferrari Giorgio     | 3'22"       | +27"
-    -  | Russo Andrea        | 3'11"       | +16"
-    -  | Conti Matteo        | 2'58"       | +3"
-    -  | Marino Fabio        | 3'29"       | +34"
-    -  | Greco Simone        | 3'06"       | +11"
+   2°  | Conti Matteo        | 2'58"       | +3"
+   3°  | Rossi Marco         | 3'03"       | +8"
+   4°  | Greco Simone        | 3'06"       | +11"
+   5°  | Russo Andrea        | 3'11"       | +16"
+   6°  | Bianchi Luca        | 3'17"       | +22"
+   7°  | Ferrari Giorgio     | 3'22"       | +27"
+   8°  | Marino Fabio        | 3'29"       | +34"
 
 Tempo medio         : 190.1 secondi
 Vincitore           : Verdi Paolo (175")
 
 Atleti sotto la media (piu' veloci di 190.1"):
-  Rossi Marco: 183"  (-7.1" dalla media)
   Verdi Paolo: 175"  (-15.1" dalla media)
   Conti Matteo: 178"  (-12.1" dalla media)
+  Rossi Marco: 183"  (-7.1" dalla media)
   Greco Simone: 186"  (-4.1" dalla media)
 Totale: 4 atleti su 8
 ```
@@ -299,14 +299,14 @@ Confronto con la media (2334.93€):
   Via Dante              |     310   | SCORREVOLE
   Piazza Duomo           |    1050   | CONGESTA
 
-Strade congestioniate (> 800 veicoli/h):
+Strade congestionate (> 800 veicoli/h):
   [!] Corso Italia           : 950 veicoli/h
   [!] Viale Europa           : 1120 veicoli/h
   [!] Corso Vittorio         : 870 veicoli/h
   [!] Piazza Duomo           : 1050 veicoli/h
 
 Densita' media : 766 veicoli/h
-Congestioniate : 4 su 8 strade
+Congestionate  : 4 su 8 strade
 
 Top-3 strade piu' trafficate:
   1° posto: Viale Europa           (1120 veicoli/h)
