@@ -430,6 +430,16 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 - Nessuna immagine decorativa o di sfondo: solo elementi visivi utili alla
   comprensione (tabelle a celle per gli array, schemi di memoria, codice).
   Fa eccezione l'immagine della slide di copertina.
+- Schemi di memoria, frecce dei puntatori e disposizioni di array non si
+  disegnano con caratteri ASCII né con tabelle o riquadri di Gamma: si
+  generano come immagini PNG con uno script Python (matplotlib) nei colori del
+  tema e si salvano in `00-Documentazione/immagini/` insieme allo script
+  (`diagrammi-<codice>.py`, immagini `<codice>-<nome>.png`). Dopo il push
+  vengono inserite nella slide dall'URL `raw.githubusercontent.com` del
+  repository.
+- Gli indirizzi di memoria si scrivono in esadecimale come li stampa `%p`
+  (`0x7ffd5e8a2eec`); se abbreviati alle ultime cifre (`...eec`), lo schema
+  lo spiega in una legenda.
 
 ### Struttura della presentazione
 1. **Copertina**: titolo, sottotitolo con gli argomenti, etichette di tema.
