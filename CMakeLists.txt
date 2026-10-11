@@ -44,3 +44,8 @@ add_subdirectory(04-array-e-stringhe/02-array-multidimensionali/05-griglie-di-ca
 add_subdirectory(04-array-e-stringhe/03-stringhe/01-dichiarazione-e-inizializzazione)
 add_subdirectory(04-array-e-stringhe/03-stringhe/02-input-output-stringhe)
 add_subdirectory(04-array-e-stringhe/03-stringhe/03-lunghezza-e-accesso-ai-caratteri)
+add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/01-funzioni-scritte-a-mano)
+add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/02-libreria-string-h)
+add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/03-ricerca-nelle-stringhe)
+add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/04-caratteri-e-conversioni)
+add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/05-array-di-stringhe)

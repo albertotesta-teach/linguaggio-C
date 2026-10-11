@@ -32,6 +32,11 @@ linguaggio-C/
 │   │   │   └── <nome-esercizio>-analisi.md  ← solo per esercizi "problema specifico"
 │   │   └── 02-input-output-stringhe/
 │   └── 04-funzioni-su-stringhe/
+│       ├── 01-funzioni-scritte-a-mano/
+│       ├── 02-libreria-string-h/
+│       ├── 03-ricerca-nelle-stringhe/
+│       ├── 04-caratteri-e-conversioni/
+│       └── 05-array-di-stringhe/
 ├── 05-puntatori/
 └── ...
 ```
@@ -251,7 +256,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `01-introduzione` | array, stringhe (char[]), puntatori, funzioni definite dall'utente, struct |
 | `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct; inoltre ogni sezione usa solo i costrutti delle sezioni precedenti (`01-logica-booleana` senza `if` né cicli, `02-if-else` senza `switch` né cicli, `03-switch` senza cicli, `04-while-do-while` senza `for`) |
 | `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
-| `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica |
+| `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica; `<string.h>` e `<ctype.h>` solo da `04-funzioni-su-stringhe` in poi. In quel sottocapitolo il puntatore restituito da `strchr`, `strrchr` e `strstr` si usa solo nel confronto con `NULL` (la posizione si ottiene con funzioni scritte a mano che restituiscono l'indice); `strtok` escluso |
 | `05-puntatori` | struct, allocazione dinamica |
 | `06-memoria-dinamica` | struct complesse, liste concatenate |
 
