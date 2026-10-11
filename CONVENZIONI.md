@@ -43,6 +43,9 @@ linguaggio-C/
 │   │   ├── 02-dichiarazione-e-dereferenziazione/
 │   │   └── 03-errori-e-puntatori-sicuri/
 │   ├── 02-puntatori-e-array/
+│   │   ├── 01-aritmetica-dei-puntatori/
+│   │   ├── 02-array-come-puntatori/
+│   │   └── 03-stringhe-e-puntatori/
 │   ├── 03-puntatori-e-funzioni/
 │   └── 04-puntatori-a-puntatori/
 └── ...
@@ -264,7 +267,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct; inoltre ogni sezione usa solo i costrutti delle sezioni precedenti (`01-logica-booleana` senza `if` né cicli, `02-if-else` senza `switch` né cicli, `03-switch` senza cicli, `04-while-do-while` senza `for`) |
 | `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
 | `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica; `<string.h>` e `<ctype.h>` solo da `04-funzioni-su-stringhe` in poi. In quel sottocapitolo il puntatore restituito da `strchr`, `strrchr` e `strstr` si usa solo nel confronto con `NULL` (la posizione si ottiene con funzioni scritte a mano che restituiscono l'indice); `strtok` escluso |
-| `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi |
+| `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi; in `02-puntatori-e-array` niente funzioni che restituiscono puntatori, doppi puntatori e array di puntatori (sottocapitoli 03 e 04) |
 | `06-memoria-dinamica` | struct complesse, liste concatenate |
 
 **Principio generale:** se un costrutto non è ancora stato introdotto nel

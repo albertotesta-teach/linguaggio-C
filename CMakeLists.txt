@@ -54,3 +54,6 @@ add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/05-array-di-stringh
 add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/01-indirizzi-e-memoria)
 add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/02-dichiarazione-e-dereferenziazione)
 add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/03-errori-e-puntatori-sicuri)
+add_subdirectory(05-puntatori/02-puntatori-e-array/01-aritmetica-dei-puntatori)
+add_subdirectory(05-puntatori/02-puntatori-e-array/02-array-come-puntatori)
+add_subdirectory(05-puntatori/02-puntatori-e-array/03-stringhe-e-puntatori)
