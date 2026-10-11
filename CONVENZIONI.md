@@ -412,6 +412,9 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 - Tema Gamma "Modello T": sfondo chiaro, riquadri di evidenza verdi.
 - Titoli in Verdana grassetto, testo in Verdana, codice in Consolas.
 - Tutto il testo allineato a sinistra; impostazioni identiche su tutte le slide.
+- Contenuto delle slide allineato in alto (allineamento verticale "inizio"),
+  così il titolo è sempre nella stessa posizione; fa eccezione la copertina,
+  che resta centrata.
 - Nessuna immagine decorativa o di sfondo: solo elementi visivi utili alla
   comprensione (tabelle a celle per gli array, schemi di memoria, codice).
   Fa eccezione l'immagine della slide di copertina.
