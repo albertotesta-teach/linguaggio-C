@@ -13,6 +13,12 @@ linguaggio-C/
 ├── CONVENZIONI.md               ← questo file
 ├── 01-introduzione/
 ├── 02-controllo-del-flusso/
+│   ├── 01-logica-booleana/
+│   ├── 02-if-else/
+│   ├── 03-switch/
+│   ├── 04-while-do-while/
+│   ├── 05-for/
+│   └── 06-break-continue/
 ├── 03-funzioni/
 ├── 04-array-e-stringhe/
 │   ├── 01-array-monodimensionali/
@@ -190,6 +196,11 @@ Ogni file `.c` inizia con un blocco commento strutturato:
   o variabili booleane di supporto (es. `trovato`, `valido`, `fine`).
 - **Niente `continue`**: il flusso all'interno di un ciclo deve essere gestito
   tramite `if/else`, non saltando iterazioni con `continue`.
+- **Unica eccezione dichiarata**: `02-controllo-del-flusso/06-break-continue/010-break-e-continue.c`
+  mostra `break` nei cicli e `continue` nel codice eseguibile per spiegarne il
+  funzionamento; ogni uso è marcato nei commenti come "DA NON IMITARE".
+  Negli altri file della sezione le versioni con `break`/`continue` compaiono
+  solo nei commenti, a confronto con quelle corrette.
 - **Una sola `return` per funzione**: ogni funzione ha un unico punto di uscita,
   alla fine del corpo. Il risultato viene accumulato in una variabile locale
   e restituito nell'unica `return` finale. Questo migliora la leggibilità
@@ -238,7 +249,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | Capitolo | Costrutti NON ancora disponibili |
 |----------|----------------------------------|
 | `01-introduzione` | array, stringhe (char[]), puntatori, funzioni definite dall'utente, struct |
-| `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct |
+| `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct; inoltre ogni sezione usa solo i costrutti delle sezioni precedenti (`01-logica-booleana` senza `if` né cicli, `02-if-else` senza `switch` né cicli, `03-switch` senza cicli, `04-while-do-while` senza `for`) |
 | `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
 | `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica |
 | `05-puntatori` | struct, allocazione dinamica |
@@ -322,8 +333,11 @@ add_subdirectory(04-array-e-stringhe/03-stringhe/01-dichiarazione-e-inizializzaz
 ```
 
 ### CMakeLists.txt per cartella esempio
-Un `add_executable` per ogni file `.c`. Il nome del target coincide con il
-nome del file senza estensione.
+Un `add_executable` per ogni file `.c`. I nomi dei target devono essere
+**unici in tutto il progetto**: dal capitolo 02 in poi il nome è formato dal
+prefisso `<capitolo>-<sezione>-` seguito dal nome del file senza estensione
+(es. `02-05-010-for-base`). Se un file usa `<math.h>` si aggiunge
+`target_link_libraries(<target> m)`, necessario su Linux.
 
 ```cmake
 cmake_minimum_required(VERSION 3.20)

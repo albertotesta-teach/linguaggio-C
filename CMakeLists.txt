@@ -16,6 +16,14 @@ add_subdirectory(01-introduzione/02-variabili-e-tipi)
 add_subdirectory(01-introduzione/03-input-output)
 add_subdirectory(01-introduzione/04-operatori)
 
+# ── 02 - Controllo del flusso ───────────────────────────────────────────
+add_subdirectory(02-controllo-del-flusso/01-logica-booleana)
+add_subdirectory(02-controllo-del-flusso/02-if-else)
+add_subdirectory(02-controllo-del-flusso/03-switch)
+add_subdirectory(02-controllo-del-flusso/04-while-do-while)
+add_subdirectory(02-controllo-del-flusso/05-for)
+add_subdirectory(02-controllo-del-flusso/06-break-continue)
+
 # ── 03 - Funzioni ───────────────────────────────────────────────────────────
 add_subdirectory(03-funzioni/01-definizione-e-chiamata)
 add_subdirectory(03-funzioni/02-parametri-e-return)

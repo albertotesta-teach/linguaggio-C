@@ -8,9 +8,12 @@
  * necessarie. Il programma calcola area e perimetro e li stampa
  * con due cifre decimali.
  *
- * Nota didattica: la selezione avviene con if/else perché switch
- * viene introdotto nel capitolo 02. Niente array, stringhe o funzioni
- * definite dall'utente, come richiesto dai vincoli del capitolo 01.
+ * Nota didattica: qui if/else viene usato in anticipo, prima di essere
+ * spiegato, per scegliere la figura. Il costrutto è trattato in modo
+ * completo in 02-controllo-del-flusso/02-if-else, mentre switch (che si
+ * adatterebbe bene a questa scelta) è in 02-controllo-del-flusso/03-switch.
+ * Niente array, stringhe o funzioni definite dall'utente, come richiesto
+ * dai vincoli del capitolo 01.
  */
 
 #include <stdio.h>
