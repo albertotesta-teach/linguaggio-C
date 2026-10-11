@@ -57,3 +57,6 @@ add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/03-errori-e-puntatori
 add_subdirectory(05-puntatori/02-puntatori-e-array/01-aritmetica-dei-puntatori)
 add_subdirectory(05-puntatori/02-puntatori-e-array/02-array-come-puntatori)
 add_subdirectory(05-puntatori/02-puntatori-e-array/03-stringhe-e-puntatori)
+add_subdirectory(05-puntatori/03-puntatori-e-funzioni/01-parametri-per-riferimento)
+add_subdirectory(05-puntatori/03-puntatori-e-funzioni/02-funzioni-che-restituiscono-puntatori)
+add_subdirectory(05-puntatori/03-puntatori-e-funzioni/03-puntatori-a-funzione)
