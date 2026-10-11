@@ -23,7 +23,7 @@ linguaggio-C/
 │   │   │   ├── 020-inizializzazione.c
 │   │   │   ├── ...
 │   │   │   ├── README.md
-│   │   │   └── analisi.md        ← solo per esercizi "problema specifico"
+│   │   │   └── <nome-esercizio>-analisi.md  ← solo per esercizi "problema specifico"
 │   │   └── 02-input-output-stringhe/
 │   └── 04-funzioni-su-stringhe/
 ├── 05-puntatori/
@@ -32,7 +32,7 @@ linguaggio-C/
 
 Ogni argomento ha la propria cartella numerata. All'interno, ogni esempio
 occupa una sottocartella dedicata contenente i file `.c`, il `README.md` e,
-dove previsto, il file `analisi.md`.
+dove previsto, i file `<nome-esercizio>-analisi.md`.
 
 ---
 
@@ -47,7 +47,7 @@ dove previsto, il file `analisi.md`.
 010-stringa-base.c
 020-inizializzazione.c
 030-memoria-e-terminatore.c
-040-problema-reale.c
+040-problema-codice-fiscale.c
 ```
 
 ### Cartelle degli esempi
@@ -83,6 +83,13 @@ allo studente, ma guida la struttura dei file prodotti):
 ## 4. Struttura del file `analisi.md`
 
 Presente **solo** per gli esercizi di tipo "problema specifico".
+Il file si chiama `<nome-esercizio>-analisi.md` (stesso nome del sorgente,
+senza `.c`, seguito da `-analisi.md`) e sta nella stessa cartella del `.c`:
+
+```
+040-problema-codice-fiscale.c
+040-problema-codice-fiscale-analisi.md
+```
 
 ```markdown
 # Analisi – <nome-file>.c
@@ -232,8 +239,8 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 |----------|----------------------------------|
 | `01-introduzione` | array, stringhe (char[]), puntatori, funzioni definite dall'utente, struct |
 | `02-controllo-del-flusso` | array, stringhe, puntatori, funzioni definite dall'utente, struct |
-| `03-funzioni` | array (tranne scalari passati per valore), stringhe, puntatori, struct |
-| `04-array-e-stringhe` | puntatori espliciti, struct, allocazione dinamica |
+| `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
+| `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica |
 | `05-puntatori` | struct, allocazione dinamica |
 | `06-memoria-dinamica` | struct complesse, liste concatenate |
 
@@ -324,7 +331,7 @@ cmake_minimum_required(VERSION 3.20)
 add_executable(010-stringa-base          010-stringa-base.c)
 add_executable(020-inizializzazione      020-inizializzazione.c)
 add_executable(030-memoria-e-terminatore 030-memoria-e-terminatore.c)
-add_executable(040-problema-reale        040-problema-reale.c)
+add_executable(040-problema-codice-fiscale 040-problema-codice-fiscale.c)
 ```
 
 ### Aggiornamento dopo ogni nuovo esempio
@@ -363,3 +370,23 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 - [ ] Output atteso verificato ed esatto
 - [ ] File `<nome-esercizio>-analisi.md` presente se l'esercizio è di tipo "problema specifico"
 - [ ] Almeno 3 problemi specifici per sezione
+- [ ] Nessun eseguibile compilato aggiunto al repository (`git status` pulito)
+
+---
+
+## 12. Presentazioni
+
+- Le presentazioni sono realizzate in **PowerPoint** (Gamma non è più usato;
+  il `GAMMA-PROMPT.md` del capitolo 01 resta solo come archivio).
+- Si salvano nella cartella `00-Documentazione/` alla radice del repository,
+  in formato `.pptx` e con l'esportazione `.pdf` affiancata.
+- Nome del file: `Linguaggio-C-<codice>-<Titolo-Con-Trattini>.pptx`, dove il
+  codice è il numero del capitolo (`01`) oppure capitolo + sezione (`0401`).
+
+```
+00-Documentazione/
+├── Linguaggio-C-01-Introduzione.pptx
+├── Linguaggio-C-01-Introduzione.pdf
+├── Linguaggio-C-0401-Gli-Array-Monodimensionali-in-C.pptx
+└── Linguaggio-C-0401-Gli-Array-Monodimensionali-in-C.pdf
+```

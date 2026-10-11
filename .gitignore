@@ -9,3 +9,11 @@ cmake-build-release/
 *.out
 a.out
 .idea/
+
+# File di sistema macOS
+.DS_Store
+
+# Eseguibili compilati con gcc da riga di comando: hanno lo stesso nome
+# del sorgente ma senza estensione (es. 010-stringa-base da 010-stringa-base.c)
+[0-9][0-9][0-9]-*
+![0-9][0-9][0-9]-*.*
