@@ -376,10 +376,13 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 
 ## 12. Presentazioni
 
-- Le presentazioni sono realizzate in **PowerPoint** (Gamma non è più usato;
-  il `GAMMA-PROMPT.md` del capitolo 01 resta solo come archivio).
-- Si salvano nella cartella `00-Documentazione/` alla radice del repository,
-  in formato `.pptx` e con l'esportazione `.pdf` affiancata.
+### Flusso di lavoro
+- Le presentazioni si generano in **Gamma**, direttamente da Claude tramite il
+  collegamento a Gamma, con il tema personalizzato **"Modello T"**.
+- La presentazione viene poi esportata in `.pptx` e `.pdf` e salvata nella
+  cartella `00-Documentazione/` alla radice del repository.
+- Il `GAMMA-PROMPT.md` del capitolo 01 resta come archivio del vecchio flusso
+  (prompt copiato a mano in Gamma).
 - Nome del file: `Linguaggio-C-<codice>-<Titolo-Con-Trattini>.pptx`, dove il
   codice è il numero del capitolo (`01`) oppure capitolo + sezione (`0401`).
 
@@ -390,3 +393,24 @@ Ogni volta che si aggiunge una nuova cartella esempio occorre:
 ├── Linguaggio-C-0401-Gli-Array-Monodimensionali-in-C.pptx
 └── Linguaggio-C-0401-Gli-Array-Monodimensionali-in-C.pdf
 ```
+
+### Stile grafico (uguale alle presentazioni già realizzate)
+- Tema Gamma "Modello T": sfondo chiaro, riquadri di evidenza verdi.
+- Titoli in Verdana grassetto, testo in Verdana, codice in Consolas.
+- Tutto il testo allineato a sinistra; impostazioni identiche su tutte le slide.
+- Nessuna immagine decorativa o di sfondo: solo elementi visivi utili alla
+  comprensione (tabelle a celle per gli array, schemi di memoria, codice).
+  Fa eccezione l'immagine della slide di copertina.
+
+### Struttura della presentazione
+1. **Copertina**: titolo, sottotitolo con gli argomenti, etichette di tema.
+2. **Slide teoriche**, una per concetto, nell'ordine delle sezioni del
+   capitolo: spiegazione, schema o tabella, frammento di codice, riquadro verde
+   con la regola chiave o l'errore tipico.
+3. **Errori comuni da evitare**: schede numerate.
+4. **Riepilogo concetti**: tabella Operazione / Tecnica / Note.
+5. **Esempi pratici**, per ogni sezione due slide:
+   - file concetto base (010, 020, 030) in tre colonne numerate, ciascuna con
+     nome del file, *Problema* e *Tecnica*;
+   - file problema (040 e successivi) come schede affiancate con numero, titolo
+     e descrizione breve; l'ultimo problema su una barra a tutta larghezza.
