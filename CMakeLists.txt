@@ -49,3 +49,8 @@ add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/02-libreria-string-
 add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/03-ricerca-nelle-stringhe)
 add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/04-caratteri-e-conversioni)
 add_subdirectory(04-array-e-stringhe/04-funzioni-su-stringhe/05-array-di-stringhe)
+
+# ── 05 - Puntatori ───────────────────────────────────────────────────────────
+add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/01-indirizzi-e-memoria)
+add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/02-dichiarazione-e-dereferenziazione)
+add_subdirectory(05-puntatori/01-introduzione-ai-puntatori/03-errori-e-puntatori-sicuri)
