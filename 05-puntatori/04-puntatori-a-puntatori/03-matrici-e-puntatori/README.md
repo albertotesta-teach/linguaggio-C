@@ -310,7 +310,7 @@ righe[0][0]            /* la riga 0 della tabella triangolare non esiste */
 - `04-array-e-stringhe/02-array-multidimensionali` → matrici con gli indici
 - `02-puntatori-e-array` → aritmetica dei puntatori e sottoarray
 - `02-array-di-puntatori` → array di puntatori a righe di lunghezza diversa
-- `06-memoria-dinamica/03-array-dinamici` → matrici con dimensioni decise durante l'esecuzione
+- `07-memoria-dinamica/03-array-dinamici` → matrici con dimensioni decise durante l'esecuzione
 
 ---
 

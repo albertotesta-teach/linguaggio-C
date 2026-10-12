@@ -315,7 +315,7 @@ cerca(posti, N, tessera, &posto);
 - `03-puntatori-e-funzioni/01-parametri-per-riferimento` → la stessa regola un livello più in basso
 - `03-puntatori-e-funzioni/02-funzioni-che-restituiscono-puntatori` → puntatore come valore di ritorno
 - `02-array-di-puntatori` → un array di puntatori passato a una funzione è un `**`
-- `06-memoria-dinamica/01-malloc-e-free` → funzioni che allocano e restituiscono memoria tramite `**`
+- `07-memoria-dinamica/01-malloc-e-free` → funzioni che allocano e restituiscono memoria tramite `**`
 
 ---
 
