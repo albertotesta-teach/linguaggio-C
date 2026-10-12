@@ -54,6 +54,11 @@ linguaggio-C/
 │       ├── 01-doppio-puntatore/
 │       ├── 02-array-di-puntatori/
 │       └── 03-matrici-e-puntatori/
+├── 06-strutture-e-unioni/
+│   └── 01-typedef/
+│       ├── 01-alias-di-tipi-base/
+│       ├── 02-typedef-di-array/
+│       └── 03-typedef-di-puntatori-a-funzione/
 └── ...
 ```
 
