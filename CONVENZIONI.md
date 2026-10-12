@@ -59,10 +59,14 @@ linguaggio-C/
 │   │   ├── 01-alias-di-tipi-base/
 │   │   ├── 02-typedef-di-array/
 │   │   └── 03-typedef-di-puntatori-a-funzione/
-│   └── 02-struct/
-│       ├── 01-dichiarazione-e-accesso/
-│       ├── 02-assegnamento-e-confronto/
-│       └── 03-array-di-struct/
+│   ├── 02-struct/
+│   │   ├── 01-dichiarazione-e-accesso/
+│   │   ├── 02-assegnamento-e-confronto/
+│   │   └── 03-array-di-struct/
+│   └── 03-struct-e-funzioni/
+│       ├── 01-struct-per-valore/
+│       ├── 02-puntatori-a-struct/
+│       └── 03-array-di-struct-e-funzioni/
 └── ...
 ```
 
@@ -287,7 +291,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
 | `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica; `<string.h>` e `<ctype.h>` solo da `04-funzioni-su-stringhe` in poi. In quel sottocapitolo il puntatore restituito da `strchr`, `strrchr` e `strstr` si usa solo nel confronto con `NULL` (la posizione si ottiene con funzioni scritte a mano che restituiscono l'indice); `strtok` escluso |
 | `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi; in `02-puntatori-e-array` niente funzioni che restituiscono puntatori, doppi puntatori e array di puntatori (sottocapitoli 03 e 04); in `03-puntatori-e-funzioni` niente doppi puntatori, array di puntatori (anche di puntatori a funzione), `typedef`, `qsort` e `void *`; in `04-puntatori-a-puntatori` niente `main(int argc, char *argv[])` (capitolo 12) e niente algoritmi di ordinamento completi (capitolo 11) |
-| `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali; ogni sottocapitolo usa solo quelli precedenti, nell'ordine `01-typedef` (senza struct, enum e union), `02-struct` (senza struct come parametri o valori restituiti, senza `->` e senza struct annidate; in `01-dichiarazione-e-accesso` niente assegnamento tra struct intere, in `01` e `02` niente array di struct), `03-struct-e-funzioni`, `04-struct-annidate`, `05-enum` (senza union), `06-union` |
+| `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali; ogni sottocapitolo usa solo quelli precedenti, nell'ordine `01-typedef` (senza struct, enum e union), `02-struct` (senza struct come parametri o valori restituiti, senza `->` e senza struct annidate; in `01-dichiarazione-e-accesso` niente assegnamento tra struct intere, in `01` e `02` niente array di struct), `03-struct-e-funzioni` (senza struct annidate, enum, union e `qsort`; in `01-struct-per-valore` niente `->`), `04-struct-annidate`, `05-enum` (senza union), `06-union` |
 | `07-memoria-dinamica` | liste concatenate, pile, code e alberi (capitolo 10) |
 
 **Principio generale:** se un costrutto non è ancora stato introdotto nel

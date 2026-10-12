@@ -69,3 +69,6 @@ add_subdirectory(06-strutture-e-unioni/01-typedef/03-typedef-di-puntatori-a-funz
 add_subdirectory(06-strutture-e-unioni/02-struct/01-dichiarazione-e-accesso)
 add_subdirectory(06-strutture-e-unioni/02-struct/02-assegnamento-e-confronto)
 add_subdirectory(06-strutture-e-unioni/02-struct/03-array-di-struct)
+add_subdirectory(06-strutture-e-unioni/03-struct-e-funzioni/01-struct-per-valore)
+add_subdirectory(06-strutture-e-unioni/03-struct-e-funzioni/02-puntatori-a-struct)
+add_subdirectory(06-strutture-e-unioni/03-struct-e-funzioni/03-array-di-struct-e-funzioni)
