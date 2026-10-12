@@ -210,6 +210,10 @@ Ogni file `.c` inizia con un blocco commento strutturato:
 - `main` sempre dichiarato come `int main(void)`.
 - Variabili con nomi descrittivi in italiano, parole separate da `_`.
 - Costanti con `#define` in MAIUSCOLO.
+- Tipi definiti con `typedef` (dal capitolo `06-strutture-e-unioni`): nome in
+  italiano con **iniziale maiuscola**, senza suffisso `_t` (riservato da POSIX):
+  `typedef int Voto;`, `typedef struct { ... } Studente;`. Le variabili restano
+  in minuscolo: `Studente studente;`.
 
 ### Regole di struttura del codice
 - **Niente `break` nei cicli**: `break` è consentito esclusivamente nelle istruzioni
@@ -274,7 +278,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `03-funzioni` | array, stringhe, struct; puntatori ammessi **solo** dalla sezione `03-passaggio-per-riferimento` in poi, limitati a `&`, `*` e parametri per riferimento |
 | `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica; `<string.h>` e `<ctype.h>` solo da `04-funzioni-su-stringhe` in poi. In quel sottocapitolo il puntatore restituito da `strchr`, `strrchr` e `strstr` si usa solo nel confronto con `NULL` (la posizione si ottiene con funzioni scritte a mano che restituiscono l'indice); `strtok` escluso |
 | `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi; in `02-puntatori-e-array` niente funzioni che restituiscono puntatori, doppi puntatori e array di puntatori (sottocapitoli 03 e 04); in `03-puntatori-e-funzioni` niente doppi puntatori, array di puntatori (anche di puntatori a funzione), `typedef`, `qsort` e `void *`; in `04-puntatori-a-puntatori` niente `main(int argc, char *argv[])` (capitolo 12) e niente algoritmi di ordinamento completi (capitolo 11) |
-| `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali |
+| `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali; ogni sottocapitolo usa solo quelli precedenti, nell'ordine `01-typedef` (senza struct, enum e union), `02-struct`, `03-struct-e-funzioni`, `04-struct-annidate`, `05-enum` (senza union), `06-union` |
 | `07-memoria-dinamica` | liste concatenate, pile, code e alberi (capitolo 10) |
 
 **Principio generale:** se un costrutto non è ancora stato introdotto nel
