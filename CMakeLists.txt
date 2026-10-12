@@ -75,3 +75,6 @@ add_subdirectory(06-strutture-e-unioni/03-struct-e-funzioni/03-array-di-struct-e
 add_subdirectory(06-strutture-e-unioni/04-struct-annidate/01-struct-dentro-struct)
 add_subdirectory(06-strutture-e-unioni/04-struct-annidate/02-funzioni-e-struct-annidate)
 add_subdirectory(06-strutture-e-unioni/04-struct-annidate/03-array-e-struct-annidate)
+add_subdirectory(06-strutture-e-unioni/05-enum/01-dichiarazione-e-valori)
+add_subdirectory(06-strutture-e-unioni/05-enum/02-enum-e-switch)
+add_subdirectory(06-strutture-e-unioni/05-enum/03-enum-nelle-struct)
