@@ -78,3 +78,6 @@ add_subdirectory(06-strutture-e-unioni/04-struct-annidate/03-array-e-struct-anni
 add_subdirectory(06-strutture-e-unioni/05-enum/01-dichiarazione-e-valori)
 add_subdirectory(06-strutture-e-unioni/05-enum/02-enum-e-switch)
 add_subdirectory(06-strutture-e-unioni/05-enum/03-enum-nelle-struct)
+add_subdirectory(06-strutture-e-unioni/06-union/01-union-e-memoria)
+add_subdirectory(06-strutture-e-unioni/06-union/02-union-con-etichetta)
+add_subdirectory(06-strutture-e-unioni/06-union/03-union-in-pratica)
