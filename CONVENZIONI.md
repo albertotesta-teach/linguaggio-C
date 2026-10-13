@@ -79,6 +79,11 @@ linguaggio-C/
 │       ├── 01-union-e-memoria/
 │       ├── 02-union-con-etichetta/
 │       └── 03-union-in-pratica/
+├── 07-memoria-dinamica/
+│   └── 01-malloc-e-free/
+│       ├── 01-allocare-e-liberare/
+│       ├── 02-funzioni-e-memoria-dinamica/
+│       └── 03-errori-con-la-memoria/
 └── ...
 ```
 
@@ -304,7 +309,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `04-array-e-stringhe` | puntatori oltre al passaggio per riferimento (aritmetica dei puntatori, puntatori e array), struct, allocazione dinamica; `<string.h>` e `<ctype.h>` solo da `04-funzioni-su-stringhe` in poi. In quel sottocapitolo il puntatore restituito da `strchr`, `strrchr` e `strstr` si usa solo nel confronto con `NULL` (la posizione si ottiene con funzioni scritte a mano che restituiscono l'indice); `strtok` escluso |
 | `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi; in `02-puntatori-e-array` niente funzioni che restituiscono puntatori, doppi puntatori e array di puntatori (sottocapitoli 03 e 04); in `03-puntatori-e-funzioni` niente doppi puntatori, array di puntatori (anche di puntatori a funzione), `typedef`, `qsort` e `void *`; in `04-puntatori-a-puntatori` niente `main(int argc, char *argv[])` (capitolo 12) e niente algoritmi di ordinamento completi (capitolo 11) |
 | `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali; ogni sottocapitolo usa solo quelli precedenti, nell'ordine `01-typedef` (senza struct, enum e union), `02-struct` (senza struct come parametri o valori restituiti, senza `->` e senza struct annidate; in `01-dichiarazione-e-accesso` niente assegnamento tra struct intere, in `01` e `02` niente array di struct), `03-struct-e-funzioni` (senza struct annidate, enum, union e `qsort`; in `01-struct-per-valore` niente `->`), `04-struct-annidate` (senza enum, union e struct che contengono un puntatore al proprio tipo), `05-enum` (senza union; costanti in maiuscolo, costante finale `NUM_...` per contare i valori, `switch` su enum con tutti i case e senza `default`), `06-union` (senza memoria dinamica e campi di bit; tipi a dimensione fissa di `<stdint.h>` introdotti qui, union anonime dal C11) |
-| `07-memoria-dinamica` | liste concatenate, pile, code e alberi (capitolo 10) |
+| `07-memoria-dinamica` | liste concatenate, pile, code e alberi (capitolo 10); `01-malloc-e-free` senza `calloc`, `realloc` e array che crescono; ogni `malloc` nella forma `malloc(n * sizeof *p)` seguita dal controllo di `NULL`, ogni blocco liberato con `free` prima della fine di `main` (unica eccezione voluta: `03-errori-con-la-memoria/010-memory-leak.c`) |
 
 **Principio generale:** se un costrutto non è ancora stato introdotto nel
 percorso didattico, non deve comparire negli esempi del capitolo corrente,
