@@ -92,6 +92,11 @@ linguaggio-C/
 │       ├── 01-vettore-dinamico/
 │       ├── 02-operazioni-sul-vettore/
 │       └── 03-vettori-in-pratica/
+├── 08-file/
+│   └── 01-apertura-e-chiusura/
+│       ├── 01-aprire-e-chiudere/
+│       ├── 02-flussi-standard/
+│       └── 03-file-in-pratica/
 └── ...
 ```
 
@@ -318,6 +323,7 @@ capitolo e devono essere rispettati in tutti i file `.c` e nei problemi specific
 | `05-puntatori` | struct, allocazione dinamica; `void *` solo come conversione per stampare indirizzi con `%p`; l'aritmetica dei puntatori solo da `02-puntatori-e-array` in poi; in `02-puntatori-e-array` niente funzioni che restituiscono puntatori, doppi puntatori e array di puntatori (sottocapitoli 03 e 04); in `03-puntatori-e-funzioni` niente doppi puntatori, array di puntatori (anche di puntatori a funzione), `typedef`, `qsort` e `void *`; in `04-puntatori-a-puntatori` niente `main(int argc, char *argv[])` (capitolo 12) e niente algoritmi di ordinamento completi (capitolo 11) |
 | `06-strutture-e-unioni` | allocazione dinamica (`malloc`, `calloc`, `realloc`, `free`), liste concatenate e altre strutture autoreferenziali; ogni sottocapitolo usa solo quelli precedenti, nell'ordine `01-typedef` (senza struct, enum e union), `02-struct` (senza struct come parametri o valori restituiti, senza `->` e senza struct annidate; in `01-dichiarazione-e-accesso` niente assegnamento tra struct intere, in `01` e `02` niente array di struct), `03-struct-e-funzioni` (senza struct annidate, enum, union e `qsort`; in `01-struct-per-valore` niente `->`), `04-struct-annidate` (senza enum, union e struct che contengono un puntatore al proprio tipo), `05-enum` (senza union; costanti in maiuscolo, costante finale `NUM_...` per contare i valori, `switch` su enum con tutti i case e senza `default`), `06-union` (senza memoria dinamica e campi di bit; tipi a dimensione fissa di `<stdint.h>` introdotti qui, union anonime dal C11) |
 | `07-memoria-dinamica` | liste concatenate, pile, code e alberi (capitolo 10); `01-malloc-e-free` senza `calloc`, `realloc` e array che crescono; ogni `malloc` nella forma `malloc(n * sizeof *p)` seguita dal controllo di `NULL`, ogni blocco liberato con `free` prima della fine di `main` (unica eccezione voluta: `03-errori-con-la-memoria/010-memory-leak.c`); `02-calloc-e-realloc` senza un tipo "vettore" con capacità e senza crescita a raddoppio (arrivano in `03-array-dinamici`), il risultato di `realloc` sempre in un puntatore temporaneo, mai `realloc(p, 0)`; `03-array-dinamici` con il tipo `{T *dati; int n; int capacita;}` e crescita a raddoppio, `main` che usa il vettore solo con le sue funzioni (mai i campi), senza liste, pile o code come strutture (capitolo 10, solo anticipate), senza `void *`, puntatori a funzione e `qsort` |
+| `08-file` | `01-apertura-e-chiusura`: dai file si legge solo carattere per carattere con `fgetc` (`fgets` e `fscanf` in `02-lettura-e-scrittura-testo`), si scrive con `fputc`, `fputs` e `fprintf`; niente `fread`/`fwrite` (`03-lettura-e-scrittura-binaria`), `fseek`/`ftell`/`rewind` (`04-posizionamento-nel-file`), `errno`/`perror`/`ferror`/`feof` (`05-gestione-errori`: per ora solo il controllo di `NULL` e un messaggio su `stderr`); nomi dei file letti da tastiera, non da `argv` (capitolo 12); ogni `fopen` riuscita con la sua `fclose`, mai `fclose(NULL)`, il `FILE *` non si usa dopo `fclose` |
 
 **Principio generale:** se un costrutto non è ancora stato introdotto nel
 percorso didattico, non deve comparire negli esempi del capitolo corrente,
