@@ -7,59 +7,80 @@ assegna una alla volta al prodotto (acqua, succhi, snack) che in quel
 momento ha la scorta più bassa. Il programma mostra a ogni giro il prodotto
 rifornito e le scorte aggiornate.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `acqua`, `succhi`, `snack` | `int` | — | Scorte dei tre prodotti |
-| `minimo` | `int *` | — | Indirizzo della scorta più bassa |
-| `giro` | `int` | — | Confezione corrente |
+### Input
 
-## 3. Casi d'uso e funzionalità
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
 
-### Caso d'uso 1 – Scelta della scorta minima
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `acqua`, `succhi`, `snack` | `int` | 14, 6, 9 pezzi |
+| `CONFEZIONI`, `DIM_CONFEZIONE` | `#define` | 5 confezioni da 12 pezzi |
 
-**a) Input** – acqua 14, succhi 6, snack 9
+### Output
 
-**b) Output** – "Confezione 1 -> succhi", succhi 18
+- Le scorte iniziali.
+- Per ogni confezione: il prodotto rifornito e le tre scorte aggiornate.
+- Una nota sul comportamento in caso di parità.
 
-**c) Variabili di supporto** – `minimo`
+### Vincoli
 
-**d) Vincoli** – il confronto avviene tra i valori (`succhi < *minimo`), ma si
-memorizza l'indirizzo (`minimo = &succhi`)
+- Il minimo si cerca confrontando i valori (`succhi < *minimo`) ma si
+  ricorda l'indirizzo della variabile (`minimo = &succhi`), così il
+  rifornimento `*minimo = *minimo + 12` modifica proprio quella scorta.
+- Il nome del prodotto rifornito si ricava confrontando il puntatore con gli
+  indirizzi delle variabili (`minimo == &acqua`).
+- Il confronto usa `<`: a parità resta il primo prodotto controllato
+  (acqua, poi succhi, poi snack).
 
-**e) Assunzioni** – nessuna
+### Assunzioni
 
-**f) Algoritmo in linguaggio naturale**
-1. `minimo = &acqua`.
-2. Se `succhi < *minimo`, `minimo = &succhi`; se `snack < *minimo`, `minimo = &snack`.
-3. `*minimo = *minimo + 12`.
+- Le confezioni sono tutte uguali e si possono assegnare a qualsiasi prodotto.
 
-### Caso d'uso 2 – Nome del prodotto rifornito
+### Variabili di supporto
 
-**a) Input** – `minimo`
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `minimo` | `int *` | Indirizzo della scorta più bassa |
+| `giro` | `int` | Confezione corrente (1-5) |
 
-**b) Output** – "acqua", "succhi" o "snack"
+### Algoritmo in linguaggio naturale
 
-**c) Variabili di supporto** – nessuna
+1. Stampare le scorte iniziali.
+2. Per ogni confezione:
+   1. porre `minimo = &acqua`; se `succhi < *minimo` porre
+      `minimo = &succhi`; se `snack < *minimo` porre `minimo = &snack`;
+   2. aggiungere 12 a `*minimo`;
+   3. stampare il nome del prodotto (confrontando `minimo` con gli
+      indirizzi) e le scorte.
+3. Stampare la nota sulla parità.
 
-**d) Vincoli** – si confronta il puntatore con gli indirizzi delle variabili
+## 3. Casi di test
 
-**e) Assunzioni** – nessuna
+### Test 1 – Rifornimento con i dati del sorgente
 
-**f) Algoritmo in linguaggio naturale** – se `minimo == &acqua` stampare
-"acqua", e così via.
+- **Input:** nessuno.
+- **Valori intermedi attesi:** giro 1: minimo succhi (6) → 18; giro 2:
+  snack (9) → 21; giro 3: acqua (14) → 26.
+- **Output atteso:**
+  ```
+  Confezione 1 -> succhi   scorte: acqua 14, succhi 18, snack  9
+  Confezione 2 -> snack    scorte: acqua 14, succhi 18, snack 21
+  Confezione 3 -> acqua    scorte: acqua 26, succhi 18, snack 21
+  Confezione 4 -> succhi   scorte: acqua 26, succhi 30, snack 21
+  Confezione 5 -> snack    scorte: acqua 26, succhi 30, snack 33
+  ```
 
-### Caso d'uso 3 – Parità
+### Test 2 – Parità
 
-**a) Input** – due scorte uguali e minime
-
-**b) Output** – viene rifornito il primo prodotto controllato
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – il confronto usa `<`: un valore uguale non sostituisce il minimo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
+- **Cosa si verifica:** a parità viene rifornito il primo prodotto controllato.
+- **Procedura:** nel sorgente impostare `acqua = 6`, ricompilare ed eseguire.
+- **Valori intermedi attesi:** al giro 1 acqua e succhi valgono 6: con `<`
+  resta `minimo = &acqua`.
+- **Output atteso** (prime righe):
+  ```
+  Confezione 1 -> acqua    scorte: acqua 18, succhi  6, snack  9
+  Confezione 2 -> succhi   scorte: acqua 18, succhi 18, snack  9
+  ```

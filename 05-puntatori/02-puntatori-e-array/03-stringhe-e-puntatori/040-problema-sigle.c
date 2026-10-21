@@ -35,6 +35,7 @@ int main(void)
     char riga[LUNG];
     char sigla[MAX_SIGLA];
     char *a_capo;
+    int c;
     int continua = 1;
 
     printf("=== GENERATORE DI SIGLE ===\n");
@@ -46,6 +47,13 @@ int main(void)
             a_capo = strchr(riga, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                /* riga più lunga del buffer: il resto si scarta, altrimenti
+                 * verrebbe letto come il nome di un altro ente */
+                c = getchar();
+                while (c != '\n' && c != EOF) {
+                    c = getchar();
+                }
             }
             if (riga[0] == '\0') {
                 continua = 0;

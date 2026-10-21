@@ -28,6 +28,7 @@
 int vola(int *carica, int *volo, int minuti);
 int ricarica(int *carica, int minuti);
 int autonomia(int carica);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -35,6 +36,7 @@ int main(void)
     int volo = 0;
     char comando = ' ';
     int n;
+    int letti;
 
     printf("=== DRONE DEL LABORATORIO ===\n");
     printf("Carica %d%%, autonomia %d minuti\n", carica, autonomia(carica));
@@ -45,9 +47,14 @@ int main(void)
             comando = 'Q';
         }
         if (comando == 'V' || comando == 'R') {
-            if (scanf("%d", &n) != 1 || n <= 0) {
+            letti = scanf("%d", &n);
+            if (letti == EOF) {
+                comando = 'Q';          /* input terminato */
+            } else if (letti == 0 || n <= 0) {
+                if (letti == 0) {
+                    svuota_riga();      /* non è un numero */
+                }
                 printf("  Numero di minuti non valido.\n");
-                comando = 'Q';
             } else if (comando == 'V') {
                 if (vola(&carica, &volo, n)) {
                     printf("  Volo di %d minuti eseguito.", n);
@@ -104,4 +111,15 @@ int autonomia(int carica)
         minuti = (carica - RISERVA) / CONSUMO;
     }
     return minuti;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

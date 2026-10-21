@@ -40,26 +40,30 @@ int main(void)
     printf("=== PROSSIME PARTENZE ===\n");
     printf("Ora attuale (hh:mm, q per finire): ");
     while (scanf("%d:%d", &ore, &minuti) == 2) {
-        adesso = ore * 60 + minuti;
-        printf("  Dalle ");
-        stampa_orario(adesso);
-        p = prossimo(orari, TRENI, adesso);
-        if (p == NULL) {
-            printf(": nessun treno fino a domani, primo alle ");
-            stampa_orario(orari[0]);
-            printf("\n");
+        if (ore < 0 || ore > 23 || minuti < 0 || minuti > 59) {
+            printf("  Ora non valida.\n");
         } else {
-            printf(":");
-            for (q = p; q < fine && q < p + MOSTRATI; q++) {
-                printf("  ");
-                stampa_orario(*q);
-                if (*q == adesso) {
-                    printf(" (in partenza)");
-                } else {
-                    printf(" (tra %d min)", *q - adesso);
+            adesso = ore * 60 + minuti;
+            printf("  Dalle ");
+            stampa_orario(adesso);
+            p = prossimo(orari, TRENI, adesso);
+            if (p == NULL) {
+                printf(": nessun treno fino a domani, primo alle ");
+                stampa_orario(orari[0]);
+                printf("\n");
+            } else {
+                printf(":");
+                for (q = p; q < fine && q < p + MOSTRATI; q++) {
+                    printf("  ");
+                    stampa_orario(*q);
+                    if (*q == adesso) {
+                        printf(" (in partenza)");
+                    } else {
+                        printf(" (tra %d min)", *q - adesso);
+                    }
                 }
+                printf("\n");
             }
-            printf("\n");
         }
         printf("Ora attuale (hh:mm, q per finire): ");
     }

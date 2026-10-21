@@ -7,62 +7,99 @@ giornata come caratteri `V`, `P`, `S`. Si vogliono i punti in classifica
 (3 per vittoria, 1 per pareggio) e la serie più lunga di vittorie
 consecutive, con la prima e l'ultima giornata.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `risultati` | `char[]` | 15 | Un carattere per giornata (non è una stringa) |
-| `p` | `const char *` | — | Giornata esaminata |
-| `inizio_serie` | `const char *` | — | Prima giornata della serie in corso, `NULL` se non c'è |
-| `migliore` | `const char *` | — | Inizio della serie più lunga |
-| `lunghezza_max`, `punti` | `int` | — | Lunghezza della serie migliore, punti |
+### Input
 
-## 3. Casi d'uso e funzionalità
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
 
-### Caso d'uso 1 – Punti in classifica
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `risultati` | `char[15]` | V V P V V V S V V V V P S V V (un carattere per giornata, non è una stringa) |
 
-**a) Input** – 11 vittorie, 2 pareggi, 2 sconfitte
+### Output
 
-**b) Output** – 35 punti
+- I risultati delle 15 giornate.
+- I punti in classifica.
+- La serie più lunga di vittorie con la prima e l'ultima giornata, oppure
+  `Nessuna vittoria.`
 
-**c) Variabili di supporto** – `punti`
+### Vincoli
 
-**d) Vincoli** – nessuno
+- L'array si scorre con un puntatore `p` fino a `fine` (escluso).
+- `inizio_serie` punta alla prima vittoria della serie in corso ed è `NULL`
+  quando non c'è una serie.
+- Quando la serie si interrompe, la sua lunghezza è `p − inizio_serie`
+  (con `p` sulla prima giornata non vinta).
+- Una serie ancora aperta dopo l'ultima giornata si misura dopo il ciclo
+  con `fine − inizio_serie`.
+- La giornata si ricava come `migliore − inizio + 1`.
+- A parità di lunghezza vale la serie più vecchia (confronto con `>`).
 
-**e) Assunzioni** – solo i caratteri `V`, `P`, `S`
+### Assunzioni
 
-**f) Algoritmo in linguaggio naturale** – per ogni giornata aggiungere 3 se
-`*p == 'V'`, 1 se `*p == 'P'`.
+- Nell'array ci sono solo i caratteri `V`, `P`, `S`.
 
-### Caso d'uso 2 – Serie che si interrompe
+### Variabili di supporto
 
-**a) Input** – `V V V V P` dalle giornate 8-12
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `inizio`, `fine` | `const char *` | Estremi dell'array |
+| `p` | `const char *` | Giornata esaminata |
+| `inizio_serie` | `const char *` | Prima giornata della serie in corso, `NULL` se non c'è |
+| `migliore` | `const char *` | Inizio della serie più lunga, `NULL` se nessuna vittoria |
+| `lunghezza_max`, `punti` | `int` | Lunghezza della serie migliore, punti |
 
-**b) Output** – serie di 4, dalla giornata 8 alla 11
+### Algoritmo in linguaggio naturale
 
-**c) Variabili di supporto** – `inizio_serie`, `migliore`, `lunghezza_max`
+1. Per ogni giornata `p`:
+   1. stampare il risultato;
+   2. se è `V`: aggiungere 3 punti e, se non c'è una serie in corso, porre
+      `inizio_serie = p`;
+   3. altrimenti: aggiungere 1 punto se è `P`; se c'era una serie,
+      confrontare `p − inizio_serie` con la migliore, aggiornarla e porre
+      `inizio_serie = NULL`.
+2. Se una serie è ancora aperta, confrontare `fine − inizio_serie` con la
+   migliore.
+3. Stampare punti e serie migliore (o `Nessuna vittoria.`).
 
-**d) Vincoli** – la lunghezza è `p - inizio_serie`, con `p` sulla prima
-giornata non vinta
+## 3. Casi di test
 
-**e) Assunzioni** – a parità di lunghezza vale la serie più vecchia
+### Test 1 – Risultati del sorgente
 
-**f) Algoritmo in linguaggio naturale**
-1. Con una vittoria, se `inizio_serie` è `NULL`, assegnargli `p`.
-2. Con un altro risultato, se c'è una serie in corso, confrontarne la
-   lunghezza con `lunghezza_max`; poi porre `inizio_serie = NULL`.
+- **Cosa si verifica:** punti e serie che si interrompe.
+- **Input:** nessuno.
+- **Valori intermedi attesi:** 11 vittorie × 3 + 2 pareggi = 35; la serie
+  dalle giornate 8-11 si interrompe con il pareggio della 12
+  (`p − inizio_serie` = 11 − 7 = 4).
+- **Output atteso:**
+  ```
+  === RISULTATI ===
+    V V P V V V S V V V V P S V V 
 
-### Caso d'uso 3 – Serie aperta all'ultima giornata
+  Punti in classifica: 35 in 15 giornate
+  Serie piu' lunga: 4 vittorie consecutive, dalla giornata 8 alla 11
+  ```
 
-**a) Input** – `... S V V` alla fine
+### Test 2 – Serie aperta all'ultima giornata
 
-**b) Output** – la serie di 2 viene considerata (qui non supera la migliore)
+- **Cosa si verifica:** la serie che arriva alla fine viene misurata dopo
+  il ciclo.
+- **Procedura:** nel sorgente sostituire le giornate 12 e 13 (`P`, `S`) con
+  `V`, `V`, ricompilare ed eseguire.
+- **Output atteso:**
+  ```
+  Punti in classifica: 40 in 15 giornate
+  Serie piu' lunga: 8 vittorie consecutive, dalla giornata 8 alla 15
+  ```
 
-**c) Variabili di supporto** – `fine`
+### Test 3 – Nessuna vittoria
 
-**d) Vincoli** – dopo il ciclo la lunghezza è `fine - inizio_serie`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se dopo il ciclo `inizio_serie` non
-è `NULL`, confrontare `fine - inizio_serie` con `lunghezza_max`.
+- **Procedura:** nel sorgente sostituire tutte le `V` con `S`, ricompilare
+  ed eseguire.
+- **Output atteso:**
+  ```
+  Punti in classifica: 2 in 15 giornate
+  Nessuna vittoria.
+  ```

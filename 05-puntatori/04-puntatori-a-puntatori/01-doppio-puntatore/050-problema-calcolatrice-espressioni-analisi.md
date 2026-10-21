@@ -2,16 +2,53 @@
 
 ## 1. Problema
 
-Il tesoriere di classe scrive entrate e uscite della cassa come una sola espressione di somme e sottrazioni (`150 + 35 - 48`). Il programma calcola il risultato oppure mostra il punto in cui l'espressione è scritta male. Una riga vuota termina.
+Il tesoriere di classe scrive entrate e uscite della cassa come una sola
+espressione di somme e sottrazioni (`150 + 35 - 48`). Il programma calcola
+il risultato oppure mostra il punto in cui l'espressione è scritta male.
+Una riga vuota termina.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `riga` | `char[]` | 100 | Espressione letta |
-| `p` | `const char *` | — | Puntatore di lettura dentro `valuta` |
-| `risultato` | `int` | — | Valore calcolato (uscita) |
-| `errore` | `int` | — | Posizione dell'errore (uscita) |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[100]` | Espressione `numero (operatore numero)…`, letta con `fgets`; riga vuota per finire |
+
+### Output
+
+- `= N euro` per un'espressione corretta.
+- Per un'espressione errata: l'espressione e, sotto, `^ errore qui` nella
+  colonna in cui la lettura si è fermata.
+
+### Vincoli
+
+- Le funzioni di lettura ricevono l'indirizzo del puntatore di lettura
+  (`const char **p`) e lo spostano oltre ciò che hanno letto: tutte
+  avanzano lo stesso puntatore.
+- `leggi_numero` legge le cifre e restituisce 1 se ne ha letta almeno una;
+  `leggi_operatore` accetta solo `+` e `-`; entrambe saltano gli spazi
+  iniziali.
+- Il ciclo si ferma al primo errore; la posizione dell'errore è
+  `p − testo`, dove la lettura si è fermata.
+- `valuta` restituisce il risultato e la posizione dell'errore tramite due
+  parametri di uscita.
+- Una riga più lunga del buffer viene troncata e il resto si scarta; la fine
+  dell'input termina come la riga vuota.
+
+### Assunzioni
+
+- Solo numeri interi non negativi e operatori `+` e `-`.
+- Gli spazi sono il carattere spazio (non tabulazioni).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `risultato` | `int` | Valore calcolato (uscita di `valuta`) |
+| `errore` | `int` | Posizione dell'errore (uscita di `valuta`) |
+| `a_capo`, `c`, `continua` | `char *`, `int`, `int` | Lettura della riga |
+| `p`, `valore`, `op` | `const char *`, `int`, `char` | In `valuta` |
 
 | Funzione | Compito |
 |----------|---------|
@@ -20,46 +57,41 @@ Il tesoriere di classe scrive entrate e uscite della cassa come una sola espress
 | `salta_spazi(&p)` | Sposta `p` oltre gli spazi |
 | `valuta(testo, &risultato, &errore)` | 1 se l'espressione è corretta |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Espressione corretta
+1. Finché `continua`: leggere una riga (a fine input terminare), togliere il
+   `'\n'` o scartare il resto della riga; se è vuota terminare, altrimenti
+   valutarla e stampare il risultato o la posizione dell'errore.
+2. In `valuta`: leggere il primo numero; finché la lettura è corretta e il
+   testo non è finito, leggere un operatore e un numero e applicarli al
+   risultato (se uno dei due manca l'espressione è errata); alla fine
+   scrivere la posizione raggiunta.
 
-**a) Input** – `150 + 35 - 48 + 20 - 12`
+## 3. Casi di test
 
-**b) Output** – = 145 euro
+Nell'output le espressioni inserite non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `p`, `valore`, `op`
+### Test 1 – Espressione corretta
 
-**d) Vincoli** – tutte le funzioni di lettura avanzano lo stesso puntatore
+- **Input:** `150 + 35 - 48 + 20 - 12`
+- **Output atteso:** `  = 145 euro`
 
-**e) Assunzioni** – solo interi non negativi, operatori + e -
+### Test 2 – Errori
 
-**f) Algoritmo in linguaggio naturale** – leggere un numero; poi, finché il testo non è finito, leggere un operatore e un numero e applicarli al risultato.
+- **Cosa si verifica:** operatore mancante, operatore non previsto, numero
+  finale mancante.
+- **Input:** `150 + - 20`, `100 * 2`, `150 +`
+- **Output atteso:**
+  ```
+    150 + - 20
+          ^ errore qui
+    100 * 2
+        ^ errore qui
+    150 +
+         ^ errore qui
+  ```
 
-### Caso d'uso 2 – Operatore mancante
+### Test 3 – Spazi iniziali e fine
 
-**a) Input** – `150 + - 20`
-
-**b) Output** – freccia sotto il `-`
-
-**c) Variabili di supporto** – `errore = p - testo`
-
-**d) Vincoli** – la posizione dell'errore è dove la lettura si è fermata
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se `leggi_operatore` o `leggi_numero` falliscono, `valuta` restituisce 0.
-
-### Caso d'uso 3 – Operatore non previsto
-
-**a) Input** – `100 * 2`
-
-**b) Output** – freccia sotto il `*`
-
-**c) Variabili di supporto** – `corretta`
-
-**d) Vincoli** – il ciclo si ferma al primo errore
-
-**e) Assunzioni** – la moltiplicazione non è prevista
-
-**f) Algoritmo in linguaggio naturale** – `leggi_operatore` accetta solo `+` e `-`.
+- **Input:** `  7`, riga vuota
+- **Output atteso:** `  = 7 euro`, poi il programma termina.

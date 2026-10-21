@@ -32,6 +32,7 @@ int main(void)
     char vietate[VIETATE][LUNG_PAROLA] = {"scemo", "stupido", "idiota"};
     char messaggio[LUNG];
     char *a_capo;
+    int c;
     int continua = 1;
     int sostituite;
     int totale = 0;
@@ -45,6 +46,13 @@ int main(void)
             a_capo = strchr(messaggio, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                /* messaggio più lungo del buffer: il resto si scarta,
+                 * altrimenti verrebbe pubblicato come un altro messaggio */
+                c = getchar();
+                while (c != '\n' && c != EOF) {
+                    c = getchar();
+                }
             }
             if (messaggio[0] == '\0') {
                 continua = 0;

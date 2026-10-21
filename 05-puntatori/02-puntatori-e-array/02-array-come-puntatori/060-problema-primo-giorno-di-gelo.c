@@ -25,6 +25,7 @@
 int primo_sotto_zero(const int *t, int n);
 int conta_sotto_zero(const int *t, int n);
 int minima(const int *t, int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -36,12 +37,17 @@ int main(void)
     int primo;
     const int *inizio;
     int n;
+    int letti;
 
     printf("=== GELATE DI NOVEMBRE ===\n");
     while (a != 0) {
         printf("\nPeriodo, dal giorno al giorno (0 0 per finire): ");
-        if (scanf("%d %d", &a, &b) != 2) {
-            a = 0;
+        letti = scanf("%d %d", &a, &b);
+        if (letti == EOF) {
+            a = 0;                      /* input terminato: come 0 0 */
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            a = -1;                     /* periodo non valido */
         }
 
         if (a != 0) {
@@ -52,8 +58,8 @@ int main(void)
                 n = b - a + 1;
                 primo = primo_sotto_zero(inizio, n);
 
-                printf("  Giorni %d-%d (%d giorni), minima piu' bassa %d gradi\n",
-                       a, b, n, minima(inizio, n));
+                printf("  Giorni %d-%d (%d %s), minima piu' bassa %d gradi\n",
+                       a, b, n, n == 1 ? "giorno" : "giorni", minima(inizio, n));
                 if (primo == -1) {
                     printf("  Nessun giorno di gelo.\n");
                 } else {
@@ -104,4 +110,15 @@ int minima(const int *t, int n)
         }
     }
     return min;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

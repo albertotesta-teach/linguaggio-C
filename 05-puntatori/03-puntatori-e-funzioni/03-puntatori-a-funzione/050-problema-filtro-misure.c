@@ -31,13 +31,17 @@ int tranquilla(int db);
 int main(void)
 {
     int db[MISURE] = {62, 71, 78, 84, 88, 82, 76, 69, 58, 55, 66, 73};
+    int n;
 
     printf("=== RUMORE IN MENSA (una misura ogni 10 minuti dalle 12:30) ===\n");
-    printf("Oltre %d dB:   %2d misure ->", ATTENZIONE, conta_se(db, MISURE, rumorosa));
+    n = conta_se(db, MISURE, rumorosa);
+    printf("Oltre %d dB:   %2d %s ->", ATTENZIONE, n, n == 1 ? "misura" : "misure");
     elenca_se(db, MISURE, rumorosa);
-    printf("Da %d a %d dB: %2d misure ->", QUIETE, ATTENZIONE, conta_se(db, MISURE, normale));
+    n = conta_se(db, MISURE, normale);
+    printf("Da %d a %d dB: %2d %s ->", QUIETE, ATTENZIONE, n, n == 1 ? "misura" : "misure");
     elenca_se(db, MISURE, normale);
-    printf("Sotto %d dB:   %2d misure ->", QUIETE, conta_se(db, MISURE, tranquilla));
+    n = conta_se(db, MISURE, tranquilla);
+    printf("Sotto %d dB:   %2d %s ->", QUIETE, n, n == 1 ? "misura" : "misure");
     elenca_se(db, MISURE, tranquilla);
 
     return 0;

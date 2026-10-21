@@ -43,6 +43,7 @@ int main(void)
     char *a_capo;
     int d;
     int n;
+    int c;
     int continua = 1;
 
     while (continua) {
@@ -53,6 +54,12 @@ int main(void)
             a_capo = strchr(riga, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                /* riga più lunga del buffer: il resto si scarta */
+                c = getchar();
+                while (c != '\n' && c != EOF) {
+                    c = getchar();
+                }
             }
             continua = riga[0] != '\0';
             p = riga;

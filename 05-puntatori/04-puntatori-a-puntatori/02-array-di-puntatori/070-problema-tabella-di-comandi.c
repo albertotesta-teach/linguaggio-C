@@ -45,6 +45,7 @@ int main(void)
     int x = 0;
     int y = 0;
     int dir = 0;
+    int resto;
     int continua = 1;
 
     printf("Robot in (%d, %d) verso %s\n", x, y, direzioni[dir]);
@@ -56,6 +57,12 @@ int main(void)
             a_capo = strchr(sequenza, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                /* riga più lunga del buffer: il resto si scarta */
+                resto = getchar();
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
             }
             continua = sequenza[0] != '\0';
             for (c = sequenza; *c != '\0'; c++) {

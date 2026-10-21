@@ -7,68 +7,102 @@ programma legge il nome completo di un ente e costruisce la sigla con le
 iniziali maiuscole delle parole, saltando le parole di 3 lettere o meno
 (articoli e preposizioni). Una riga vuota termina il programma.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `riga` | `char[]` | 100 | Nome letto con `fgets` |
-| `sigla` | `char[]` | 20 | Sigla costruita |
-| `a_capo` | `char *` | — | Posizione del `'\n'` trovato da `strchr` |
-| `p` | `const char *` | — | Carattere esaminato |
-| `inizio` | `const char *` | — | Prima lettera della parola corrente |
-| `s` | `char *` | — | Prossima posizione libera in `sigla` |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[100]` | Nome dell'ente letto con `fgets`; riga vuota per finire |
+
+### Output
+
+- Per ogni nome: `Sigla: <SIGLA>`.
+
+### Vincoli
+
+- Una parola è una sequenza di lettere (`isalpha`): spazi, apostrofi e
+  punteggiatura separano le parole.
+- Le parole di 3 lettere o meno si saltano; delle altre si prende l'iniziale
+  in maiuscolo (`toupper`).
+- `crea_sigla` scorre il nome con il puntatore `p`, ricorda l'inizio di ogni
+  parola in `inizio` e ne calcola la lunghezza come `p − inizio`; scrive la
+  sigla tramite il puntatore `s`.
+- La sigla non supera 19 caratteri più il `'\0'`: le iniziali in più si
+  ignorano.
+- Il `'\n'` lasciato da `fgets` si cerca con `strchr` e si toglie prima del
+  controllo della riga vuota; se manca, la riga era più lunga del buffer e
+  il resto si scarta.
+- La fine dell'input termina il programma.
+
+### Assunzioni
+
+- Il nome non contiene lettere accentate.
+- Le preposizioni articolate lunghe ("delle", "della") non vengono saltate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `sigla` | `char[20]` | Sigla costruita |
+| `a_capo` | `char *` | Posizione del `'\n'` trovato da `strchr`, `NULL` se manca |
+| `c` | `int` | Carattere scartato da una riga troppo lunga |
+| `continua` | `int` | Flag del ciclo principale |
+| `p`, `inizio`, `s` | `const char *`, `const char *`, `char *` | In `crea_sigla` |
+| `MAX_SIGLA`, `MAX_BREVE` | `#define` | 20, 3 |
 
 | Funzione | Compito |
 |----------|---------|
 | `crea_sigla(nome, sigla)` | Scrive in `sigla` le iniziali delle parole lunghe |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Parole tutte lunghe
+1. Finché `continua`:
+   1. leggere una riga; a fine input terminare;
+   2. togliere il `'\n'`, oppure scartare il resto di una riga troppo lunga;
+   3. se la riga è vuota terminare, altrimenti costruire e stampare la sigla.
+2. In `crea_sigla`, scorrendo il nome: a ogni lettera ricordare l'inizio
+   della parola e avanzare fino alla fine della parola; se la parola è
+   lunga più di 3 lettere e c'è spazio, aggiungere l'iniziale maiuscola;
+   gli altri caratteri si saltano. Alla fine chiudere la sigla con `'\0'`.
 
-**a) Input** – `Istituto Tecnico Industriale Statale`
+## 3. Casi di test
 
-**b) Output** – `ITIS`
+Nell'output i nomi inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `inizio`, `p`, `s`
+### Test 1 – Parole tutte lunghe
 
-**d) Vincoli** – la sigla non supera 19 caratteri più `'\0'`
+- **Input:** `Istituto Tecnico Industriale Statale`
+- **Output atteso:** `  Sigla: ITIS`
 
-**e) Assunzioni** – lettere senza accento
+### Test 2 – Parole brevi e apostrofo
 
-**f) Algoritmo in linguaggio naturale**
-1. Se `*p` è una lettera, salvare `inizio = p` e avanzare fino alla prima
-   non-lettera.
-2. Se `p - inizio > 3`, scrivere in `*s` la maiuscola di `*inizio` e
-   avanzare `s`.
-3. Altrimenti avanzare `p` di un carattere.
+- **Cosa si verifica:** "per" (3 lettere) e "l" (1 lettera, separata
+  dall'apostrofo) si saltano.
+- **Input:** `Ente Nazionale per l'Aviazione Civile`
+- **Output atteso:** `  Sigla: ENAC`
 
-### Caso d'uso 2 – Parole brevi e apostrofo
+### Test 3 – Minuscole e preposizioni lunghe
 
-**a) Input** – `Ente Nazionale per l'Aviazione Civile`
+- **Input:** `unione europea`; `Organizzazione delle Nazioni Unite per
+  l'Educazione, la Scienza e la Cultura`
+- **Output atteso:** `  Sigla: UE`; `  Sigla: ODNUESC` ("delle" ha 5
+  lettere e non viene saltata).
 
-**b) Output** – `ENAC`
+### Test 4 – Sigla al limite
 
-**c) Variabili di supporto** – lunghezza `p - inizio`
+- **Cosa si verifica:** la sigla si ferma a 19 caratteri.
+- **Input:** 20 volte la parola `Abcd` separata da spazi
+- **Output atteso:** `  Sigla: AAAAAAAAAAAAAAAAAAA` (19 lettere).
 
-**d) Vincoli** – "per" (3) e "l" (1) si saltano
+### Test 5 – Riga più lunga del buffer
 
-**e) Assunzioni** – l'apostrofo separa le parole
+- **Cosa si verifica:** il resto della riga non diventa un altro nome.
+- **Input:** 6 volte `Alfa Beta Gamma Delta ` (132 caratteri), poi riga vuota
+- **Output atteso:** una sola riga `  Sigla: ABGDABGDABGDABGDAB` (le iniziali
+  delle parole contenute nei primi 99 caratteri).
 
-**f) Algoritmo in linguaggio naturale** – lo stesso del caso 1: ogni carattere
-che non è una lettera chiude la parola.
+### Test 6 – Fine
 
-### Caso d'uso 3 – Fine dell'input
-
-**a) Input** – riga vuota
-
-**b) Output** – il programma termina
-
-**c) Variabili di supporto** – `a_capo`, `continua`
-
-**d) Vincoli** – il `'\n'` di `fgets` va tolto prima del controllo
-
-**e) Assunzioni** – una riga più lunga di 99 caratteri viene spezzata
-
-**f) Algoritmo in linguaggio naturale** – `strchr` trova il `'\n'`; se il
-puntatore non è `NULL` si scrive `'\0'` al suo posto con `*a_capo = '\0'`.
+- **Input:** riga vuota
+- **Output atteso:** il programma termina senza stampare sigle.

@@ -7,67 +7,87 @@ I compiti consegnati sulla piattaforma della scuola hanno percorsi come
 estensione separati, segnalando i file senza cartella o senza estensione.
 La ricerca usa una versione di `strrchr` scritta a mano.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `percorsi` | `char[][]` | 5 × 40 | Percorsi da esaminare |
-| `barra` | `const char *` | — | Ultima `/` del percorso, `NULL` se assente |
-| `nome` | `const char *` | — | Inizio del nome del file |
-| `punto` | `const char *` | — | Ultimo `.` del nome, `NULL` se assente |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `percorsi` | `char[5][40]` | `4B/informatica/verifica-3.c`, `4B/informatica/relazione.lab.pdf`, `5A/sistemi/v1.2/schema`, `appunti.txt`, `4B/storia/.nascosto` |
+
+### Output
+
+- Per ogni percorso: il percorso, la cartella (o `(nessuna)`), il nome del
+  file senza estensione e l'estensione (o `(nessuna)`).
+
+### Vincoli
+
+- `ultimo(s, c)` restituisce un puntatore all'ultima occorrenza di `c`,
+  oppure `NULL`.
+- La cartella è tutto ciò che precede l'ultima `/`; il nome inizia subito
+  dopo (`barra + 1`), oppure all'inizio del percorso se non c'è `/`.
+- L'estensione si cerca solo nel nome (non nel percorso), dopo l'ultimo `.`:
+  così il punto di una cartella come `v1.2` non viene preso.
+- Un punto all'inizio del nome (file nascosto) non indica un'estensione.
+- Le parti si stampano con `%.*s` senza copiarle.
+
+### Assunzioni
+
+- Il separatore delle cartelle è `/`; il percorso non termina con `/`.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `percorso` | `const char *` | Percorso esaminato |
+| `barra` | `const char *` | Ultima `/` del percorso, `NULL` se assente |
+| `nome` | `const char *` | Inizio del nome del file |
+| `punto` | `const char *` | Ultimo `.` del nome, `NULL` se assente |
 
 | Funzione | Compito |
 |----------|---------|
 | `ultimo(s, c)` | Puntatore all'ultima occorrenza di `c`, `NULL` se assente |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Percorso completo
+1. Per ogni percorso:
+   1. trovare l'ultima `/`; il nome inizia dopo la barra (o all'inizio);
+   2. trovare l'ultimo `.` nel nome;
+   3. stampare la cartella (`barra − percorso` caratteri) o `(nessuna)`;
+   4. se non c'è un punto o il punto è il primo carattere del nome, stampare
+      il nome intero senza estensione; altrimenti il nome fino al punto e
+      l'estensione dopo il punto.
 
-**a) Input** – `4B/informatica/relazione.lab.pdf`
+## 3. Casi di test
 
-**b) Output** – cartella `4B/informatica`, nome `relazione.lab`, estensione
-`pdf`
+### Test 1 – Percorsi del sorgente
 
-**c) Variabili di supporto** – `barra`, `nome`, `punto`
-
-**d) Vincoli** – conta l'ULTIMO punto e l'ULTIMA barra
-
-**e) Assunzioni** – il separatore delle cartelle è `/`
-
-**f) Algoritmo in linguaggio naturale**
-1. `barra = ultimo(percorso, '/')`; il nome inizia da `barra + 1`.
-2. `punto = ultimo(nome, '.')`.
-3. Cartella: `barra - percorso` caratteri; nome: `punto - nome` caratteri;
-   estensione: da `punto + 1`.
-
-### Caso d'uso 2 – Punto nella cartella
-
-**a) Input** – `5A/sistemi/v1.2/schema`
-
-**b) Output** – estensione "(nessuna)"
-
-**c) Variabili di supporto** – `punto` cercato in `nome`
-
-**d) Vincoli** – il punto di `v1.2` non deve essere preso come estensione
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il punto si cerca a partire da
-`nome`, non dall'inizio del percorso.
-
-### Caso d'uso 3 – Senza cartella e file nascosto
-
-**a) Input** – `appunti.txt`; `4B/storia/.nascosto`
-
-**b) Output** – cartella "(nessuna)"; nome `.nascosto` senza estensione
-
-**c) Variabili di supporto** – `barra` = `NULL`, `punto == nome`
-
-**d) Vincoli** – un punto all'inizio del nome non indica un'estensione
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se `barra` è `NULL` il nome è
-tutto il percorso; se `punto` è `NULL` o coincide con `nome` non c'è
-estensione.
+- **Cosa si verifica:** ultimo punto e ultima barra, punto in una cartella,
+  file senza cartella, file nascosto.
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+  4B/informatica/verifica-3.c
+    cartella:   4B/informatica
+    nome:       verifica-3
+    estensione: c
+  4B/informatica/relazione.lab.pdf
+    cartella:   4B/informatica
+    nome:       relazione.lab
+    estensione: pdf
+  5A/sistemi/v1.2/schema
+    cartella:   5A/sistemi/v1.2
+    nome:       schema
+    estensione: (nessuna)
+  appunti.txt
+    cartella:   (nessuna)
+    nome:       appunti
+    estensione: txt
+  4B/storia/.nascosto
+    cartella:   4B/storia
+    nome:       .nascosto
+    estensione: (nessuna)
+  ```

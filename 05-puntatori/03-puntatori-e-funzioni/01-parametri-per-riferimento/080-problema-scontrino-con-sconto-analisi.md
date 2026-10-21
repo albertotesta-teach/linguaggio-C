@@ -7,64 +7,85 @@ assegna un punto fedeltà per ogni euro pagato. Una sola funzione calcola
 totale, sconto e punti, ma la cassa li vuole tutti, il preventivo solo il
 totale e la tessera solo i punti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `prezzi`, `quantita` | `int[]` | 4 | Articoli dello scontrino, prezzi in centesimi |
-| `totale`, `sconto`, `punti` | `int` | — | Risultati ricevuti dalla funzione |
-| `articoli` | `int` | — | Numero di pezzi, restituito con `return` |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `prezzi` | `int[4]` | 1890, 350, 1240, 990 centesimi |
+| `quantita` | `int[4]` | 1, 6, 2, 1 |
+
+### Output
+
+- Cassa: numero di articoli, totale, sconto, importo da pagare e punti.
+- Preventivo: il totale dei primi due articoli.
+- Tessera: i punti caricati.
+
+### Vincoli
+
+- `calcola_scontrino` restituisce il numero di pezzi con `return` e totale,
+  sconto e punti tramite tre puntatori; scrive solo nei puntatori diversi
+  da `NULL`, così chi non vuole un risultato passa `NULL`.
+- Sconto del 10% solo se il totale è almeno 5000 centesimi (50 euro).
+- Punti = euro pagati dopo lo sconto, arrotondati per difetto; anche lo
+  sconto è arrotondato per difetto (divisione intera).
+- I punti si calcolano sul prezzo scontato anche se lo sconto non è
+  richiesto dal chiamante.
+- Il valore restituito può essere ignorato (preventivo e tessera).
+
+### Assunzioni
+
+- Gli importi sono in centesimi interi.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `totale`, `sconto`, `punti` | `int` | Risultati ricevuti dalla funzione |
+| `articoli` | `int` | Numero di pezzi, restituito con `return` |
+| `lordo`, `pezzi`, `riduzione` | `int` | Nella funzione: calcoli locali |
+| `SOGLIA_SCONTO`, `PERCENTUALE` | `#define` | 5000, 10 |
 
 | Funzione | Compito |
 |----------|---------|
-| `calcola_scontrino(prezzi, quantita, n, &totale, &sconto, &punti)` | Calcola i tre valori, scrive solo nei puntatori non `NULL` |
+| `calcola_scontrino(prezzi, quantita, n, &totale, &sconto, &punti)` | Calcola i tre valori, scrive solo nei puntatori non `NULL`; restituisce i pezzi |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Cassa
+1. In `calcola_scontrino`: sommare prezzo × quantità e le quantità; se il
+   lordo è almeno 5000 calcolare lo sconto del 10%; scrivere totale,
+   sconto e punti (`(lordo − sconto) / 100`) solo nei puntatori non `NULL`;
+   restituire i pezzi.
+2. Nel `main` chiamare la funzione tre volte: con tutti i puntatori (cassa),
+   con i primi due articoli e solo `&totale` (preventivo), con tutti gli
+   articoli e solo `&punti` (tessera).
 
-**a) Input** – 4 articoli per 74.60 euro
+## 3. Casi di test
 
-**b) Output** – 10 articoli, sconto 7.46, da pagare 67.14 euro, 67 punti
+### Test 1 – Chiamate del sorgente
 
-**c) Variabili di supporto** – `lordo`, `riduzione`, `pezzi`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** lordo = 1890 + 2100 + 2480 + 990 = 7460;
+  sconto = 746; punti = 6714 / 100 = 67; preventivo 1890 + 2100 = 3990.
+- **Output atteso:**
+  ```
+  === CASSA ===
+    10 articoli, totale 74.60, sconto 7.46, da pagare 67.14 euro, 67 punti
 
-**d) Vincoli** – sconto solo da 50 euro in su
+  === PREVENTIVO (solo il totale) ===
+    primi due articoli: 39.90 euro
 
-**e) Assunzioni** – sconto e punti arrotondati per difetto
+  === TESSERA (solo i punti) ===
+    punti caricati: 67
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Sommare prezzo × quantità e le quantità.
-2. Calcolare lo sconto se il totale raggiunge la soglia.
-3. Scrivere i tre risultati nei puntatori ricevuti.
+### Test 2 – Sotto la soglia di sconto
 
-### Caso d'uso 2 – Preventivo
-
-**a) Input** – primi due articoli, `sconto` e `punti` = `NULL`
-
-**b) Output** – 39.90 euro
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – la funzione non deve dereferenziare i puntatori `NULL`
-
-**e) Assunzioni** – il valore di ritorno può essere ignorato
-
-**f) Algoritmo in linguaggio naturale** – prima di ogni scrittura controllare
-`if (puntatore != NULL)`.
-
-### Caso d'uso 3 – Tessera
-
-**a) Input** – tutti gli articoli, solo `&punti`
-
-**b) Output** – 67 punti
-
-**c) Variabili di supporto** – `riduzione`
-
-**d) Vincoli** – i punti si calcolano sul prezzo scontato anche se lo sconto
-non viene richiesto
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il calcolo è sempre completo;
-cambia solo quali risultati vengono scritti.
+- **Procedura:** nel sorgente impostare tutte le quantità a 1, ricompilare
+  ed eseguire.
+- **Output atteso** (cassa):
+  `  4 articoli, totale 44.70, sconto 0.00, da pagare 44.70 euro, 44 punti`

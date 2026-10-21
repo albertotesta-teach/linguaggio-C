@@ -24,6 +24,7 @@
 #define TAGLI 6
 
 int eroga_resto(int resto, const int *tagli, const int *scorta, int *usate, int *mancante);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -33,16 +34,23 @@ int main(void)
     int prezzo = 1;
     int inserito = 0;
     int mancante;
+    int letti;
     int t;
 
     printf("=== DISTRIBUTORE: RESTO IN MONETE ===\n");
     while (prezzo != 0) {
         printf("\nPrezzo e importo inserito in centesimi (0 0 per finire): ");
-        if (scanf("%d %d", &prezzo, &inserito) != 2) {
-            prezzo = 0;
+        letti = scanf("%d %d", &prezzo, &inserito);
+        if (letti == EOF) {
+            prezzo = 0;                 /* input terminato: come 0 0 */
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            prezzo = -1;                /* importo non valido */
         }
         if (prezzo < 0 || (prezzo > 0 && inserito < prezzo)) {
             printf("  Importo non valido.\n");
+        } else if (prezzo > 0 && inserito == prezzo) {
+            printf("  Importo esatto: nessun resto.\n");
         } else if (prezzo > 0) {
             if (eroga_resto(inserito - prezzo, tagli, scorta, usate, &mancante)) {
                 printf("  Resto %.2f euro:", (inserito - prezzo) / 100.0);
@@ -86,4 +94,15 @@ int eroga_resto(int resto, const int *tagli, const int *scorta, int *usate, int 
     }
     *mancante = resto;
     return resto == 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

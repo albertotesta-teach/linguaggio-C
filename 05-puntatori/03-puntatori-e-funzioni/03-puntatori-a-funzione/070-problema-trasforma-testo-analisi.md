@@ -7,13 +7,44 @@ dato un testo, ne mostra la versione in maiuscolo, quella cifrata con il
 cifrario di Cesare (spostamento 3) e quella con le cifre sostituite da
 asterischi. Una riga vuota termina.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `messaggio` | `char[]` | 100 | Testo letto con `fgets` |
-| `copia` | `char[]` | 100 | Copia su cui si applica una trasformazione |
-| `a_capo` | `char *` | — | `'\n'` da togliere |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `messaggio` | `char[100]` | Testo letto con `fgets`; riga vuota per finire |
+
+### Output
+
+- Per ogni messaggio tre righe: `maiuscolo`, `Cesare +3`, `senza cifre`,
+  ciascuna con il testo trasformato.
+
+### Vincoli
+
+- Le tre regole hanno lo stesso prototipo `char (char)`: `trasforma` le
+  riceve come puntatore a funzione e le applica a ogni carattere con un
+  solo ciclo.
+- `mostra` trasforma una copia: il messaggio originale non cambia e ogni
+  trasformazione parte dal testo originale.
+- Cesare: le lettere si spostano di 3 posizioni; dopo la `z` si ricomincia
+  dalla `a` (`% 26`); maiuscole e minuscole restano tali; gli altri
+  caratteri non cambiano.
+- Un messaggio più lungo del buffer viene troncato e il resto della riga si
+  scarta; la fine dell'input termina come la riga vuota.
+
+### Assunzioni
+
+- Alfabeto inglese di 26 lettere, senza lettere accentate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `a_capo` | `char *` | Posizione del `'\n'` da togliere, `NULL` se la riga è troppo lunga |
+| `c` | `int` | Carattere scartato da una riga troppo lunga |
+| `continua` | `int` | Flag del ciclo |
+| `copia` | `char[100]` | In `mostra`: copia su cui si applica la regola |
 
 | Funzione | Compito |
 |----------|---------|
@@ -21,51 +52,37 @@ asterischi. Una riga vuota termina.
 | `mostra(titolo, originale, regola)` | Copia, trasforma e stampa |
 | `maiuscolo`, `cesare`, `oscura_cifre` | Regole `char (char)` |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Cifrario di Cesare
+1. Finché `continua`: leggere un messaggio (a fine input terminare),
+   togliere il `'\n'` o scartare il resto della riga; se è vuoto terminare,
+   altrimenti chiamare `mostra` con le tre regole.
+2. In `mostra`: copiare l'originale, chiamare `trasforma(copia, regola)`,
+   stampare titolo e copia.
+3. In `trasforma`: scorrere il testo con un puntatore e sostituire ogni
+   carattere con `regola(*p)`.
 
-**a) Input** – `Ciao Zeno, chiamami al 333 1234567`
+## 3. Casi di test
 
-**b) Output** – `Fldr Chqr, fkldpdpl do 333 1234567`
+Nell'output i messaggi inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `risultato`
+### Test 1 – Messaggio con lettere e cifre
 
-**d) Vincoli** – dopo la z si ricomincia dalla a; maiuscole e minuscole
-restano tali
+- **Input:** `Ciao Zeno, chiamami al 333 1234567`
+- **Output atteso:**
+  ```
+    maiuscolo    CIAO ZENO, CHIAMAMI AL 333 1234567
+    Cesare +3    Fldr Chqr, fkldpdpl do 333 1234567
+    senza cifre  Ciao Zeno, chiamami al *** *******
+  ```
 
-**e) Assunzioni** – alfabeto inglese di 26 lettere, senza accenti
+### Test 2 – Giro dell'alfabeto
 
-**f) Algoritmo in linguaggio naturale** – per una lettera minuscola:
-`'a' + (c - 'a' + 3) % 26`; analogamente per le maiuscole; gli altri
-caratteri restano uguali.
-
-### Caso d'uso 2 – Cifre oscurate
-
-**a) Input** – lo stesso messaggio
-
-**b) Output** – `Ciao Zeno, chiamami al *** *******`
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – il messaggio originale non cambia
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – `mostra` copia l'originale con
-`strcpy` e solo la copia viene trasformata.
-
-### Caso d'uso 3 – Un solo ciclo per tutte le regole
-
-**a) Input** – tre chiamate a `mostra`
-
-**b) Output** – tre righe trasformate
-
-**c) Variabili di supporto** – `p` dentro `trasforma`
-
-**d) Vincoli** – le regole hanno tutte prototipo `char (char)`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – `trasforma` scorre la stringa fino
-a `'\0'` e scrive `*p = regola(*p)`.
+- **Cosa si verifica:** dopo la z (e la Z) si ricomincia da capo.
+- **Input:** `xyz XYZ!`
+- **Output atteso:**
+  ```
+    maiuscolo    XYZ XYZ!
+    Cesare +3    abc ABC!
+    senza cifre  xyz XYZ!
+  ```

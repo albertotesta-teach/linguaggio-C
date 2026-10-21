@@ -37,6 +37,7 @@ int main(void)
     char *a_capo;
     int risultato;
     int errore;
+    int c;
     int continua = 1;
 
     printf("=== CASSA DI CLASSE ===\n");
@@ -48,6 +49,12 @@ int main(void)
             a_capo = strchr(riga, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                /* riga più lunga del buffer: il resto si scarta */
+                c = getchar();
+                while (c != '\n' && c != EOF) {
+                    c = getchar();
+                }
             }
             if (riga[0] == '\0') {
                 continua = 0;

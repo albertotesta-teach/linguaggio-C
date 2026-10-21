@@ -4,68 +4,78 @@
 
 Per il laboratorio di fisica serve una calcolatrice che legge espressioni
 `numero operatore numero` e stampa il risultato, con gli operatori
-`+ - * / ^`. Gli operatori sconosciuti e la divisione per zero vanno
-segnalati. Un input non numerico termina.
+`+ - * / ^`. Gli operatori sconosciuti, la divisione per zero e gli
+esponenti negativi vanno segnalati. Un input non numerico termina.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `a`, `b` | `double` | — | Operandi |
-| `simbolo` | `char` | — | Operatore letto |
-| `operazione` | `double (*)(double, double)` | — | Funzione scelta, `NULL` se l'operatore non esiste |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `a`, `simbolo`, `b` | `double`, `char`, `double` | Espressione `numero operatore numero`; un testo non numerico (es. `q`) termina |
+
+### Output
+
+- `a op b = risultato` (formato `%g`).
+- `Operatore 'x' sconosciuto.`, `Divisione per zero.` oppure
+  `Esponente negativo non ammesso.`
+
+### Vincoli
+
+- Le cinque operazioni hanno lo stesso prototipo `double (double, double)`,
+  quindi i loro indirizzi si possono assegnare allo stesso puntatore a
+  funzione `operazione`.
+- `scegli_operazione` restituisce il puntatore alla funzione dell'operatore
+  oppure `NULL`; un puntatore a funzione `NULL` non si chiama mai.
+- Divisione per zero ed esponente negativo si controllano prima della
+  chiamata, confrontando il puntatore con `dividi` e `potenza`.
+- La potenza usa la parte intera dell'esponente.
+
+### Assunzioni
+
+- Gli spazi intorno all'operatore sono facoltativi.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `operazione` | `double (*)(double, double)` | Funzione scelta, `NULL` se l'operatore non esiste |
+| `scelta` | `double (*)(double, double)` | In `scegli_operazione`: risultato |
 
 | Funzione | Compito |
 |----------|---------|
-| `scegli_operazione(simbolo)` | Restituisce il puntatore alla funzione dell'operatore |
+| `scegli_operazione(simbolo)` | Restituisce il puntatore alla funzione dell'operatore, `NULL` se non previsto |
 | `somma`, `sottrai`, `moltiplica`, `dividi`, `potenza` | Le cinque operazioni, stesso prototipo |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Calcolo
+1. Finché si legge un'espressione completa:
+   1. scegliere la funzione dell'operatore;
+   2. se è `NULL` segnalare l'operatore sconosciuto;
+   3. altrimenti, se è una divisione per zero o una potenza con esponente
+      negativo segnalarlo;
+   4. altrimenti chiamare `operazione(a, b)` e stampare il risultato.
+2. Alla prima riga che non è un'espressione terminare.
 
-**a) Input** – `12.5 * 4`; `2 ^ 10`
+## 3. Casi di test
 
-**b) Output** – `12.5 * 4 = 50`; `2 ^ 10 = 1024`
+Nell'output le espressioni inserite non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `operazione`
+### Test 1 – Sessione completa
 
-**d) Vincoli** – tutte le funzioni hanno prototipo `double (double, double)`
-
-**e) Assunzioni** – la potenza usa la parte intera dell'esponente, non negativo
-
-**f) Algoritmo in linguaggio naturale**
-1. Leggere `a`, `simbolo`, `b`.
-2. `operazione = scegli_operazione(simbolo)`.
-3. Stampare `operazione(a, b)`.
-
-### Caso d'uso 2 – Operatore sconosciuto
-
-**a) Input** – `5 % 2`
-
-**b) Output** – "Operatore '%' sconosciuto."
-
-**c) Variabili di supporto** – `operazione` = `NULL`
-
-**d) Vincoli** – un puntatore a funzione `NULL` non si chiama mai
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – `scegli_operazione` parte da `NULL`
-e assegna una funzione solo per i simboli previsti.
-
-### Caso d'uso 3 – Divisione per zero
-
-**a) Input** – `8 / 0`
-
-**b) Output** – "Divisione per zero."
-
-**c) Variabili di supporto** – confronto `operazione == dividi`
-
-**d) Vincoli** – il controllo avviene prima della chiamata
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – due puntatori a funzione si
-confrontano con `==`: se la funzione scelta è `dividi` e `b` vale 0 non si
-calcola.
+- **Input:** `12.5 * 4`, `2 ^ 10`, `5 % 2`, `8 / 0`, `7 - 10.5`, `2 ^ -1`,
+  `2 ^ 2.9`, `1 / 3`, `q`
+- **Output atteso:**
+  ```
+  >   12.5 * 4 = 50
+  >   2 ^ 10 = 1024
+  >   Operatore '%' sconosciuto.
+  >   Divisione per zero.
+  >   7 - 10.5 = -3.5
+  >   Esponente negativo non ammesso.
+  >   2 ^ 2.9 = 4
+  >   1 / 3 = 0.333333
+  > 
+  ```
+  (`2 ^ 2.9` usa la parte intera dell'esponente: 2² = 4).

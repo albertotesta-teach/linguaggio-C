@@ -7,68 +7,89 @@ lunghezza e dislivello. Per il ritorno bisogna preparare la tabella dei
 tratti in ordine inverso, con i dislivelli di segno opposto, e calcolare
 chilometri e metri di salita di andata e ritorno.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `localita` | `char[][]` | 5 × 16 | Nomi delle località in ordine di andata |
-| `distanze` | `int[]` | 4 | Lunghezza dei tratti in decimi di km |
-| `dislivelli` | `int[]` | 4 | Metri, positivi in salita |
-| `sinistra`, `destra` | `int *` | — | Estremi che si avvicinano durante l'inversione |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `localita` | `char[5][16]` | Paese, Mulino, Cascina, Belvedere, Santuario (ordine di andata) |
+| `distanze` | `int[4]` | 52, 38, 61, 27 (decimi di km) |
+| `dislivelli` | `int[4]` | 40, −15, 120, 85 (metri, positivi in salita) |
+
+### Output
+
+- La tabella dell'andata: per ogni tratto partenza, arrivo, km e
+  dislivello con segno; totale km e metri di salita.
+- La stessa tabella per il ritorno.
+
+### Vincoli
+
+- `inverti` riceve l'intervallo `[inizio, fine)` (fine esclusa) e scambia gli
+  elementi a coppie con due puntatori che si avvicinano dagli estremi; si
+  ferma quando `sinistra` non è più minore di `destra`, quindi l'elemento
+  centrale di un intervallo dispari resta al suo posto.
+- `cambia_segno` modifica l'array sul posto scorrendolo con un puntatore.
+- Nel ritorno le località si leggono all'indietro (non si invertono).
+- Nei totali si sommano solo i dislivelli positivi.
+
+### Assunzioni
+
+- L'intervallo passato alle funzioni non è vuoto.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `sinistra`, `destra`, `scambio` | `int *`, `int *`, `int` | In `inverti`: estremi che si avvicinano, valore di appoggio |
+| `p` | `int *` | In `cambia_segno`: puntatore di scorrimento |
+| `da`, `a`, `km`, `salita` | `int` | In `stampa_tappe`: località del tratto, totali |
 
 | Funzione | Compito |
 |----------|---------|
-| `inverti` | Inverte gli elementi tra `inizio` (incluso) e `fine` (escluso) |
-| `cambia_segno` | Cambia il segno degli elementi di un intervallo |
-| `stampa_tappe` | Stampa la tabella e i totali |
+| `inverti(int *inizio, int *fine)` | Inverte gli elementi di `[inizio, fine)` |
+| `cambia_segno(int *inizio, int *fine)` | Cambia il segno degli elementi di `[inizio, fine)` |
+| `stampa_tappe` | Stampa la tabella e i totali, leggendo le località in avanti o all'indietro |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Inversione con due puntatori
+1. Stampare la tabella dell'andata.
+2. Invertire `distanze` e `dislivelli` con `inverti(&a[0], &a[0] + 4)`.
+3. Cambiare il segno dei dislivelli.
+4. Stampare la tabella del ritorno, con le località da `Santuario` a `Paese`.
+5. In `inverti`: porre `sinistra = inizio`, `destra = fine − 1`; finché
+   `sinistra < destra` scambiare `*sinistra` e `*destra`, avanzare
+   `sinistra` e arretrare `destra`.
 
-**a) Input** – `{52, 38, 61, 27}`
+## 3. Casi di test
 
-**b) Output** – `{27, 61, 38, 52}`
+### Test 1 – Andata
 
-**c) Variabili di supporto** – `sinistra`, `destra`, `scambio`
+- **Input:** nessuno (dati del sorgente).
+- **Output atteso:**
+  ```
+  === ANDATA ===
+    Paese      -> Mulino       5.2 km    +40 m
+    Mulino     -> Cascina      3.8 km    -15 m
+    Cascina    -> Belvedere    6.1 km   +120 m
+    Belvedere  -> Santuario    2.7 km    +85 m
+    Totale 17.8 km, 245 m di salita
+  ```
 
-**d) Vincoli** – ci si ferma quando `sinistra` non è più minore di `destra`;
-con un numero dispari di elementi quello centrale resta al suo posto
+### Test 2 – Inversione e cambio di segno
 
-**e) Assunzioni** – intervallo non vuoto
-
-**f) Algoritmo in linguaggio naturale**
-1. `sinistra = inizio`, `destra = fine - 1`.
-2. Finché `sinistra < destra`: scambiare `*sinistra` e `*destra`, poi
-   `sinistra++` e `destra--`.
-
-### Caso d'uso 2 – Dislivelli del ritorno
-
-**a) Input** – dislivelli invertiti `{85, 120, -15, 40}`
-
-**b) Output** – `{-85, -120, 15, -40}`
-
-**c) Variabili di supporto** – `p`
-
-**d) Vincoli** – si modifica l'array sul posto
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni `p` da `inizio` a `fine`
-escluso, `*p = -*p`.
-
-### Caso d'uso 3 – Totali
-
-**a) Input** – tabelle di andata e ritorno
-
-**b) Output** – 17.8 km in entrambi i casi; 245 m di salita all'andata, 15 m
-al ritorno
-
-**c) Variabili di supporto** – `km`, `salita`
-
-**d) Vincoli** – si sommano solo i dislivelli positivi
-
-**e) Assunzioni** – le località del ritorno si leggono all'indietro
-
-**f) Algoritmo in linguaggio naturale** – sommare tutte le distanze e i
-dislivelli maggiori di zero.
+- **Cosa si verifica:** `distanze` diventa {27, 61, 38, 52}, `dislivelli`
+  diventa {85, 120, −15, 40} e poi {−85, −120, 15, −40}.
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+  === RITORNO ===
+    Santuario  -> Belvedere    2.7 km    -85 m
+    Belvedere  -> Cascina      6.1 km   -120 m
+    Cascina    -> Mulino       3.8 km    +15 m
+    Mulino     -> Paese        5.2 km    -40 m
+    Totale 17.8 km, 15 m di salita
+  ```

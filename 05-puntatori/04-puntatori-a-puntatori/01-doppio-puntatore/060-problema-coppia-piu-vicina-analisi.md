@@ -2,61 +2,81 @@
 
 ## 1. Problema
 
-Alla corsa campestre i tempi di arrivo sono registrati nell'ordine dei pettorali. Il giudice vuole i due atleti arrivati più vicini tra loro e il loro distacco; sotto i 2 decimi serve il fotofinish.
+Alla corsa campestre i tempi di arrivo sono registrati nell'ordine dei
+pettorali. Il giudice vuole i due atleti arrivati più vicini tra loro e il
+loro distacco; con un distacco di 2 decimi o meno serve il fotofinish.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `tempi` | `int[]` | 8 | Tempi in decimi di secondo, per pettorale |
-| `a`, `b` | `const int *` | — | I due tempi più vicini, ricevuti dalla funzione |
-| `d` | `int` | — | Distacco minimo |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `tempi` | `int[8]` | 7342, 7120, 7865, 7343, 7240, 7461, 7228, 7980 decimi di secondo (per pettorale) |
+
+### Output
+
+- La tabella pettorali e tempi in secondi.
+- I pettorali e i tempi dei due atleti più vicini e il distacco.
+- Con distacco ≤ 2 decimi: `Distacco di 2 decimi o meno: serve il fotofinish.`
+
+### Vincoli
+
+- `coppia_piu_vicina` restituisce il distacco minimo con `return` e scrive
+  due puntatori del chiamante: riceve i loro indirizzi (`const int **`).
+- I puntatori restituiti puntano dentro l'array del `main`: il pettorale è
+  `a − tempi + 1`.
+- Si confrontano tutte le coppie (`q` parte da `p + 1`, così ogni coppia
+  si esamina una volta).
+- A parità di distacco vale la prima coppia trovata (confronto con `<`).
+
+### Assunzioni
+
+- Almeno due atleti; pettorali numerati da 1.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `a`, `b` | `const int *` | I due tempi più vicini, scritti dalla funzione |
+| `d` | `int` | Distacco minimo |
+| `p`, `q`, `minima` | `const int *`, `const int *`, `int` | Nella funzione |
 
 | Funzione | Compito |
 |----------|---------|
-| `coppia_piu_vicina(tempi, n, &a, &b)` | Restituisce la distanza minima e scrive i due puntatori |
+| `coppia_piu_vicina(tempi, n, &a, &b)` | Restituisce il distacco minimo e scrive i due puntatori |
 | `distanza(x, y)` | Valore assoluto della differenza |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Coppia più vicina
+1. Stampare pettorali e tempi.
+2. In `coppia_piu_vicina`: partire dalla coppia dei primi due tempi; per
+   ogni coppia `(p, q)` con `q` dopo `p`, se la distanza è minore della
+   minima aggiornarla e scrivere `*primo = p`, `*secondo = q`.
+3. Stampare pettorali, tempi e distacco; se ≤ 2 decimi segnalare il
+   fotofinish.
 
-**a) Input** – gli 8 tempi
+## 3. Casi di test
 
-**b) Output** – pettorali 1 e 4, distacco 0.1 s
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – `p`, `q`, `minima`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** |7342 − 7343| = 1 decimo, la distanza minima.
+- **Output atteso:**
+  ```
+  Pettorale:      1      2      3      4      5      6      7      8
+  Tempo (s):  734.2  712.0  786.5  734.3  724.0  746.1  722.8  798.0
 
-**d) Vincoli** – la funzione scrive due puntatori del chiamante: parametri `const int **`
+  Arrivo piu' combattuto: pettorali 1 e 4 (734.2 s e 734.3 s), distacco 0.1 s
+  Distacco di 2 decimi o meno: serve il fotofinish.
+  ```
 
-**e) Assunzioni** – a parità vale la prima coppia trovata
+### Test 2 – Nessun fotofinish
 
-**f) Algoritmo in linguaggio naturale** – per ogni coppia (p, q) con q dopo p, se la distanza è minore di `minima` aggiornare `minima`, `*primo = p`, `*secondo = q`.
-
-### Caso d'uso 2 – Dal puntatore al pettorale
-
-**a) Input** – `a` punta a `tempi[0]`
-
-**b) Output** – pettorale 1
-
-**c) Variabili di supporto** – `a - tempi`
-
-**d) Vincoli** – i puntatori restituiti puntano dentro l'array del main
-
-**e) Assunzioni** – pettorali numerati da 1
-
-**f) Algoritmo in linguaggio naturale** – pettorale = `a - tempi + 1`.
-
-### Caso d'uso 3 – Fotofinish
-
-**a) Input** – distacco 1 decimo
-
-**b) Output** – "serve il fotofinish"
-
-**c) Variabili di supporto** – `d`
-
-**d) Vincoli** – soglia 2 decimi
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confrontare il valore restituito con 2.
+- **Procedura:** nel sorgente impostare il tempo del pettorale 4 a 7400,
+  ricompilare ed eseguire.
+- **Output atteso:** la coppia più vicina diventa 5 e 7 (724.0 s e 722.8 s,
+  distacco 1.2 s), senza la riga del fotofinish.

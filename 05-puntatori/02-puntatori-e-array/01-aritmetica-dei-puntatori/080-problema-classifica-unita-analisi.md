@@ -7,63 +7,89 @@ ordine crescente. Bisogna costruire la classifica finale unendo i due
 elenchi in un solo elenco ordinato, indicando per ogni tempo la batteria di
 provenienza e le tre medaglie.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `batteria_a`, `batteria_b` | `int[]` | 5, 4 | Tempi ordinati in centesimi di secondo |
-| `classifica` | `int[]` | 9 | Tempi uniti |
-| `provenienza` | `char[]` | 9 | `'A'` o `'B'`, parallelo a `classifica` |
-| `pa`, `pb` | `const int *` | — | Primo tempo non ancora usato di ogni batteria |
-| `fine_a`, `fine_b` | `const int *` | — | Fine delle due batterie |
-| `pc`, `pv` | `int *`, `char *` | — | Prossima posizione libera in `classifica` e `provenienza` |
+### Input
 
-## 3. Casi d'uso e funzionalità
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
 
-### Caso d'uso 1 – Fusione
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `batteria_a` | `int[5]` | 1185, 1212, 1240, 1301, 1355 (centesimi di secondo, ordinati) |
+| `batteria_b` | `int[4]` | 1179, 1226, 1238, 1290 (ordinati) |
 
-**a) Input** – A = 11.85, 12.12, …; B = 11.79, 12.26, …
+### Output
 
-**b) Output** – 11.79 (B), 11.85 (A), 12.12 (A), …
+- La classifica dei 9 atleti: posizione, tempo in secondi, batteria di
+  provenienza e `medaglia` per i primi tre.
+- Il controllo finale `Posizioni scritte: pc - &classifica[0] = 9`.
 
-**c) Variabili di supporto** – `pa`, `pb`, `pc`, `pv`
+### Vincoli
 
-**d) Vincoli** – ogni tempo si copia una sola volta; i puntatori avanzano
-solo in avanti
+- Fusione di due elenchi ordinati con quattro puntatori: `pa` e `pb` sul
+  primo tempo non ancora usato di ogni batteria, `pc` e `pv` sulla
+  prossima posizione libera di `classifica` e `provenienza`.
+- A ogni passo si copia il tempo minore tra `*pa` e `*pb` e si avanza solo il
+  puntatore della batteria da cui viene; ogni tempo si copia una sola volta.
+- Quando una batteria è finita si copiano in coda i tempi rimasti
+  dell'altra: dei due cicli finali al massimo uno viene eseguito.
+- A parità di tempo viene prima la batteria A (confronto con `<=`).
+- Alla fine `pc − &classifica[0]` deve valere 5 + 4 = 9.
 
-**e) Assunzioni** – le batterie sono già ordinate; a parità vince la A
+### Assunzioni
 
-**f) Algoritmo in linguaggio naturale**
-1. Finché entrambe le batterie hanno tempi, copiare in `*pc` il minore tra
-   `*pa` e `*pb`, scrivere la batteria in `*pv` e far avanzare il puntatore
-   usato insieme a `pc` e `pv`.
+- Le due batterie sono già ordinate in modo crescente.
 
-### Caso d'uso 2 – Tempi rimasti
+### Variabili di supporto
 
-**a) Input** – la batteria B finisce dopo 12.90; restano 13.01 e 13.55 di A
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `classifica` | `int[9]` | Tempi uniti |
+| `provenienza` | `char[9]` | `'A'` o `'B'`, parallelo a `classifica` |
+| `pa`, `pb` | `const int *` | Primo tempo non ancora usato di ogni batteria |
+| `fine_a`, `fine_b` | `const int *` | Fine delle due batterie |
+| `pc`, `pv` | `int *`, `char *` | Prossima posizione libera in `classifica` e `provenienza` |
+| `posto` | `int` | Indice della stampa |
 
-**b) Output** – i due tempi in coda alla classifica
+### Algoritmo in linguaggio naturale
 
-**c) Variabili di supporto** – `pa`, `fine_a`
+1. Finché entrambe le batterie hanno tempi: se `*pa <= *pb` copiare `*pa`
+   con `'A'` e avanzare `pa`, altrimenti copiare `*pb` con `'B'` e
+   avanzare `pb`; avanzare `pc` e `pv`.
+2. Copiare i tempi rimasti della batteria A, poi quelli della B.
+3. Stampare la classifica con le medaglie ai primi tre.
+4. Stampare il numero di posizioni scritte.
 
-**d) Vincoli** – al massimo uno dei due cicli finali viene eseguito
+## 3. Casi di test
 
-**e) Assunzioni** – nessuna
+### Test 1 – Fusione dei dati del sorgente
 
-**f) Algoritmo in linguaggio naturale** – copiare i tempi da `pa` a `fine_a`
-escluso, poi da `pb` a `fine_b` escluso.
+- **Cosa si verifica:** fusione e coda della batteria A (13.01 e 13.55
+  restano dopo che la B è finita con 12.90).
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+  === CLASSIFICA FINALE 100 METRI ===
+    1. 11.79 s   batteria B   medaglia
+    2. 11.85 s   batteria A   medaglia
+    3. 12.12 s   batteria A   medaglia
+    4. 12.26 s   batteria B
+    5. 12.38 s   batteria B
+    6. 12.40 s   batteria A
+    7. 12.90 s   batteria B
+    8. 13.01 s   batteria A
+    9. 13.55 s   batteria A
+  Posizioni scritte: pc - &classifica[0] = 9
+  ```
 
-### Caso d'uso 3 – Controllo finale
+### Test 2 – Tempi uguali
 
-**a) Input** – classifica completa
-
-**b) Output** – "Posizioni scritte: pc - &classifica[0] = 9"
-
-**c) Variabili di supporto** – `pc`
-
-**d) Vincoli** – il numero deve essere 5 + 4
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la differenza tra `pc` e l'inizio
-dell'array dice quante posizioni sono state scritte.
+- **Cosa si verifica:** a parità viene prima la batteria A.
+- **Procedura:** nel sorgente impostare il primo tempo della batteria A a
+  1179, ricompilare ed eseguire.
+- **Output atteso** (prime righe):
+  ```
+    1. 11.79 s   batteria A   medaglia
+    2. 11.79 s   batteria B   medaglia
+  ```

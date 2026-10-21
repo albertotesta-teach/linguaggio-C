@@ -8,60 +8,91 @@ anni, ulteriori 15 euro di promozione da 10 anni; chi non è ancora socio
 paga il prezzo pieno. La versione dello studente conteneva quattro errori
 con i puntatori, che vanno riconosciuti e corretti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `anni` | `int` | — | Anni di iscrizione letti con `scanf` |
-| `sconto` | `int` | — | Percentuale di sconto |
-| `prezzo` | `int` | — | Prezzo finale in euro |
-| `percentuale` | `int *` | — | Punta a `sconto` |
-| `da_applicare` | `int *` | — | Sconto da applicare, `NULL` per chi non è socio |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `anni` | `int` | Anni di iscrizione, letti con `scanf` |
 
-### Caso d'uso 1 – Errori 1 e 2: scanf e puntatore non inizializzato
+### Output
 
-**a) Input** – `3`
+- `Socio da N anni: sconto S%, prezzo P euro` (con `anno` al singolare per 1).
+- Da 10 anni in su: `(compresa la promozione fedelta' di 15 euro)`.
 
-**b) Output** – "Socio da 3 anni: sconto 10%, prezzo 360 euro"
+### Vincoli
 
-**c) Variabili di supporto** – `&anni`, `percentuale = &sconto`
+- Prezzo base 400 euro; sconto 10% da 2 anni, 20% da 5 anni; promozione
+  di 15 euro da 10 anni; con 0 anni nessuno sconto.
+- I quattro errori corretti:
+  1. a `scanf` si passa l'indirizzo `&anni`, non il valore;
+  2. un puntatore va inizializzato (`percentuale = &sconto`) prima di
+     scrivere con `*percentuale`;
+  3. `da_applicare` resta `NULL` per chi non è socio e si dereferenzia solo
+     dopo aver controllato che non sia `NULL`;
+  4. non si usa l'indirizzo di una variabile dichiarata in un blocco `{ }`
+     dopo la fine del blocco.
+- Un input non numerico o negativo vale 0 anni.
 
-**d) Vincoli** – `scanf` riceve l'indirizzo; il puntatore si inizializza prima di `*percentuale = ...`
+### Assunzioni
 
-**e) Assunzioni** – numero intero non negativo (altrimenti 0)
+- Gli importi sono euro interi: lo sconto si calcola con la divisione
+  intera.
 
-**f) Algoritmo in linguaggio naturale** – leggere gli anni, far puntare
-`percentuale` a `sconto` e scrivervi la percentuale.
+### Variabili di supporto
 
-### Caso d'uso 2 – Errore 3: NULL per chi non è socio
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `sconto` | `int` | Percentuale di sconto |
+| `prezzo` | `int` | Prezzo finale in euro |
+| `percentuale` | `int *` | Punta a `sconto` |
+| `da_applicare` | `int *` | Sconto da applicare, `NULL` per chi non è socio |
+| `PREZZO_BASE` | `#define` | 400 euro |
 
-**a) Input** – `0`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – "sconto 0%, prezzo 400 euro"
+1. Leggere gli anni; se la lettura fallisce o il valore è negativo usare 0.
+2. Far puntare `percentuale` a `sconto` e scrivervi 20 (≥ 5 anni) o 10
+   (≥ 2 anni).
+3. Se gli anni sono > 0 far puntare `da_applicare` a `sconto`.
+4. Se `da_applicare` non è `NULL` calcolare
+   `prezzo = 400 − 400 × (*da_applicare) / 100`, altrimenti `prezzo = 400`.
+5. Da 10 anni sottrarre 15 euro di promozione.
+6. Stampare anni, sconto e prezzo, e la nota sulla promozione.
 
-**c) Variabili di supporto** – `da_applicare` resta `NULL`
+## 3. Casi di test
 
-**d) Vincoli** – si dereferenzia `da_applicare` solo se diverso da `NULL`
+### Test 1 – Sconto del 10%
 
-**e) Assunzioni** – nessuna
+- **Input:** `3`
+- **Output atteso:** `Socio da 3 anni: sconto 10%, prezzo 360 euro`
 
-**f) Algoritmo in linguaggio naturale** – se `da_applicare` è `NULL` il prezzo
-è quello base, altrimenti si applica la percentuale puntata.
+### Test 2 – Non ancora socio
 
-### Caso d'uso 3 – Errore 4: variabile che non esiste più
+- **Cosa si verifica:** `da_applicare` resta `NULL` e non si dereferenzia.
+- **Input:** `0`
+- **Output atteso:** `Socio da 0 anni: sconto 0%, prezzo 400 euro`
 
-**a) Input** – `12`
+### Test 3 – Promozione fedeltà
 
-**b) Output** – "sconto 20%, prezzo 305 euro (compresa la promozione fedeltà)"
+- **Input:** `12`
+- **Valori intermedi attesi:** 400 − 80 = 320, poi 320 − 15 = 305.
+- **Output atteso:**
+  ```
+  Socio da 12 anni: sconto 20%, prezzo 305 euro
+  (compresa la promozione fedelta' di 15 euro)
+  ```
 
-**c) Variabili di supporto** – nessuna
+### Test 4 – Soglie esatte
 
-**d) Vincoli** – l'indirizzo di una variabile dichiarata in un blocco `{ }`
-non è valido dopo la fine del blocco
+- **Cosa si verifica:** i confronti con `>=`.
+- **Input:** `2`, `5`, `10` (tre esecuzioni)
+- **Output atteso:** sconto 10% (360 euro), sconto 20% (320 euro), sconto
+  20% e promozione (305 euro).
 
-**e) Assunzioni** – nessuna
+### Test 5 – Un anno e input non valido
 
-**f) Algoritmo in linguaggio naturale** – la promozione si applica
-direttamente con il suo valore, senza puntare a una variabile temporanea.
+- **Input:** `1`; in una seconda esecuzione `abc`
+- **Output atteso:** `Socio da 1 anno: sconto 0%, prezzo 400 euro`;
+  `Socio da 0 anni: sconto 0%, prezzo 400 euro`

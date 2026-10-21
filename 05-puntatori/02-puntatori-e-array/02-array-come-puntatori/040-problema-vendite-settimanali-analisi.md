@@ -7,65 +7,89 @@ vuole confrontare i giorni feriali con il fine settimana: totale, media e
 giorno migliore di ciascun gruppo, la differenza tra le medie e l'incasso
 complessivo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `incassi` | `int[]` | 7 | Euro incassati da lunedì a domenica |
-| `giorni` | `char[][]` | 7 × 10 | Nomi dei giorni |
-| `media_feriali`, `media_festivi` | `int` | — | Medie dei due gruppi |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `incassi` | `int[7]` | 640, 585, 710, 690, 980, 1420, 1260 euro (da lunedì a domenica) |
+| `giorni` | `char[7][10]` | Nomi dei giorni |
+
+### Output
+
+- Per i giorni feriali e per il fine settimana: intervallo dei giorni,
+  totale, media e giorno migliore con il suo incasso.
+- Quanto incassa in più, in media, un giorno del fine settimana (euro e
+  percentuale).
+- L'incasso della settimana.
+
+### Vincoli
+
+- Le funzioni ricevono un puntatore al primo elemento e il numero di
+  elementi: passando `incassi + 5` si passa il sottoarray del fine
+  settimana, e la funzione vede solo i 2 elementi ricevuti.
+- Dentro la funzione `v[0]` è il primo elemento del sottoarray: la
+  posizione restituita da `posizione_massimo` è relativa al gruppo, e per
+  il nome del giorno si aggiunge l'indice `primo` del gruppo nella
+  settimana.
+- `posizione_massimo` restituisce `migliore − v`, differenza tra puntatori.
+- Medie e percentuale sono intere (divisione intera).
+
+### Assunzioni
+
+- La media dei feriali è maggiore di zero (serve per la percentuale).
+- A parità di incasso vale il primo giorno del gruppo.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `media_feriali`, `media_festivi` | `int` | Medie dei due gruppi |
+| `p`, `migliore` | `const int *` | Nelle funzioni: puntatore di scorrimento, elemento massimo |
+| `GIORNI`, `FERIALI`, `LUNG` | `#define` | 7, 5, 10 |
 
 | Funzione | Compito |
 |----------|---------|
 | `totale(v, n)` | Somma degli `n` elementi da `v` |
 | `posizione_massimo(v, n)` | Posizione del massimo dentro l'intervallo |
-| `riepilogo(...)` | Stampa totale, media e giorno migliore di un gruppo |
+| `riepilogo(titolo, v, n, primo, giorni)` | Stampa totale, media e giorno migliore di un gruppo |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Giorni feriali
+1. Chiamare `riepilogo` per i feriali (`incassi`, 5 giorni, primo 0) e per
+   il fine settimana (`incassi + 5`, 2 giorni, primo 5).
+2. In `riepilogo`: calcolare totale e posizione del massimo nel gruppo;
+   stampare il primo e l'ultimo giorno del gruppo, totale, media e giorno
+   migliore (`giorni[primo + migliore]`, `v[migliore]`).
+3. Calcolare le due medie, stampare la differenza e la percentuale
+   `differenza × 100 / media_feriali`.
+4. Stampare il totale dei 7 giorni.
 
-**a) Input** – `riepilogo("Feriali", incassi, 5, 0, giorni)`
+## 3. Casi di test
 
-**b) Output** – totale 3605, media 721, giorno migliore venerdì (980)
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – `somma`, `migliore`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** feriali 3605 / 5 = 721; fine settimana
+  2680 / 2 = 1340; nel sottoarray `posizione_massimo` restituisce 0
+  (sabato), cioè il giorno 5 + 0 della settimana; (1340 − 721) × 100 / 721
+  = 85.
+- **Output atteso:**
+  ```
+  === INCASSI DELLA SETTIMANA ===
 
-**d) Vincoli** – la funzione vede solo i 5 elementi ricevuti
+  Feriali (lunedi-venerdi)
+    totale  3605 euro, media  721 euro
+    giorno migliore: venerdi con 980 euro
 
-**e) Assunzioni** – media intera
+  Fine settimana (sabato-domenica)
+    totale  2680 euro, media 1340 euro
+    giorno migliore: sabato con 1420 euro
 
-**f) Algoritmo in linguaggio naturale** – chiamare `totale` e
-`posizione_massimo` sull'intervallo; il nome del giorno è
-`giorni[primo + migliore]`.
-
-### Caso d'uso 2 – Fine settimana come sottoarray
-
-**a) Input** – `riepilogo("Fine settimana", incassi + 5, 2, 5, giorni)`
-
-**b) Output** – totale 2680, media 1340, giorno migliore sabato (1420)
-
-**c) Variabili di supporto** – `primo` = 5
-
-**d) Vincoli** – dentro la funzione `v[0]` è il sabato: la posizione
-restituita (0) si somma a `primo`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – lo stesso del caso 1: cambia solo
-l'indirizzo di partenza passato alla funzione.
-
-### Caso d'uso 3 – Confronto tra le medie
-
-**a) Input** – medie 721 e 1340
-
-**b) Output** – "619 euro in piu' (+85%)"
-
-**c) Variabili di supporto** – `media_feriali`, `media_festivi`
-
-**d) Vincoli** – percentuale intera
-
-**e) Assunzioni** – la media dei feriali è maggiore di zero
-
-**f) Algoritmo in linguaggio naturale** – differenza = festivi − feriali;
-percentuale = differenza × 100 / feriali.
+  Un giorno del fine settimana incassa in media 619 euro in piu' (+85%).
+  Incasso della settimana: 6285 euro
+  ```

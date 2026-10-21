@@ -7,14 +7,44 @@ cinque fasce (insufficiente, sufficiente, discreto, buono, ottimo): per
 ogni fascia il numero di studenti, la percentuale e una barra di asterischi,
 poi la fascia più numerosa e il numero di sufficienze.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `voti` | `int[]` | 24 | Voti da 1 a 10 |
-| `nomi` | `char[][]` | 5 × 16 | Nomi delle fasce |
-| `conteggi` | `int[]` | 5 | Studenti per fascia, riempito dalla funzione |
-| `prevalente` | `int` | — | Indice della fascia più numerosa |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `voti` | `int[24]` | 6, 7, 5, 8, 4, 9, 6, 7, 7, 6, 10, 5, 6, 8, 7, 3, 6, 7, 8, 5, 9, 6, 7, 6 |
+| `nomi` | `char[5][16]` | insufficiente, sufficiente, discreto, buono, ottimo |
+
+### Output
+
+- Per ogni fascia: nome, numero di studenti, percentuale e una barra con un
+  asterisco per studente.
+- La fascia più numerosa e il numero di studenti con almeno 6.
+
+### Vincoli
+
+- Fasce: insufficiente < 6; sufficiente 6; discreto 7; buono 8; ottimo 9-10.
+- `conta_fasce` riceve `conteggi` come `int *`, lo azzera e lo riempie
+  usando la notazione `*(conteggi + f)`: modifica l'array del `main`.
+- Percentuale intera (`conteggio × 100 / 24`): la somma delle percentuali
+  può non fare 100.
+- A parità di numerosità vale la fascia più bassa (confronto con `>`).
+
+### Assunzioni
+
+- I voti sono validi, da 1 a 10.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `conteggi` | `int[5]` | Studenti per fascia, riempito dalla funzione |
+| `prevalente` | `int` | Indice della fascia più numerosa |
+| `f`, `k` | `int` | Indice della fascia, contatore degli asterischi |
 
 | Funzione | Compito |
 |----------|---------|
@@ -22,51 +52,30 @@ poi la fascia più numerosa e il numero di sufficienze.
 | `conta_fasce(voti, n, conteggi)` | Azzera e riempie l'array dei conteggi |
 | `posizione_massimo(v, n)` | Posizione dell'elemento maggiore |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Conteggio per fasce
+1. Contare i voti per fascia con `conta_fasce`: azzerare i 5 contatori,
+   poi per ogni voto incrementare il contatore della sua fascia.
+2. Per ogni fascia stampare nome, conteggio, percentuale e asterischi.
+3. Trovare la fascia più numerosa con `posizione_massimo` e stamparla.
+4. Stampare `24 − conteggi[0]` sufficienti.
 
-**a) Input** – i 24 voti
+## 3. Casi di test
 
-**b) Output** – 5, 7, 6, 3, 3
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – `p`, `f`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** `conteggi` = {5, 7, 6, 3, 3}; percentuali
+  20, 29, 25, 12, 12 (somma 98 per la divisione intera).
+- **Output atteso:**
+  ```
+  === ESITI DELLA VERIFICA (24 studenti) ===
+    insufficiente   5   20%  *****
+    sufficiente     7   29%  *******
+    discreto        6   25%  ******
+    buono           3   12%  ***
+    ottimo          3   12%  ***
 
-**d) Vincoli** – la funzione riceve `conteggi` come `int *` e lo modifica
-nell'array del chiamante
-
-**e) Assunzioni** – voti validi da 1 a 10
-
-**f) Algoritmo in linguaggio naturale**
-1. Azzerare `*(conteggi + f)` per ogni fascia.
-2. Per ogni voto calcolare la fascia `f` e incrementare `*(conteggi + f)`.
-
-### Caso d'uso 2 – Istogramma
-
-**a) Input** – fascia "sufficiente" con 7 studenti su 24
-
-**b) Output** – `sufficiente  7  29%  *******`
-
-**c) Variabili di supporto** – `k`
-
-**d) Vincoli** – percentuale intera: la somma può non fare 100
-
-**e) Assunzioni** – un asterisco per studente
-
-**f) Algoritmo in linguaggio naturale** – percentuale = conteggio × 100 / 24;
-stampare tanti `*` quanti sono gli studenti.
-
-### Caso d'uso 3 – Fascia più numerosa
-
-**a) Input** – conteggi `{5, 7, 6, 3, 3}`
-
-**b) Output** – "Fascia piu' numerosa: sufficiente (7 studenti)"
-
-**c) Variabili di supporto** – `prevalente`
-
-**d) Vincoli** – a parità vale la fascia più bassa
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la funzione tiene un puntatore
-all'elemento maggiore e restituisce `migliore - v`.
+  Fascia piu' numerosa: sufficiente (7 studenti)
+  Sufficienti o meglio: 19 su 24
+  ```

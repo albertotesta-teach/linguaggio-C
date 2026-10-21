@@ -23,18 +23,24 @@
 
 int *piu_vicina(int *occupata, int n, int richiesta);
 void stampa_corridoio(const int *occupata, int n);
+void svuota_riga(void);
 
 int main(void)
 {
     int occupata[AULE] = {1, 0, 1, 1, 1, 0, 1, 1, 0, 1};
     int richiesta = 1;
     int *aula;
+    int letti;
 
     stampa_corridoio(occupata, AULE);
     while (richiesta != 0) {
         printf("Aula richiesta (1-%d, 0 per finire): ", AULE);
-        if (scanf("%d", &richiesta) != 1) {
-            richiesta = 0;
+        letti = scanf("%d", &richiesta);
+        if (letti == EOF) {
+            richiesta = 0;              /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            richiesta = -1;             /* aula inesistente */
         }
         if (richiesta < 0 || richiesta > AULE) {
             printf("  Aula inesistente.\n");
@@ -92,4 +98,15 @@ void stampa_corridoio(const int *occupata, int n)
         }
     }
     printf("\n");
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

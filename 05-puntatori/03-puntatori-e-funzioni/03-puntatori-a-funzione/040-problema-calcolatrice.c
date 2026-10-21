@@ -41,6 +41,8 @@ int main(void)
             printf("  Operatore '%c' sconosciuto.\n", simbolo);
         } else if (operazione == dividi && b == 0) {
             printf("  Divisione per zero.\n");
+        } else if (operazione == potenza && b < 0) {
+            printf("  Esponente negativo non ammesso.\n");
         } else {
             printf("  %g %c %g = %g\n", a, simbolo, b, operazione(a, b));
         }

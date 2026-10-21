@@ -48,7 +48,7 @@ int main(void)
     printf("Arrivo piu' combattuto: pettorali %d e %d (%.1f s e %.1f s), distacco %.1f s\n",
            (int) (a - tempi) + 1, (int) (b - tempi) + 1, *a / 10.0, *b / 10.0, d / 10.0);
     if (d <= 2) {
-        printf("Distacco sotto i 2 decimi: serve il fotofinish.\n");
+        printf("Distacco di 2 decimi o meno: serve il fotofinish.\n");
     }
 
     return 0;

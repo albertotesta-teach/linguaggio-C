@@ -2,63 +2,96 @@
 
 ## 1. Problema
 
-Nel laboratorio di grafica una piccola immagine in scala di grigi è una matrice di livelli da 0 a 9, mostrata a terminale con un carattere per livello. Il programma la capovolge in verticale e poi ne calcola il negativo.
+Nel laboratorio di grafica una piccola immagine in scala di grigi è una
+matrice di livelli da 0 a 9, mostrata a terminale con un carattere per
+livello. Il programma la capovolge in verticale e poi ne calcola il
+negativo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `immagine` | `int[][]` | 6 × 10 | Livelli di grigio |
-| `alto`, `basso` | `int (*)[COLONNE]` | — | Righe da scambiare |
-| `a`, `b` | `int *` | — | Elementi delle due righe |
-| `LIVELLI` | letterale | 11 | Carattere per ogni livello |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `immagine` | `int[6][10]` | Una freccia verso l'alto (livelli 9 e 6) su una base di livello 3 |
+
+### Output
+
+- L'immagine originale, capovolta e in negativo, disegnate con i caratteri
+  di `" .:-=+*#%@"` (livello 0 = spazio, 9 = `@`).
+
+### Vincoli
+
+- Il livello è l'indice nella stringa dei caratteri `LIVELLI`.
+- `stampa` riceve la matrice come puntatore a righe
+  (`const int (*)[COLONNE]`) e la scorre con `riga++`.
+- `capovolgi` usa due puntatori a righe, `alto` e `basso`, che si
+  avvicinano; per ogni coppia scambia gli elementi con due puntatori a
+  `int`; si ferma quando `alto` non è più minore di `basso` (con un numero
+  dispari di righe quella centrale resta al suo posto).
+- `negativo` tratta la matrice come un blocco unico di 60 interi
+  consecutivi (`&immagine[0][0]`) e sostituisce ogni livello `v` con `9 − v`.
+
+### Assunzioni
+
+- I livelli sono sempre tra 0 e 9.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `riga` | `const int (*)[COLONNE]` | In `stampa`: riga corrente |
+| `alto`, `basso` | `int (*)[COLONNE]` | In `capovolgi`: righe da scambiare |
+| `a`, `b`, `temp` | `int *`, `int *`, `int` | In `capovolgi`: elementi delle due righe |
+| `fine` | `int *` | In `negativo`: fine del blocco |
+| `LIVELLI` | `#define` | `" .:-=+*#%@"` |
 
 | Funzione | Compito |
 |----------|---------|
 | `stampa(img, righe)` | Disegna l'immagine riga per riga |
 | `capovolgi(img, righe)` | Scambia le righe dagli estremi verso il centro |
-| `negativo(p, n)` | 9 − v per n elementi consecutivi |
+| `negativo(p, n)` | `9 − v` per n elementi consecutivi |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Capovolgimento
+1. Stampare l'originale.
+2. Capovolgere: finché `alto < basso` scambiare elemento per elemento le due
+   righe, poi avanzare `alto` e arretrare `basso`; stampare.
+3. Calcolare il negativo sul blocco di 60 elementi; stampare.
 
-**a) Input** – immagine a freccia verso l'alto
+## 3. Casi di test
 
-**b) Output** – freccia verso il basso
+### Test 1 – Trasformazioni
 
-**c) Variabili di supporto** – `alto`, `basso`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** dopo il negativo la base (livello 3, `-`)
+  diventa 6 (`*`), lo sfondo 0 diventa 9 (`@`), il gambo 6 diventa 3.
+- **Output atteso:**
+  ```
+  Originale:
+    |    @@    |
+    |   @@@@   |
+    |  @@@@@@  |
+    |    **    |
+    |    **    |
+    |----------|
 
-**d) Vincoli** – si ferma quando `alto` non è più minore di `basso`
+  Capovolta:
+    |----------|
+    |    **    |
+    |    **    |
+    |  @@@@@@  |
+    |   @@@@   |
+    |    @@    |
 
-**e) Assunzioni** – numero di righe qualsiasi
-
-**f) Algoritmo in linguaggio naturale** – scambiare elemento per elemento la riga `*alto` con la riga `*basso`, poi `alto++` e `basso--`.
-
-### Caso d'uso 2 – Negativo
-
-**a) Input** – livello 0
-
-**b) Output** – livello 9 ('@')
-
-**c) Variabili di supporto** – `p`
-
-**d) Vincoli** – la riga non conta: blocco unico
-
-**e) Assunzioni** – livelli da 0 a 9
-
-**f) Algoritmo in linguaggio naturale** – per ogni elemento `*p = 9 - *p`.
-
-### Caso d'uso 3 – Stampa
-
-**a) Input** – livello 3
-
-**b) Output** – carattere '-'
-
-**c) Variabili di supporto** – `LIVELLI[(*riga)[c]]`
-
-**d) Vincoli** – il livello è l'indice nella stringa dei caratteri
-
-**e) Assunzioni** – valori sempre tra 0 e 9
-
-**f) Algoritmo in linguaggio naturale** – per ogni elemento stampare il carattere corrispondente.
+  Negativo:
+    |**********|
+    |@@@@--@@@@|
+    |@@@@--@@@@|
+    |@@      @@|
+    |@@@    @@@|
+    |@@@@  @@@@|
+  ```

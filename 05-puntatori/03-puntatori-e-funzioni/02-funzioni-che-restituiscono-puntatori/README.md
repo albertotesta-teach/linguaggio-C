@@ -162,6 +162,7 @@ Movimento (C codice n, S codice n, Q): S 9999 1
   Codice 9999 inesistente.
 Movimento (C codice n, S codice n, Q): C 1001 0
   Dati non validi.
+Movimento (C codice n, S codice n, Q): Q
 Inventario:  1001: 40  1002: 25  2010: 120  2011: 53  3050: 15
 ```
 

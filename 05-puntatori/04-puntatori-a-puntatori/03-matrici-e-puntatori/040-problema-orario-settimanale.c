@@ -26,6 +26,7 @@
 
 void stampa_giorno(const int *ore, int n, const char *materie[]);
 int ore_settimanali(const int (*orario)[ORE], int giorni, int materia);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -40,12 +41,17 @@ int main(void)
         {3, 1, 2, 2, 0, 6}
     };
     int g = 1;
+    int letti;
     int m;
 
     while (g != 0) {
         printf("Giorno (1-5, 0 per finire): ");
-        if (scanf("%d", &g) != 1) {
-            g = 0;
+        letti = scanf("%d", &g);
+        if (letti == EOF) {
+            g = 0;                      /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            g = -1;                     /* giorno non valido */
         }
         if (g < 0 || g > GIORNI) {
             printf("  Giorno non valido.\n");
@@ -88,4 +94,15 @@ int ore_settimanali(const int (*orario)[ORE], int giorni, int materia)
         }
     }
     return conteggio;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

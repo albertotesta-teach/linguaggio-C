@@ -2,62 +2,89 @@
 
 ## 1. Problema
 
-L'orario settimanale della 3B è una matrice giorni × ore con il codice della materia in ogni cella. Lo studente chiede un giorno e il programma stampa le sei lezioni; alla fine stampa le ore settimanali di ogni materia.
+L'orario settimanale della 3B è una matrice giorni × ore con il codice
+della materia in ogni cella. Lo studente chiede un giorno e il programma
+stampa le sei lezioni; alla fine stampa le ore settimanali di ogni materia.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `orario` | `int[][]` | 5 × 6 | Codice della materia per giorno e ora |
-| `materie` | `const char *[]` | 7 | Nome della materia, l'indice è il codice |
-| `giorni` | `const char *[]` | 5 | Nomi dei giorni |
-| `g` | `int` | — | Giorno scelto |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `g` | `int` | Giorno scelto (1-5); 0 per finire |
+| `orario` | `int[5][6]` | Codice della materia per giorno e ora (nel sorgente) |
+| `materie`, `giorni` | `const char *[7]`, `const char *[5]` | Nomi (nel sorgente); l'indice di `materie` è il codice |
+
+### Output
+
+- Per ogni giorno valido: il nome del giorno e le sei ore con la materia.
+- `Giorno non valido.` per un numero fuori da 0-5 o un testo.
+- Alla fine le ore settimanali di ogni materia.
+
+### Vincoli
+
+- La riga `orario[g − 1]` si passa a `stampa_giorno` come un array
+  (`const int *`).
+- `ore_settimanali` riceve la matrice come puntatore a righe
+  (`const int (*)[ORE]`) e la scorre riga per riga con `riga++`, leggendo
+  le celle con `(*riga)[h]`.
+- La riga si usa solo con un indice valido.
+- Un testo non numerico è un giorno non valido (la riga si scarta); a fine
+  input il programma termina come con 0.
+
+### Assunzioni
+
+- Giorni numerati da 1 (lunedì); sei ore al giorno.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `m` | `int` | Codice della materia nel riepilogo |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `riga` | `const int (*)[ORE]` | In `ore_settimanali`: riga corrente |
 
 | Funzione | Compito |
 |----------|---------|
 | `stampa_giorno(orario[g], ORE, materie)` | Stampa una riga ricevuta come `const int *` |
 | `ore_settimanali(orario, GIORNI, m)` | Conta le celle della materia con un puntatore a riga |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Orario di un giorno
+1. Finché il giorno non è 0: leggerlo (a fine input 0; testo → non valido);
+   se fuori da 0-5 segnalarlo, altrimenti, se non è 0, stampare il nome del
+   giorno e le sue ore.
+2. Per ogni materia stampare le ore settimanali, contando con
+   `ore_settimanali` le celle con quel codice.
 
-**a) Input** – `3`
+## 3. Casi di test
 
-**b) Output** – Mercoledì: Informatica (3 ore), Inglese, Ed. fisica (2 ore)
+Nell'output i giorni inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `orario[g - 1]`
+### Test 1 – Sessione completa
 
-**d) Vincoli** – la riga di una matrice si passa come un array
+- **Input:** `3`, `6`, `x`, `0`
+- **Output atteso:**
+  ```
+    Mercoledi:
+      1a ora  Informatica
+      2a ora  Informatica
+      3a ora  Informatica
+      4a ora  Inglese
+      5a ora  Ed. fisica
+      6a ora  Ed. fisica
+    Giorno non valido.
+    Giorno non valido.
 
-**e) Assunzioni** – giorni numerati da 1
-
-**f) Algoritmo in linguaggio naturale** – passare `orario[g - 1]` a `stampa_giorno`, che stampa `materie[ore[h]]`.
-
-### Caso d'uso 2 – Ore per materia
-
-**a) Input** – tutta la matrice
-
-**b) Output** – Italiano 6, Matematica 5, Informatica 7, ...
-
-**c) Variabili di supporto** – `riga`
-
-**d) Vincoli** – la matrice arriva come `const int (*)[ORE]`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – scorrere le righe con `riga++` e contare le celle uguali al codice.
-
-### Caso d'uso 3 – Giorno non valido
-
-**a) Input** – `6`
-
-**b) Output** – "Giorno non valido."
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – la riga si usa solo con indice valido
-
-**e) Assunzioni** – un input non numerico termina
-
-**f) Algoritmo in linguaggio naturale** – controllare l'intervallo 1-5.
+  Ore settimanali per materia:
+    Italiano     6
+    Matematica   5
+    Informatica  7
+    Inglese      3
+    Sistemi      4
+    Ed. fisica   2
+    Storia       3
+  ```
+  (il totale delle ore è 30 = 5 × 6).

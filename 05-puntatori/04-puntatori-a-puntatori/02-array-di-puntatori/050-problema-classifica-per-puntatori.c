@@ -27,6 +27,7 @@ void scambia_nomi(const char **a, const char **b);
 void scambia_tempi(const int **a, const int **b);
 void stampa(const char *nomi[], const int *tempi[], int n);
 int in_ordine(const int *tempi[], int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -37,6 +38,7 @@ int main(void)
     char comando = ' ';
     int a;
     int b;
+    int letti;
     int i;
 
     for (i = 0; i < CONCORRENTI; i++) {
@@ -51,10 +53,15 @@ int main(void)
             comando = 'Q';
         }
         if (comando == 'S') {
-            if (scanf("%d %d", &a, &b) != 2 || a < 1 || b < 1 ||
-                a > CONCORRENTI || b > CONCORRENTI) {
+            letti = scanf("%d %d", &a, &b);
+            if (letti == EOF) {
+                comando = 'Q';          /* input terminato */
+            } else if (letti != 2 || a < 1 || b < 1 ||
+                       a > CONCORRENTI || b > CONCORRENTI) {
+                if (letti != 2) {
+                    svuota_riga();      /* non sono due numeri */
+                }
                 printf("  Posizioni non valide.\n");
-                comando = 'Q';
             } else {
                 scambia_nomi(&nome_al_posto[a - 1], &nome_al_posto[b - 1]);
                 scambia_tempi(&tempo_al_posto[a - 1], &tempo_al_posto[b - 1]);
@@ -110,4 +117,15 @@ int in_ordine(const int *tempi[], int n)
         }
     }
     return ordinata;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

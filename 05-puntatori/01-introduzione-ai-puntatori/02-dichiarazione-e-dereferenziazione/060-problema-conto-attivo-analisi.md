@@ -8,73 +8,109 @@ Il tesoriere dell'associazione dei genitori gestisce quattro salvadanai
 quello selezionato. Il prelievo è rifiutato se il saldo non basta. Alla
 fine viene stampato il riepilogo, indicando l'ultimo salvadanaio selezionato.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `nomi` | `char[][]` | 4 × 12 | Nomi dei salvadanai |
-| `saldi` | `int[]` | 4 | Saldi in euro (parallelo) |
-| `attivo` | `int *` | — | Indirizzo dell'elemento selezionato di `saldi`, `NULL` all'inizio |
-| `indice_attivo` | `int` | — | Indice selezionato, per stampare il nome |
-| `riga`, `comando`, `valore`, `letti` | — | — | Lettura del comando con `fgets` e `sscanf` |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[40]` | Comando letto con `fgets`: `N k` (seleziona il salvadanaio k, da 1 a 4), `V importo`, `P importo`, `F` (fine) |
+| `nomi` | `char[4][12]` | Gita, Biblioteca, Sport, Festa (nel sorgente) |
+| `saldi` | `int[4]` | Saldi iniziali in euro: 350, 120, 80, 0 (nel sorgente) |
 
-### Caso d'uso 1 – Operazione senza selezione
+### Output
 
-**a) Input** – `V 50`
+- Per ogni comando: il salvadanaio selezionato con il saldo, il nuovo saldo
+  dopo un'operazione, oppure un messaggio di errore (`Nessun salvadanaio
+  selezionato.`, `Numero di salvadanaio non valido.`, `Importo non valido.`,
+  `Saldo insufficiente in ...`, `Comando sconosciuto.`, `Comando vuoto.`).
+- Il riepilogo dei quattro saldi, con `<- ultimo selezionato` accanto al
+  salvadanaio selezionato per ultimo.
 
-**b) Output** – "Nessun salvadanaio selezionato."
+### Vincoli
 
-**c) Variabili di supporto** – `attivo` = `NULL`
+- La riga si scompone con `sscanf(riga, " %c %d", ...)`: il numero di
+  elementi letti dice se l'importo o il numero sono presenti.
+- `attivo` contiene l'indirizzo dell'elemento selezionato di `saldi` ed è
+  `NULL` finché non si seleziona nulla: non si dereferenzia mai `NULL`.
+- L'utente conta i salvadanai da 1, l'array da 0: `attivo = &saldi[k - 1]`.
+- Gli importi devono essere positivi; il saldo non può diventare negativo.
+- Nel riepilogo il salvadanaio selezionato si riconosce confrontando gli
+  indirizzi: `&saldi[k] == attivo`.
+- A fine input (EOF) il programma si comporta come il comando `F`.
 
-**d) Vincoli** – mai dereferenziare `NULL`
+### Assunzioni
 
-**e) Assunzioni** – nessuna
+- Importi interi in euro; comandi in maiuscolo.
 
-**f) Algoritmo in linguaggio naturale** – controllare `attivo` prima di ogni operazione.
+### Variabili di supporto
 
-### Caso d'uso 2 – Selezione e versamento
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `attivo` | `int *` | Indirizzo del saldo selezionato, `NULL` all'inizio |
+| `indice_attivo` | `int` | Indice selezionato, per stampare il nome |
+| `comando`, `valore` | `char`, `int` | Parti del comando lette da `sscanf` |
+| `letti` | `int` | Elementi convertiti da `sscanf` |
+| `k` | `int` | Indice del riepilogo |
 
-**a) Input** – `N 2`, `V 30`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – "Selezionato Biblioteca (saldo 120 euro)"; "nuovo saldo 150 euro"
+1. Porre `attivo = NULL`.
+2. Finché il comando non è `F`:
+   1. leggere la riga (a fine input usare `F`) e scomporla con `sscanf`;
+   2. riga vuota → `Comando vuoto.`;
+   3. `N`: se c'è un numero tra 1 e 4 far puntare `attivo` a quel saldo e
+      stamparlo, altrimenti segnalare l'errore;
+   4. `V` o `P`: se `attivo` è `NULL` segnalarlo; se l'importo manca o non è
+      positivo segnalarlo; se è un prelievo superiore a `*attivo` segnalare
+      il saldo insufficiente; altrimenti aggiornare `*attivo` e stamparlo;
+   5. ogni altro comando diverso da `F` è sconosciuto.
+3. Stampare il riepilogo marcando il saldo il cui indirizzo è `attivo`.
 
-**c) Variabili di supporto** – `attivo = &saldi[1]`
+## 3. Casi di test
 
-**d) Vincoli** – l'utente conta da 1, l'array da 0
+Nell'output i comandi non compaiono (input da pipe); ogni risposta segue il
+prompt `Comando (N k | V euro | P euro | F): `.
 
-**e) Assunzioni** – importi interi in euro
+### Test 1 – Sessione completa
 
-**f) Algoritmo in linguaggio naturale** – con `N k` valido assegnare
-`attivo = &saldi[k - 1]`; con `V` sommare a `*attivo`.
+- **Input:** `V 50`, `N 2`, `V 30`, `P 200`, `N 9`, `N 4`, `V 75`, `P 20`,
+  `P 0`, `X`, riga vuota, `F`
+- **Output atteso** (risposte nell'ordine e riepilogo):
+  ```
+    Nessun salvadanaio selezionato.
+    Selezionato Biblioteca (saldo 120 euro)
+    Biblioteca: nuovo saldo 150 euro
+    Saldo insufficiente in Biblioteca: 150 euro.
+    Numero di salvadanaio non valido.
+    Selezionato Festa (saldo 0 euro)
+    Festa: nuovo saldo 75 euro
+    Festa: nuovo saldo 55 euro
+    Importo non valido.
+    Comando sconosciuto.
+    Comando vuoto.
 
-### Caso d'uso 3 – Prelievo
+  === RIEPILOGO ===
+    Gita          350 euro
+    Biblioteca    150 euro
+    Sport          80 euro
+    Festa          55 euro   <- ultimo selezionato
+  ```
 
-**a) Input** – `P 200` con saldo 150; `P 20` con saldo 75
+### Test 2 – Fine dell'input senza F
 
-**b) Output** – "Saldo insufficiente"; "nuovo saldo 55 euro"
+- **Cosa si verifica:** a fine input il programma stampa il riepilogo.
+- **Input:** `N 1`, `V 5`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso** (riepilogo):
+  ```
+    Gita          355 euro   <- ultimo selezionato
+    Biblioteca    120 euro
+    Sport          80 euro
+    Festa           0 euro
+  ```
 
-**c) Variabili di supporto** – `*attivo`
+### Test 3 – Nessuna selezione
 
-**d) Vincoli** – il saldo non può diventare negativo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se l'importo supera `*attivo`
-rifiutare, altrimenti sottrarre.
-
-### Caso d'uso 4 – Riepilogo
-
-**a) Input** – `F`
-
-**b) Output** – i quattro saldi, con "<- ultimo selezionato" accanto a Festa
-
-**c) Variabili di supporto** – `k`
-
-**d) Vincoli** – il salvadanaio selezionato si riconosce con `&saldi[k] == attivo`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – scorrere i saldi confrontando
-l'indirizzo di ogni elemento con `attivo`.
+- **Cosa si verifica:** senza selezioni nessun salvadanaio è marcato.
+- **Input:** `F`
+- **Output atteso:** il riepilogo con i saldi iniziali e nessuna freccia.

@@ -217,7 +217,7 @@ Pettorale:      1      2      3      4      5      6      7      8
 Tempo (s):  734.2  712.0  786.5  734.3  724.0  746.1  722.8  798.0
 
 Arrivo piu' combattuto: pettorali 1 e 4 (734.2 s e 734.3 s), distacco 0.1 s
-Distacco sotto i 2 decimi: serve il fotofinish.
+Distacco di 2 decimi o meno: serve il fotofinish.
 ```
 
 ### 070-problema-lettore-comandi

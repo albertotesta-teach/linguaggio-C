@@ -24,6 +24,7 @@
 void aggiungi_giro(int *ore, int *minuti, int *secondi, int m, int s);
 void normalizza(int *ore, int *minuti, int *secondi);
 int aggiorna_migliore(int *migliore, int m, int s);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -34,13 +35,18 @@ int main(void)
     int giri = 0;
     int m = 1;
     int s = 0;
+    int letti;
 
     printf("=== ALLENAMENTO IN PISTA ===\n");
     while (m != 0 || s != 0) {
         printf("Tempo del giro %d (mm:ss, 0:00 per finire): ", giri + 1);
-        if (scanf("%d:%d", &m, &s) != 2) {
-            m = 0;
+        letti = scanf("%d:%d", &m, &s);
+        if (letti == EOF) {
+            m = 0;                      /* input terminato: come 0:00 */
             s = 0;
+        } else if (letti != 2) {
+            svuota_riga();              /* non è un tempo mm:ss */
+            m = -1;                     /* tempo non valido */
         }
         if (m < 0 || s < 0 || s > 59) {
             printf("  Tempo non valido.\n");
@@ -92,4 +98,15 @@ int aggiorna_migliore(int *migliore, int m, int s)
         aggiornato = 1;
     }
     return aggiornato;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

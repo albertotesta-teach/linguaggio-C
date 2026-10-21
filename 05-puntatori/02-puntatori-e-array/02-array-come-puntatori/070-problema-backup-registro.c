@@ -28,6 +28,7 @@ void copia_blocco(int *dest, const int *sorgente, int n);
 int mostra_differenze(const int *attuali, const int *backup, int n,
                       const char nomi[][LUNG]);
 void stampa_registro(const int *voti, int n, const char nomi[][LUNG]);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -36,7 +37,8 @@ int main(void)
     int voti[STUDENTI] = {6, 7, 5, 8, 4, 9, 6, 7};
     int backup[STUDENTI];
     int studente = 1;
-    int voto;
+    int voto = 0;
+    int letti;
     int cambiati;
     char risposta = 'S';
 
@@ -46,8 +48,12 @@ int main(void)
 
     while (studente != 0) {
         printf("Studente (1-%d) e nuovo voto, 0 0 per finire: ", STUDENTI);
-        if (scanf("%d %d", &studente, &voto) != 2) {
-            studente = 0;
+        letti = scanf("%d %d", &studente, &voto);
+        if (letti == EOF) {
+            studente = 0;               /* input terminato: come 0 0 */
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            studente = -1;
         }
         if (studente < 0 || studente > STUDENTI) {
             printf("  Studente inesistente.\n");
@@ -120,5 +126,16 @@ void stampa_registro(const int *voti, int n, const char nomi[][LUNG])
 
     for (i = 0; i < n; i++) {
         printf("  %d. %-10s %2d\n", i + 1, nomi[i], voti[i]);
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

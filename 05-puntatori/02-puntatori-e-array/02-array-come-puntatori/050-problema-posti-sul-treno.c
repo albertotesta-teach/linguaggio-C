@@ -24,6 +24,7 @@
 #define POSTI 20
 
 int cerca_liberi(const int *posti, int n, int k);
+void svuota_riga(void);
 void occupa(int *inizio, int *fine);
 void stampa_carrozza(const int *posti, int n);
 
@@ -33,14 +34,19 @@ int main(void)
                         1, 1, 0, 0, 0, 0, 1, 0, 1, 1};
     int k = 1;
     int i;
+    int letti;
 
     printf("=== PRENOTAZIONE POSTI VICINI ===\n");
     stampa_carrozza(posti, POSTI);
 
     while (k != 0) {
         printf("\nPersone nel gruppo (0 per finire): ");
-        if (scanf("%d", &k) != 1) {
-            k = 0;
+        letti = scanf("%d", &k);
+        if (letti == EOF) {
+            k = 0;                      /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            k = -1;
         }
 
         if (k < 0 || k > POSTI) {
@@ -111,4 +117,15 @@ void stampa_carrozza(const int *posti, int n)
         }
     }
     printf("\n  Posti liberi: %d su %d\n", liberi, n);
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

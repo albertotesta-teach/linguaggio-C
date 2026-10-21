@@ -8,71 +8,90 @@ un solo spazio tra le parole, nessuno spazio prima della punteggiatura. La
 correzione avviene nello stesso array e il programma indica quanti
 caratteri ha tolto.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `testi` | `char[][]` | 4 × 80 | Testi di prova, modificabili |
-| `lettura` | `const char *` | — | Carattere esaminato |
-| `scrittura` | `char *` | — | Posizione in cui copiare il prossimo carattere tenuto |
-| `spazio_in_sospeso` | `int` | — | 1 se è stato letto uno spazio non ancora scritto |
-| `lunghezza_iniziale` | `int` | — | Per calcolare i caratteri tolti |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `testi` | `char[4][80]` | `"   Mario    Rossi   "`, `"Via Roma ,  12"`, `"Allergie :  nessuna ."`, `"Sport preferiti:calcio ,   nuoto , tennis"` |
+
+### Output
+
+- Per ogni testo: il testo prima e dopo la normalizzazione, tra parentesi
+  quadre, e il numero di caratteri tolti.
+
+### Vincoli
+
+- La correzione avviene sul posto con due puntatori sullo stesso array:
+  `lettura` esamina ogni carattere, `scrittura` indica dove copiare il
+  prossimo carattere tenuto. `scrittura` non supera mai `lettura`, quindi
+  non si sovrascrive un carattere non ancora letto.
+- Uno spazio non si copia subito: diventa "in sospeso" e si scrive solo
+  prima del carattere successivo, se questo non è punteggiatura
+  (`, . ; : ! ?`). Così si eliminano gli spazi finali, quelli ripetuti e
+  quelli prima della punteggiatura.
+- Gli spazi iniziali si ignorano finché non è stato scritto nulla
+  (`scrittura == testo`).
+- La nuova lunghezza è `scrittura − testo`; i caratteri tolti sono la
+  differenza con la lunghezza iniziale.
+
+### Assunzioni
+
+- Si considera solo il carattere spazio (non le tabulazioni).
+- Dopo la punteggiatura lo spazio non viene aggiunto se manca
+  (`preferiti:calcio` resta così).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `lettura` | `const char *` | Carattere esaminato |
+| `scrittura` | `char *` | Posizione in cui copiare il prossimo carattere tenuto |
+| `spazio_in_sospeso` | `int` | 1 se è stato letto uno spazio non ancora scritto |
+| `lunghezza_iniziale` | `int` | Per calcolare i caratteri tolti |
 
 | Funzione | Compito |
 |----------|---------|
 | `normalizza(testo)` | Corregge gli spazi sul posto, restituisce i caratteri tolti |
 | `punteggiatura(c)` | 1 se `c` è tra `, . ; : ! ?` |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Spazi all'inizio, alla fine e ripetuti
+1. Per ogni testo stampare il prima, normalizzarlo e stampare il dopo con i
+   caratteri tolti.
+2. In `normalizza`, per ogni carattere letto:
+   1. se è uno spazio e qualcosa è già stato scritto, porre lo spazio in
+      sospeso;
+   2. altrimenti, se c'è uno spazio in sospeso e il carattere non è
+      punteggiatura, scrivere uno spazio; poi scrivere il carattere e
+      annullare lo spazio in sospeso.
+3. Chiudere il testo con `'\0'` e restituire la differenza di lunghezza.
 
-**a) Input** – `"   Mario    Rossi   "`
+## 3. Casi di test
 
-**b) Output** – `"Mario Rossi"`, 9 caratteri tolti
+### Test 1 – Testi del sorgente
 
-**c) Variabili di supporto** – `lettura`, `scrittura`, `spazio_in_sospeso`
+- **Cosa si verifica:** spazi iniziali, finali, ripetuti e prima della
+  punteggiatura.
+- **Input:** nessuno.
+- **Valori intermedi attesi:** `"Via Roma ,  12"` (14 caratteri) diventa
+  `"Via Roma, 12"` (12): 2 tolti.
+- **Output atteso:**
+  ```
+  === NORMALIZZAZIONE DEGLI SPAZI ===
+    prima: [   Mario    Rossi   ]
+    dopo:  [Mario Rossi]   (9 caratteri tolti)
 
-**d) Vincoli** – `scrittura` non supera mai `lettura`: si copia solo verso
-sinistra
+    prima: [Via Roma ,  12]
+    dopo:  [Via Roma, 12]   (2 caratteri tolti)
 
-**e) Assunzioni** – solo il carattere spazio (non tabulazioni)
+    prima: [Allergie :  nessuna .]
+    dopo:  [Allergie: nessuna.]   (3 caratteri tolti)
 
-**f) Algoritmo in linguaggio naturale**
-1. Uno spazio non si copia: se `scrittura > testo` si ricorda in
-   `spazio_in_sospeso`.
-2. Un altro carattere: se c'è uno spazio in sospeso si scrive prima uno
-   spazio, poi il carattere.
-3. Alla fine si scrive `'\0'` in `*scrittura`: lo spazio finale in sospeso
-   non viene mai scritto.
-
-### Caso d'uso 2 – Spazio prima della punteggiatura
-
-**a) Input** – `"Allergie :  nessuna ."`
-
-**b) Output** – `"Allergie: nessuna."`
-
-**c) Variabili di supporto** – `spazio_in_sospeso`
-
-**d) Vincoli** – lo spazio in sospeso si scarta se il carattere successivo
-è punteggiatura
-
-**e) Assunzioni** – dopo la punteggiatura lo spazio resta com'è
-
-**f) Algoritmo in linguaggio naturale** – al punto 2 del caso 1 si scrive lo
-spazio solo se `punteggiatura(*lettura)` vale 0.
-
-### Caso d'uso 3 – Caratteri tolti
-
-**a) Input** – `"Via Roma ,  12"` (14 caratteri)
-
-**b) Output** – `"Via Roma, 12"` (12 caratteri), 2 tolti
-
-**c) Variabili di supporto** – `lunghezza_iniziale`
-
-**d) Vincoli** – la nuova lunghezza è `scrittura - testo`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – restituire `lunghezza_iniziale -
-(scrittura - testo)`.
+    prima: [Sport preferiti:calcio ,   nuoto , tennis]
+    dopo:  [Sport preferiti:calcio, nuoto, tennis]   (4 caratteri tolti)
+  ```

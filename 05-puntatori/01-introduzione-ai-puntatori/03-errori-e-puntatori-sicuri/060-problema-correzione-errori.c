@@ -75,7 +75,8 @@ int main(void)
         prezzo = prezzo - 15;           /* promozione fedeltà */
     }
 
-    printf("Socio da %d anni: sconto %d%%, prezzo %d euro\n", anni, sconto, prezzo);
+    printf("Socio da %d %s: sconto %d%%, prezzo %d euro\n", anni,
+           anni == 1 ? "anno" : "anni", sconto, prezzo);
     if (anni >= 10) {
         printf("(compresa la promozione fedelta' di 15 euro)\n");
     }

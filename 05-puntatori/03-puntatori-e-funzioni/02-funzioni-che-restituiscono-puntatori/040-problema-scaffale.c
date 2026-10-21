@@ -22,6 +22,7 @@
 
 int *quantita_di(const int *codici, int *quantita, int n, int codice);
 void inventario(const int *codici, const int *quantita, int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -31,6 +32,7 @@ int main(void)
     char comando = ' ';
     int codice;
     int n;
+    int letti;
 
     inventario(codici, quantita, ARTICOLI);
     while (comando != 'Q') {
@@ -39,9 +41,14 @@ int main(void)
             comando = 'Q';
         }
         if (comando == 'C' || comando == 'S') {
-            if (scanf("%d %d", &codice, &n) != 2 || n <= 0) {
+            letti = scanf("%d %d", &codice, &n);
+            if (letti == EOF) {
+                comando = 'Q';          /* input terminato */
+            } else if (letti != 2 || n <= 0) {
+                if (letti != 2) {
+                    svuota_riga();      /* non sono due numeri */
+                }
                 printf("  Dati non validi.\n");
-                comando = 'Q';
             } else {
                 q = quantita_di(codici, quantita, ARTICOLI, codice);
                 if (q == NULL) {
@@ -87,4 +94,15 @@ void inventario(const int *codici, const int *quantita, int n)
         printf("  %d: %d", codici[i], quantita[i]);
     }
     printf("\n");
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

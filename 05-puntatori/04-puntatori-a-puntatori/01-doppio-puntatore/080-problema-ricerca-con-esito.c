@@ -28,6 +28,7 @@
 
 int cerca(int *v, int n, int valore, int **trovato);
 void stampa(const int *posti, int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -35,6 +36,7 @@ int main(void)
     int *posto;
     char comando = ' ';
     int tessera;
+    int letti;
 
     stampa(posti, POSTI);
     while (comando != 'Q') {
@@ -43,9 +45,14 @@ int main(void)
             comando = 'Q';
         }
         if (comando == 'E' || comando == 'U') {
-            if (scanf("%d", &tessera) != 1 || tessera <= 0) {
+            letti = scanf("%d", &tessera);
+            if (letti == EOF) {
+                comando = 'Q';          /* input terminato */
+            } else if (letti == 0 || tessera <= 0) {
+                if (letti == 0) {
+                    svuota_riga();      /* non è un numero */
+                }
                 printf("  Tessera non valida.\n");
-                comando = 'Q';
             } else if (comando == 'E') {
                 if (cerca(posti, POSTI, tessera, &posto)) {
                     printf("  La tessera %d ha gia' una bici al posto %d.\n",
@@ -101,4 +108,15 @@ void stampa(const int *posti, int n)
         }
     }
     printf("\n");
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

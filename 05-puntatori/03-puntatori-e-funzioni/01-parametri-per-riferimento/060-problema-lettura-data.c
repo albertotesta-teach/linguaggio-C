@@ -56,10 +56,23 @@ int leggi_data(int *g, int *m, int *a)
     int gg;
     int mm;
     int aa;
+    int n;
+    int c;
     int esito = -1;
 
     if (fgets(riga, LUNG, stdin) != NULL && riga[0] != '\n') {
         esito = 0;
+        /* riga più lunga del buffer: il resto si scarta */
+        n = 0;
+        while (riga[n] != '\0' && riga[n] != '\n') {
+            n++;
+        }
+        if (riga[n] == '\0') {
+            c = getchar();
+            while (c != '\n' && c != EOF) {
+                c = getchar();
+            }
+        }
         if (sscanf(riga, "%d/%d/%d", &gg, &mm, &aa) == 3 &&
             aa >= 1900 && mm >= 1 && mm <= 12 &&
             gg >= 1 && gg <= giorni_del_mese(mm, aa)) {

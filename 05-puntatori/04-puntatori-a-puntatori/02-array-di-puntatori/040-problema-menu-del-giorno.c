@@ -21,6 +21,7 @@
 
 void stampa_menu(int g, const char *giorni[], const char *primi[],
                  const char *secondi[], const char *contorni[]);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -33,12 +34,17 @@ int main(void)
                                     "Fagiolini", "Pomodori"};
     const char *piu_lungo = primi[0];
     int g = 1;
+    int letti;
     int i;
 
     while (g != 0) {
         printf("Giorno (1-5, 0 per finire): ");
-        if (scanf("%d", &g) != 1) {
-            g = 0;
+        letti = scanf("%d", &g);
+        if (letti == EOF) {
+            g = 0;                      /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            g = -1;                     /* giorno non valido */
         }
         if (g < 0 || g > GIORNI) {
             printf("  Giorno non valido.\n");
@@ -71,4 +77,15 @@ void stampa_menu(int g, const char *giorni[], const char *primi[],
     printf("  Primo:    %s\n", primi[g]);
     printf("  Secondo:  %s\n", secondi[g]);
     printf("  Contorno: %s\n", contorni[g]);
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

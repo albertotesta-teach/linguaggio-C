@@ -2,61 +2,80 @@
 
 ## 1. Problema
 
-Per il progetto di tecnologia la classe è divisa in quattro gruppi con un numero diverso di studenti. Il programma stampa voti e media di ogni gruppo, il gruppo con la media più alta e il voto più alto della classe con il gruppo di appartenenza.
+Per il progetto di tecnologia la classe è divisa in quattro gruppi con un
+numero diverso di studenti. Il programma stampa voti e media di ogni
+gruppo, il gruppo con la media più alta e il voto più alto della classe con
+il gruppo di appartenenza.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `rossi`, `blu`, `verdi`, `gialli` | `int[]` | 3, 5, 4, 2 | Voti dei gruppi |
-| `gruppi` | `int *[]` | 4 | Puntatori agli array dei gruppi |
-| `studenti` | `int[]` | 4 | Dimensione di ogni gruppo |
-| `voto_max` | `const int *` | — | Voto più alto trovato |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `rossi` | `int[3]` | 7, 8, 6 |
+| `blu` | `int[5]` | 9, 7, 8, 8, 6 |
+| `verdi` | `int[4]` | 6, 6, 7, 5 |
+| `gialli` | `int[2]` | 10, 8 |
+
+### Output
+
+- Per ogni gruppo: nome, numero di studenti, voti e media (colonna della
+  media allineata).
+- Il gruppo con la media più alta.
+- Il voto più alto della classe e il suo gruppo.
+
+### Vincoli
+
+- `gruppi` è un array di puntatori ai quattro array di lunghezza diversa;
+  `studenti` dice quanti elementi ha ciascuno.
+- `gruppi[g][i]` scorre righe di lunghezza diversa; `gruppi[g]` si passa a
+  `media` come un normale array.
+- Il voto più alto si ricorda con un puntatore (`voto_max`) e il gruppo con
+  un indice.
+- A parità vale il primo gruppo trovato (confronto con `>`).
+
+### Assunzioni
+
+- Ogni gruppo ha almeno uno studente e al massimo 5 (per l'allineamento).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `gruppi` | `int *[4]` | Puntatori agli array dei gruppi |
+| `studenti` | `int[4]` | Dimensione di ogni gruppo |
+| `nomi` | `const char *[4]` | Nomi dei gruppi |
+| `migliore`, `gruppo_max` | `int` | Gruppo con la media più alta, gruppo del voto massimo |
+| `voto_max` | `const int *` | Voto più alto trovato |
 
 | Funzione | Compito |
 |----------|---------|
 | `media(voti, n)` | Media di un array di voti |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Media di un gruppo
+1. Per ogni gruppo: stampare i voti aggiornando `voto_max` e `gruppo_max`;
+   stampare la media; se è maggiore di quella del migliore aggiornare
+   `migliore`.
+2. Stampare il gruppo migliore e il voto più alto.
 
-**a) Input** – gruppo Blu, 5 voti
+## 3. Casi di test
 
-**b) Output** – media 7.60
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – `gruppi[g]`, `studenti[g]`
+- **Input:** nessuno.
+- **Valori intermedi attesi:** Blu: 38 / 5 = 7.60; Gialli: 18 / 2 = 9.00.
+- **Output atteso:**
+  ```
+    Rossi   (3)  voti:  7  8  6       media 7.00
+    Blu     (5)  voti:  9  7  8  8  6 media 7.60
+    Verdi   (4)  voti:  6  6  7  5    media 6.00
+    Gialli  (2)  voti: 10  8          media 9.00
 
-**d) Vincoli** – `gruppi[g]` si passa alla funzione come un normale array
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – chiamare `media(gruppi[g], studenti[g])`.
-
-### Caso d'uso 2 – Gruppo migliore
-
-**a) Input** – le quattro medie
-
-**b) Output** – Gialli (9.00)
-
-**c) Variabili di supporto** – `migliore`
-
-**d) Vincoli** – a parità vale il primo gruppo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confrontare la media di ogni gruppo con quella del migliore.
-
-### Caso d'uso 3 – Voto più alto
-
-**a) Input** – tutti i voti
-
-**b) Output** – 10, nel gruppo Gialli
-
-**c) Variabili di supporto** – `voto_max`, `gruppo_max`
-
-**d) Vincoli** – `gruppi[g][i]` scorre righe di lunghezza diversa
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – tenere il puntatore al voto massimo e l'indice del suo gruppo.
+  Gruppo con la media piu' alta: Gialli (9.00)
+  Voto piu' alto della classe: 10, nel gruppo Gialli
+  ```

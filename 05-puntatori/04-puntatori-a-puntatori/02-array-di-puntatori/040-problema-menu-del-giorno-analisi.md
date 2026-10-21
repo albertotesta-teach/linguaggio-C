@@ -2,60 +2,81 @@
 
 ## 1. Problema
 
-Il menu settimanale della mensa ha primo, secondo e contorno per ogni giorno da lunedì a venerdì, con nomi di lunghezza molto diversa. Lo studente sceglie il giorno e il programma stampa il menu; alla fine indica il nome di piatto più lungo, per il tabellone.
+Il menu settimanale della mensa ha primo, secondo e contorno per ogni
+giorno da lunedì a venerdì, con nomi di lunghezza molto diversa. Lo
+studente sceglie il giorno e il programma stampa il menu; alla fine indica
+il nome di piatto più lungo, per il tabellone.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `giorni`, `primi`, `secondi`, `contorni` | `const char *[]` | 5 | Testi costanti di lunghezza variabile |
-| `g` | `int` | — | Giorno scelto (1-5, 0 fine) |
-| `piu_lungo` | `const char *` | — | Puntatore al nome più lungo |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `g` | `int` | Giorno scelto (1-5); 0 per finire |
+| `giorni`, `primi`, `secondi`, `contorni` | `const char *[5]` | Menu della settimana (nel sorgente) |
+
+### Output
+
+- Per ogni giorno valido: nome del giorno, primo, secondo e contorno.
+- `Giorno non valido.` per un numero fuori da 0-5 o un testo.
+- Alla fine il nome di piatto più lungo con il numero di caratteri.
+
+### Vincoli
+
+- I menu sono array di puntatori a stringhe costanti: ogni elemento punta a
+  un testo della lunghezza che serve, senza spreco di spazio.
+- I quattro array sono paralleli: lo stesso indice indica lo stesso giorno.
+- L'indice usato è sempre tra 0 e 4 (`g − 1` con `g` da 1 a 5).
+- Per il nome più lungo si conserva il puntatore, non una copia del testo;
+  a parità vale il primo trovato (confronto con `>`).
+- Un testo non numerico è un giorno non valido (la riga si scarta); a fine
+  input il programma termina come con 0.
+
+### Assunzioni
+
+- Giorni numerati da 1 (lunedì) a 5 (venerdì).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `piu_lungo` | `const char *` | Puntatore al nome più lungo |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `i` | `int` | Indice dei giorni |
 
 | Funzione | Compito |
 |----------|---------|
 | `stampa_menu(g, giorni, primi, secondi, contorni)` | Stampa il menu del giorno di indice `g` |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Menu del giorno
+1. Finché il giorno non è 0: leggerlo (a fine input 0; testo → non
+   valido); se fuori da 0-5 segnalarlo, altrimenti, se non è 0, stampare il
+   menu del giorno `g − 1`.
+2. Scorrere i tre array dei piatti e conservare in `piu_lungo` il puntatore
+   al nome con `strlen` maggiore.
+3. Stampare il nome più lungo e la sua lunghezza.
 
-**a) Input** – `3`
+## 3. Casi di test
 
-**b) Output** – Mercoledì: Minestrone di verdure, Merluzzo al forno, Patate al forno
+Nell'output i giorni inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `g - 1`
+### Test 1 – Sessione completa
 
-**d) Vincoli** – l'indice dei quattro array è lo stesso
-
-**e) Assunzioni** – giorni numerati da 1
-
-**f) Algoritmo in linguaggio naturale** – chiamare `stampa_menu` con `g - 1`; la funzione stampa `primi[g]`, `secondi[g]`, `contorni[g]`.
-
-### Caso d'uso 2 – Giorno non valido
-
-**a) Input** – `7`
-
-**b) Output** – "Giorno non valido."
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – indice sempre tra 0 e 4
-
-**e) Assunzioni** – un input non numerico termina
-
-**f) Algoritmo in linguaggio naturale** – controllare l'intervallo prima di usare l'indice.
-
-### Caso d'uso 3 – Nome più lungo
-
-**a) Input** – tutti i piatti
-
-**b) Output** – "Pasta al pomodoro e basilico" (28 caratteri)
-
-**c) Variabili di supporto** – `piu_lungo`
-
-**d) Vincoli** – si conserva il puntatore, non una copia del testo
-
-**e) Assunzioni** – a parità vale il primo trovato
-
-**f) Algoritmo in linguaggio naturale** – confrontare `strlen` di ogni piatto con quello di `piu_lungo` e spostare il puntatore.
+- **Input:** `3`, `7`, `abc`, `1`, `0`
+- **Output atteso:**
+  ```
+    --- Mercoledi ---
+    Primo:    Minestrone di verdure
+    Secondo:  Merluzzo al forno
+    Contorno: Patate al forno
+    Giorno non valido.
+    Giorno non valido.
+    --- Lunedi ---
+    Primo:    Pasta al pomodoro e basilico
+    Secondo:  Pollo arrosto
+    Contorno: Insalata
+  Nome piu' lungo per il tabellone: "Pasta al pomodoro e basilico" (28 caratteri)
+  ```

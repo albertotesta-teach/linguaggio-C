@@ -23,6 +23,7 @@
 
 int punti(const int *riga);
 void stampa(int *classifica[], const int *inizio, const char *nomi[]);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -38,6 +39,7 @@ int main(void)
     int *temp;
     int squadra = 1;
     char esito;
+    int letti;
     int k;
 
     for (k = 0; k < SQUADRE; k++) {
@@ -47,10 +49,20 @@ int main(void)
 
     while (squadra != 0) {
         printf("Squadra (1-%d) ed esito V/P/S, 0 per finire: ", SQUADRE);
-        if (scanf("%d", &squadra) != 1) {
-            squadra = 0;
+        letti = scanf("%d", &squadra);
+        if (letti == EOF) {
+            squadra = 0;                /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            squadra = -1;               /* dati non validi */
         }
-        if (squadra >= 1 && squadra <= SQUADRE && scanf(" %c", &esito) == 1 &&
+        esito = ' ';
+        if (squadra >= 1 && squadra <= SQUADRE) {
+            if (scanf(" %c", &esito) != 1) {
+                esito = ' ';            /* esito mancante */
+            }
+        }
+        if (squadra >= 1 && squadra <= SQUADRE &&
             (esito == 'V' || esito == 'P' || esito == 'S')) {
             /* aggiorna la riga della squadra: 0 vittorie, 1 pareggi, 2 sconfitte */
             if (esito == 'V') {
@@ -74,8 +86,10 @@ int main(void)
             }
             stampa(classifica, risultati[0], nomi);
         } else if (squadra != 0) {
+            if (letti == 1) {
+                svuota_riga();          /* scarta il resto della riga */
+            }
             printf("  Dati non validi.\n");
-            squadra = 0;
         }
     }
 
@@ -96,5 +110,16 @@ void stampa(int *classifica[], const int *inizio, const char *nomi[])
     for (k = 0; k < SQUADRE; k++) {
         printf("  %2d. %-8s %2d %d %d  %3d\n", k + 1, nomi[(classifica[k] - inizio) / 3],
                classifica[k][0], classifica[k][1], classifica[k][2], punti(classifica[k]));
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

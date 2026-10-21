@@ -7,69 +7,88 @@ stiano nelle colonne: per ogni titolo il programma conta le parole, trova
 la parola più lunga con la sua posizione e segnala quelle che superano 12
 lettere.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `titoli` | `char[][]` | 4 × 80 | Titoli da controllare |
-| `migliore` | `const char *` | — | Inizio della parola più lunga nel titolo |
-| `lunghezza` | `int` | — | Lettere della parola più lunga |
-| `parola` | `const char *` | — | Inizio della parola esaminata |
+### Input
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da
+tastiera.
+
+| Dato | Tipo | Valore |
+|------|------|--------|
+| `titoli` | `char[4][80]` | `Torneo di pallavolo: vince la 4B`, `Intervista alla dirigente scolastica`, `Laboratorio di elettrotecnica aperto al pomeriggio`, `Gita a Torino, si parte lunedi` |
+
+### Output
+
+- Per ogni titolo: il titolo, il numero di parole, la parola più lunga con
+  il numero di lettere e la posizione in cui inizia, e
+  `<- troppo lunga per la colonna` se supera 12 lettere.
+
+### Vincoli
+
+- Una parola è una sequenza di lettere (`isalpha`): le cifre non sono
+  lettere, quindi in "4B" la parola è "B".
+- `parola_piu_lunga` restituisce la posizione in cui inizia la parola più
+  lunga (`migliore − testo`) e scrive la lunghezza in `*lunghezza`
+  (parametro di uscita).
+- La parola non si copia: si stampa direttamente dal titolo con `%.*s`,
+  passando lunghezza e puntatore all'inizio.
+- `conta_parole` conta le lettere precedute da un carattere che non è una
+  lettera; `*(p − 1)` si legge solo se `p` non è il primo carattere.
+- A parità di lunghezza vale la prima parola (confronto con `>`).
+- Limite della colonna: 12 lettere (13 o più sono troppe).
+
+### Assunzioni
+
+- I titoli non contengono lettere accentate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `migliore` | `const char *` | Inizio della parola più lunga nel titolo |
+| `lunghezza` | `int` | Lettere della parola più lunga |
+| `t` | `int` | Indice del titolo |
+| `p`, `parola` | `const char *` | Nelle funzioni: carattere esaminato, inizio della parola corrente |
+| `LIMITE` | `#define` | 12 |
 
 | Funzione | Compito |
 |----------|---------|
-| `parola_piu_lunga(testo, &lunghezza)` | Posizione della parola più lunga, lunghezza come parametro OUT |
+| `parola_piu_lunga(testo, &lunghezza)` | Posizione della parola più lunga; lunghezza come parametro di uscita |
 | `conta_parole(testo)` | Numero di parole |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Parola più lunga
+1. Per ogni titolo:
+   1. calcolare `migliore = titolo + parola_piu_lunga(titolo, &lunghezza)`;
+   2. stampare titolo, numero di parole, parola più lunga, lunghezza e
+      posizione;
+   3. se la lunghezza supera 12 aggiungere l'avviso.
+2. In `parola_piu_lunga`: scorrendo il testo, a ogni lettera ricordare
+   l'inizio della parola, avanzare fino alla sua fine e, se `p − parola` è
+   maggiore della lunghezza migliore, aggiornare lunghezza e `migliore`.
 
-**a) Input** – `Torneo di pallavolo: vince la 4B`
+## 3. Casi di test
 
-**b) Output** – 6 parole, la più lunga "pallavolo" (9 lettere, posizione 10)
+### Test 1 – Titoli del sorgente
 
-**c) Variabili di supporto** – `parola`, `p`, `migliore`
+- **Cosa si verifica:** parola più lunga, parità ("Intervista" e
+  "scolastica" hanno 10 lettere: vale la prima), parola oltre il limite,
+  conteggio con punteggiatura e cifre.
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+  === CONTROLLO TITOLI (limite 12 lettere per parola) ===
 
-**d) Vincoli** – la parola non si copia: si stampa con
-`printf("%.*s", lunghezza, migliore)`
+    "Torneo di pallavolo: vince la 4B"
+    parole: 6, la piu' lunga: "pallavolo" (9 lettere, dalla posizione 10)
 
-**e) Assunzioni** – a parità di lunghezza vale la prima
+    "Intervista alla dirigente scolastica"
+    parole: 4, la piu' lunga: "Intervista" (10 lettere, dalla posizione 0)
 
-**f) Algoritmo in linguaggio naturale**
-1. All'inizio di una parola salvare `parola = p` e avanzare fino alla prima
-   non-lettera.
-2. Se `p - parola` supera la lunghezza migliore, aggiornare lunghezza e
-   `migliore`.
-3. Restituire `migliore - testo`; il main calcola `titoli[t] + posizione`.
+    "Laboratorio di elettrotecnica aperto al pomeriggio"
+    parole: 6, la piu' lunga: "elettrotecnica" (14 lettere, dalla posizione 15)  <- troppo lunga per la colonna
 
-### Caso d'uso 2 – Parola oltre il limite
-
-**a) Input** – `Laboratorio di elettrotecnica aperto al pomeriggio`
-
-**b) Output** – "elettrotecnica" (14 lettere) e l'avviso "troppo lunga per
-la colonna"
-
-**c) Variabili di supporto** – `lunghezza`
-
-**d) Vincoli** – limite 12 lettere
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confrontare la lunghezza trovata con
-`LIMITE`.
-
-### Caso d'uso 3 – Conteggio delle parole
-
-**a) Input** – `Gita a Torino, si parte lunedi`
-
-**b) Output** – 6 parole
-
-**c) Variabili di supporto** – `p`, `*(p - 1)`
-
-**d) Vincoli** – `*(p - 1)` si legge solo se `p` non è il primo carattere
-
-**e) Assunzioni** – le cifre non sono lettere ("4B" conta come la parola "B")
-
-**f) Algoritmo in linguaggio naturale** – una parola inizia dove c'è una
-lettera preceduta da una non-lettera o dall'inizio del testo.
+    "Gita a Torino, si parte lunedi"
+    parole: 6, la piu' lunga: "Torino" (6 lettere, dalla posizione 7)
+  ```

@@ -21,10 +21,12 @@
  * -Wall lo segnala con un avviso.
  *
  * Il programma usa anche il valore restituito da scanf (numero di dati
- * letti) per accorgersi degli errori di inserimento.
+ * letti) per accorgersi degli errori di inserimento: 0 se l'input non è
+ * del tipo richiesto, EOF se l'input è terminato.
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define LUNG_NICK 20
 
@@ -34,43 +36,76 @@ int main(void)
 {
     int eta;
     int elo;
-    char categoria;
+    char categoria = ' ';
     char nickname[LUNG_NICK];
     int letti;
+    int fine_input = 0;     /* 1 se l'input termina prima della fine */
 
     printf("=== ISCRIZIONE AL TORNEO ===\n");
 
     printf("Eta': ");
     letti = scanf("%d", &eta);
-    while (letti != 1 || eta < 6 || eta > 99) {
-        svuota_riga();
-        printf("  Valore non valido. Eta': ");
-        letti = scanf("%d", &eta);
+    while (!fine_input && (letti != 1 || eta < 6 || eta > 99)) {
+        if (letti == EOF) {
+            fine_input = 1;
+        } else {
+            svuota_riga();
+            printf("  Valore non valido. Eta': ");
+            letti = scanf("%d", &eta);
+        }
     }
 
-    printf("Punteggio ELO: ");
-    letti = scanf("%d", &elo);
-    while (letti != 1 || elo < 0) {
-        svuota_riga();
-        printf("  Valore non valido. Punteggio ELO: ");
+    if (!fine_input) {
+        printf("Punteggio ELO: ");
         letti = scanf("%d", &elo);
+        while (!fine_input && (letti != 1 || elo < 0)) {
+            if (letti == EOF) {
+                fine_input = 1;
+            } else {
+                svuota_riga();
+                printf("  Valore non valido. Punteggio ELO: ");
+                letti = scanf("%d", &elo);
+            }
+        }
     }
 
-    printf("Categoria (U = under 18, A = adulti): ");
-    scanf(" %c", &categoria);
-    printf("Nickname: ");
-    scanf("%19s", nickname);
+    if (!fine_input) {
+        printf("Categoria (U = under 18, A = adulti): ");
+        letti = scanf(" %c", &categoria);
+        categoria = (char) toupper((unsigned char) categoria);
+        while (!fine_input && (letti != 1 || (categoria != 'U' && categoria != 'A'))) {
+            if (letti == EOF) {
+                fine_input = 1;
+            } else {
+                svuota_riga();
+                printf("  Categoria non valida. Categoria (U/A): ");
+                letti = scanf(" %c", &categoria);
+                categoria = (char) toupper((unsigned char) categoria);
+            }
+        }
+    }
 
-    printf("\n=== DATI REGISTRATI ===\n");
-    printf("  %-10s %-13s scritto da scanf all'indirizzo\n", "Dato", "Valore");
-    printf("  %-10s %-13d %p\n", "eta", eta, (void *) &eta);
-    printf("  %-10s %-13d %p\n", "elo", elo, (void *) &elo);
-    printf("  %-10s %-13c %p\n", "categoria", categoria, (void *) &categoria);
-    printf("  %-10s %-13s %p  (= &nickname[0])\n", "nickname", nickname,
-           (void *) &nickname[0]);
+    if (!fine_input) {
+        printf("Nickname: ");
+        if (scanf("%19s", nickname) != 1) {
+            fine_input = 1;
+        }
+    }
 
-    if ((categoria == 'U' && eta >= 18) || (categoria == 'A' && eta < 18)) {
-        printf("Attenzione: la categoria non corrisponde all'eta'.\n");
+    if (fine_input) {
+        printf("\n\nInput terminato: iscrizione annullata.\n");
+    } else {
+        printf("\n=== DATI REGISTRATI ===\n");
+        printf("  %-10s %-13s scritto da scanf all'indirizzo\n", "Dato", "Valore");
+        printf("  %-10s %-13d %p\n", "eta", eta, (void *) &eta);
+        printf("  %-10s %-13d %p\n", "elo", elo, (void *) &elo);
+        printf("  %-10s %-13c %p\n", "categoria", categoria, (void *) &categoria);
+        printf("  %-10s %-13s %p  (= &nickname[0])\n", "nickname", nickname,
+               (void *) &nickname[0]);
+
+        if ((categoria == 'U' && eta >= 18) || (categoria == 'A' && eta < 18)) {
+            printf("Attenzione: la categoria non corrisponde all'eta'.\n");
+        }
     }
 
     return 0;
