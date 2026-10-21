@@ -32,6 +32,7 @@ int main(void) {
     int occorrenze_esatte     = 0;
     int occorrenze_maiuscola  = 0;
     int occorrenze_minuscola  = 0;
+    int occorrenze_totali     = 0;
 
     /* Carattere corrente durante la scansione */
     char c;
@@ -102,6 +103,14 @@ int main(void) {
             occorrenze_minuscola++;
         }
 
+        /* Totale senza distinguere maiuscole e minuscole: un carattere
+         * conta una sola volta se coincide con l'una OPPURE con l'altra.
+         * Sommare i due contatori sarebbe sbagliato per i caratteri non
+         * alfabetici, per i quali maiuscola e minuscola coincidono. */
+        if (c == lettera_maiuscola || c == lettera_minuscola) {
+            occorrenze_totali++;
+        }
+
         i++;
     }
 
@@ -120,7 +129,7 @@ int main(void) {
     printf("  Occorrenze minuscola ('%c'): %d\n",
            lettera_minuscola, occorrenze_minuscola);
     printf("  Totale (case-insensitive)  : %d\n",
-           occorrenze_maiuscola + occorrenze_minuscola);
+           occorrenze_totali);
     printf("════════════════════════════════════\n");
 
     return 0;

@@ -75,13 +75,23 @@ int ultimo_per_categoria(const int log[], int cat) {
 /* Stampa il log con etichetta di categoria */
 void stampa_log(const int log[]) {
     int i = 0;
-    char *etichette[] = {"???", "INFO   ", "WARNING", "ERROR  "};
+    int cat;
     printf("  Pos. | Codice | Categoria\n");
     printf("  -----|--------|----------\n");
     while (log[i] != TAPPO) {
-        int cat = categoria(log[i]);
-        printf("   %2d  |  %3d   | %s\n",
-               i + 1, log[i], (cat >= 1 && cat <= 3) ? etichette[cat] : etichette[0]);
+        cat = categoria(log[i]);
+        printf("   %2d  |  %3d   | ", i + 1, log[i]);
+        /* L'etichetta si sceglie con if-else: gli array di stringhe
+         * si vedranno nel capitolo sulle stringhe. */
+        if (cat == 1) {
+            printf("INFO\n");
+        } else if (cat == 2) {
+            printf("WARNING\n");
+        } else if (cat == 3) {
+            printf("ERROR\n");
+        } else {
+            printf("???\n");
+        }
         i++;
     }
 }

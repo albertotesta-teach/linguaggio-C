@@ -124,10 +124,10 @@ int main(void) {
     printf("  Lunghezza (%d car.): %s\n",
            lunghezza,
            (lunghezza >= 8) ? "OK" : "INSUFFICIENTE (minimo 8)");
-    printf("  Maiuscola       : %s\n", ha_maiuscola ? "OK" : "MANCANTE");
-    printf("  Minuscola       : %s\n", ha_minuscola ? "OK" : "MANCANTE");
-    printf("  Cifra           : %s\n", ha_cifra     ? "OK" : "MANCANTE");
-    printf("  Carattere spec. : %s\n", ha_speciale  ? "OK" : "MANCANTE");
+    printf("  Maiuscola         : %s\n", ha_maiuscola ? "OK" : "MANCANTE");
+    printf("  Minuscola         : %s\n", ha_minuscola ? "OK" : "MANCANTE");
+    printf("  Cifra             : %s\n", ha_cifra     ? "OK" : "MANCANTE");
+    printf("  Carattere spec.   : %s\n", ha_speciale  ? "OK" : "MANCANTE");
     printf("────────────────────────────────────────────\n");
     printf("  Requisiti: %d/5 soddisfatti\n", requisiti_ok);
     printf("────────────────────────────────────────────\n");

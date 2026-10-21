@@ -29,6 +29,7 @@ int main(void)
     double raggio;    /* per il cerchio */
     double area;
     double perimetro;
+    int    codice_uscita = 0;   /* 0 = tutto bene, 1 = scelta non valida */
 
     /* ── input: scelta della figura ────────────────────────────────────── */
     printf("=== Calcolo area e perimetro ===\n\n");
@@ -68,20 +69,24 @@ int main(void)
 
     } else {
 
-        /* scelta non valida: i valori rimangono non inizializzati,
-         * quindi avvisiamo l'utente e usciamo con un codice di errore. */
+        /* scelta non valida: non ci sono misure da leggere, quindi si
+         * stampano i trattini e si ricorda il codice di errore, che il
+         * programma restituirà al sistema operativo con l'unico return. */
         printf("\nErrore: scelta non valida.\n");
         area      = 0.0;
         perimetro = 0.0;
-        printf("Area:      ---\n");
-        printf("Perimetro: ---\n");
-        return 1;   /* 1 indica errore al sistema operativo */
+        codice_uscita = 1;
 
     }
 
     /* ── output ─────────────────────────────────────────────────────────── */
-    printf("Area:       %.4f m^2\n", area);
-    printf("Perimetro:  %.4f m\n",   perimetro);
+    if (codice_uscita == 0) {
+        printf("Area:       %.4f m^2\n", area);
+        printf("Perimetro:  %.4f m\n",   perimetro);
+    } else {
+        printf("Area:      ---\n");
+        printf("Perimetro: ---\n");
+    }
 
-    return 0;
+    return codice_uscita;   /* 1 indica errore al sistema operativo */
 }

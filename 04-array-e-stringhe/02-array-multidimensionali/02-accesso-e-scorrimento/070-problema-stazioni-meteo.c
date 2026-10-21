@@ -46,6 +46,8 @@ int main(void)
     int in_media_max = 0;
     int scelta_stazione;
     int scelta_intervallo;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
 
     /* ── 1. Tabella con totale e intervallo più piovoso ───────────── */
     printf("=== PIOGGIA DEL 14 OTTOBRE (mm) ===\n\n");
@@ -91,11 +93,31 @@ int main(void)
      * vengono verificati prima dell'accesso alla matrice.             */
     printf("Consultazione (stazione 0 per terminare)\n");
     printf("Stazione (1-%d): ", STAZIONI);
-    scanf("%d", &scelta_stazione);
+    esito = scanf("%d", &scelta_stazione);
+    if (esito == EOF) {
+        scelta_stazione = 0;     /* input terminato: come la stazione 0 */
+    } else if (esito == 0) {
+        /* non è un numero: si scarta il resto della riga */
+        scarta = getchar();
+        while (scarta != '\n' && scarta != EOF) {
+            scarta = getchar();
+        }
+        scelta_stazione = -1;    /* non è un numero: stazione inesistente */
+    }
 
     while (scelta_stazione != 0) {
         printf("Intervallo (1-%d): ", INTERVALLI);
-        scanf("%d", &scelta_intervallo);
+        esito = scanf("%d", &scelta_intervallo);
+        if (esito == EOF) {
+            scelta_intervallo = 0;   /* intervallo non letto: inesistente */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelta_intervallo = 0;   /* non è un numero: intervallo inesistente */
+        }
 
         st = scelta_stazione - 1;
         in = scelta_intervallo - 1;
@@ -108,7 +130,17 @@ int main(void)
         }
 
         printf("Stazione (1-%d): ", STAZIONI);
-        scanf("%d", &scelta_stazione);
+        esito = scanf("%d", &scelta_stazione);
+        if (esito == EOF) {
+            scelta_stazione = 0;     /* input terminato: come la stazione 0 */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelta_stazione = -1;    /* non è un numero: stazione inesistente */
+        }
     }
 
     return 0;

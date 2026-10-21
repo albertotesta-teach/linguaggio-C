@@ -57,7 +57,9 @@ int main(void)
     stampa_mappa(mappa);
 
     printf("Comando (N S E O, Q = fine): ");
-    scanf(" %c", &comando);
+    if (scanf(" %c", &comando) != 1) {
+        comando = 'Q';          /* input terminato: come il comando Q */
+    }
 
     while (comando != 'Q' && comando != 'q' && pacchi_rimasti > 0) {
         dr = 0;
@@ -108,7 +110,9 @@ int main(void)
 
         if (pacchi_rimasti > 0) {
             printf("Comando (N S E O, Q = fine): ");
-            scanf(" %c", &comando);
+            if (scanf(" %c", &comando) != 1) {
+                comando = 'Q';      /* input terminato: come il comando Q */
+            }
         }
     }
 

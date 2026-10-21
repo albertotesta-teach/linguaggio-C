@@ -47,6 +47,9 @@ int main(void)
     int ritardi;
     int presenti_giorno;
     int scelto;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina prima della scelta */
 
     /* ── 1. Registro con riepilogo per studente ───────────────────── */
     printf("=== REGISTRO PRESENZE - SETTIMANA 12 ===\n\n");
@@ -103,24 +106,38 @@ int main(void)
     }
     do {
         printf("Numero dello studente (1-%d): ", STUDENTI);
-        scanf("%d", &scelto);
-    } while (scelto < 1 || scelto > STUDENTI);
-
-    s = scelto - 1;
-    printf("\nPresenze di %s:\n", studenti[s]);
-    for (g = 0; g < GIORNI; g++) {
-        printf("  %s: ", giorni[g]);
-        switch (registro[s][g]) {
-            case 'P':
-                printf("presente\n");
-                break;
-            case 'R':
-                printf("presente (ritardo)\n");
-                break;
-            default:
-                printf("assente\n");
-                break;
+        esito = scanf("%d", &scelto);
+        if (esito == EOF) {
+            fine_input = 1;     /* input terminato */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelto = 0;         /* non è un numero: scelta non valida */
         }
+    } while (!fine_input && (scelto < 1 || scelto > STUDENTI));
+
+    if (!fine_input) {
+        s = scelto - 1;
+        printf("\nPresenze di %s:\n", studenti[s]);
+        for (g = 0; g < GIORNI; g++) {
+            printf("  %s: ", giorni[g]);
+            switch (registro[s][g]) {
+                case 'P':
+                    printf("presente\n");
+                    break;
+                case 'R':
+                    printf("presente (ritardo)\n");
+                    break;
+                default:
+                    printf("assente\n");
+                    break;
+            }
+        }
+    } else {
+        printf("\n\nInput terminato: nessuno studente scelto.\n");
     }
 
     return 0;

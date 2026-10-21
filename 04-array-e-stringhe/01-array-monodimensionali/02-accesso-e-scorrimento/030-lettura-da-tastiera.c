@@ -20,6 +20,9 @@ int main(void) {
     int i;
     int somma;
     int valido;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina prima del previsto */
 
     printf("=== Inserimento voti ===\n");
     printf("Inserisci %d voti (da 1 a 10):\n\n", MAX_STUDENTI);
@@ -27,51 +30,65 @@ int main(void) {
     /* Ciclo di input: per ogni posizione dell'array si chiede un valore.
      * La validazione usa una variabile booleana 'valido' per ripetere
      * la richiesta senza break o continue. */
-    for (i = 0; i < MAX_STUDENTI; i++) {
+    for (i = 0; i < MAX_STUDENTI && !fine_input; i++) {
         valido = 0;
 
         /* Ripeti la richiesta finché il valore inserito non è valido.
          * Non si usa break: la condizione del while controlla l'uscita. */
-        while (!valido) {
+        while (!valido && !fine_input) {
             printf("  Voto studente %d: ", i + 1);
-            scanf("%d", &voti[i]);
+            esito = scanf("%d", &voti[i]);
 
             /* Controlla che il voto sia nel range ammesso [1, 10] */
-            if (voti[i] >= 1 && voti[i] <= 10) {
+            if (esito == EOF) {
+                fine_input = 1;     /* input terminato */
+            } else if (esito == 1 && voti[i] >= 1 && voti[i] <= 10) {
                 valido = 1;   /* il valore è accettabile: esci dal while */
             } else {
+                if (esito == 0) {
+                    /* non è un numero: si scarta il resto della riga,
+                     * altrimenti scanf la rileggerebbe all'infinito */
+                    scarta = getchar();
+                    while (scarta != '\n' && scarta != EOF) {
+                        scarta = getchar();
+                    }
+                }
                 printf("  Voto non valido. Inserire un valore tra 1 e 10.\n");
             }
         }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Riepilogo dei dati inseriti */
-    printf("\n=== Riepilogo voti inseriti ===\n");
-    for (i = 0; i < MAX_STUDENTI; i++) {
-        printf("  Studente %d: %d\n", i + 1, voti[i]);
-    }
-
-    /* ------------------------------------------------------------------ */
-    /* Calcolo della somma e della media */
-    somma = 0;
-    for (i = 0; i < MAX_STUDENTI; i++) {
-        somma = somma + voti[i];
-    }
-
-    printf("\nMedia dei voti: %.1f\n", (double)somma / MAX_STUDENTI);
-
-    /* ------------------------------------------------------------------ */
-    /* Stampa di una barra visiva proporzionale al voto.
-     * Mostra come si può costruire un output grafico semplice con array. */
-    printf("\nDistribuzione:\n");
-    for (i = 0; i < MAX_STUDENTI; i++) {
-        int j;
-        printf("  Studente %d [%2d]: ", i + 1, voti[i]);
-        for (j = 0; j < voti[i]; j++) {
-            printf("*");
+    if (!fine_input) {
+        /* ------------------------------------------------------------------ */
+        /* Riepilogo dei dati inseriti */
+        printf("\n=== Riepilogo voti inseriti ===\n");
+        for (i = 0; i < MAX_STUDENTI; i++) {
+            printf("  Studente %d: %d\n", i + 1, voti[i]);
         }
-        printf("\n");
+
+        /* ------------------------------------------------------------------ */
+        /* Calcolo della somma e della media */
+        somma = 0;
+        for (i = 0; i < MAX_STUDENTI; i++) {
+            somma = somma + voti[i];
+        }
+
+        printf("\nMedia dei voti: %.1f\n", (double)somma / MAX_STUDENTI);
+
+        /* ------------------------------------------------------------------ */
+        /* Stampa di una barra visiva proporzionale al voto.
+         * Mostra come si può costruire un output grafico semplice con array. */
+        printf("\nDistribuzione:\n");
+        for (i = 0; i < MAX_STUDENTI; i++) {
+            int j;
+            printf("  Studente %d [%2d]: ", i + 1, voti[i]);
+            for (j = 0; j < voti[i]; j++) {
+                printf("*");
+            }
+            printf("\n");
+        }
+    } else {
+        printf("\n\nInput terminato prima di aver inserito tutti i voti.\n");
     }
 
     return 0;

@@ -47,7 +47,7 @@ int main(void) {
 
     for (i = 0; i < NUM_PRODOTTI; i++) {
         double valore_riga = quantita[i] * prezzi[i];
-        printf("  %s | %-22s | %4d | %5.2f€ | %6.2f€\n",
+        printf("  %s  | %-22s | %4d | %5.2f€ | %6.2f€\n",
                codici[i], nomi[i], quantita[i], prezzi[i], valore_riga);
     }
     printf("==========================================================\n\n");

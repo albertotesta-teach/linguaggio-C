@@ -80,7 +80,9 @@ int main(void) {
     printf("╠══════════════════════════════════════╣\n");
     printf("║ %-10s: %-25s║\n", "Nome",     nome);
     printf("║ %-10s: %-25s║\n", "Cognome",  cognome);
-    printf("║ %-10s: %-25s║\n", "Città",    citta);
+    /* "Città" occupa 6 byte ('à' in UTF-8 ne usa 2) ma 5 colonne: la
+     * larghezza di %s si conta in byte, quindi qui serve 11 invece di 10 */
+    printf("║ %-11s: %-25s║\n", "Città",    citta);
     printf("║ %-10s: %-25s║\n", "Email",    email);
     printf("║ %-10s: %-25s║\n", "Telefono", telefono);
     printf("╚══════════════════════════════════════╝\n");

@@ -46,6 +46,9 @@ int main(void)
     char tiri[RIGHE][COLONNE + 1];
     char lettera;
     int colonna_utente;
+    int letti;          /* valori convertiti da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina durante la partita */
     int r;
     int c;
     int colpi_rimasti = COLPI;
@@ -58,13 +61,25 @@ int main(void)
     printf("Parti di nave da colpire: %d, colpi disponibili: %d\n", da_affondare, COLPI);
     stampa_griglia(tiri);
 
-    while (da_affondare > 0 && colpi_rimasti > 0) {
+    while (da_affondare > 0 && colpi_rimasti > 0 && !fine_input) {
         printf("Colpo (es. C 4), rimasti %d: ", colpi_rimasti);
-        scanf(" %c %d", &lettera, &colonna_utente);
+        letti = scanf(" %c %d", &lettera, &colonna_utente);
+        if (letti == EOF) {
+            fine_input = 1;
+        } else if (letti != 2) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            colonna_utente = 0; /* colpo non letto: cella inesistente */
+        }
         r = lettera - 'A';
         c = colonna_utente - 1;
 
-        if (r < 0 || r >= RIGHE || c < 0 || c >= COLONNE) {
+        if (fine_input) {
+            printf("\n\nInput terminato: partita interrotta.\n");
+        } else if (r < 0 || r >= RIGHE || c < 0 || c >= COLONNE) {
             printf("  Cella inesistente.\n");
         } else if (tiri[r][c] != IGNOTA) {
             printf("  Cella gia' colpita.\n");
@@ -82,12 +97,14 @@ int main(void)
         }
     }
 
-    if (da_affondare == 0) {
-        printf("Flotta affondata con %d colpi!\n", COLPI - colpi_rimasti);
-    } else {
-        printf("Colpi esauriti: restano %d parti di nave.\n", da_affondare);
-        printf("La flotta era:\n");
-        stampa_griglia(flotta);
+    if (!fine_input) {
+        if (da_affondare == 0) {
+            printf("Flotta affondata con %d colpi!\n", COLPI - colpi_rimasti);
+        } else {
+            printf("Colpi esauriti: restano %d parti di nave.\n", da_affondare);
+            printf("La flotta era:\n");
+            stampa_griglia(flotta);
+        }
     }
 
     return 0;

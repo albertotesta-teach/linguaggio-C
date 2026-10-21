@@ -43,23 +43,30 @@ int main(void)
     char decifrato[DIM];
     int i;
     int letta;
+    int fine_input = 0;     /* 1 se l'input termina prima di una chiave valida */
 
     printf("=== CIFRARIO DI VIGENERE ===\n");
     do {
         printf("Chiave (solo lettere): ");
-        leggi_riga(chiave, DIM_CHIAVE);
-        if (!chiave_valida(chiave)) {
+        if (!leggi_riga(chiave, DIM_CHIAVE)) {
+            fine_input = 1;
+        } else if (!chiave_valida(chiave)) {
             printf("  Chiave non valida.\n");
         }
-    } while (!chiave_valida(chiave));
+    } while (!fine_input && !chiave_valida(chiave));
 
-    for (i = 0; chiave[i] != '\0'; i++) {
-        chiave[i] = (char) toupper((unsigned char) chiave[i]);
+    if (fine_input) {
+        printf("\nNessuna chiave valida inserita: programma terminato.\n");
+        letta = 0;
+    } else {
+        for (i = 0; chiave[i] != '\0'; i++) {
+            chiave[i] = (char) toupper((unsigned char) chiave[i]);
+        }
+        printf("Chiave in uso: %s\n", chiave);
+
+        printf("Messaggio (riga vuota per terminare): ");
+        letta = leggi_riga(messaggio, DIM);
     }
-    printf("Chiave in uso: %s\n", chiave);
-
-    printf("Messaggio (riga vuota per terminare): ");
-    letta = leggi_riga(messaggio, DIM);
     while (letta && messaggio[0] != '\0') {
         vigenere(cifrato, messaggio, chiave, 1);
         vigenere(decifrato, cifrato, chiave, -1);

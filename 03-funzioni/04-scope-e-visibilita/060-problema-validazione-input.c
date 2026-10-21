@@ -15,19 +15,29 @@
 
 #include <stdio.h>
 
+/* Codici degli errori: le stringhe come parametri si vedranno nel
+ * capitolo sugli array, qui l'errore si identifica con un numero. */
+#define ERRORE_ETA     1
+#define ERRORE_CODICE  2
+
 /* --- Stato globale di validazione --- */
 int errori_trovati = 0;   /* incrementato da ogni funzione di validazione */
 
 /* Prototipi */
 int  valida_eta(int eta);
 int  valida_codice(int codice);
-void segnala_errore(const char *messaggio);
+void segnala_errore(int codice_errore);
 void stampa_esito(void);
 
-/* Segnala un errore: stampa il messaggio e incrementa il contatore globale */
-void segnala_errore(const char *messaggio)
+/* Segnala un errore: stampa il messaggio corrispondente al codice e
+ * incrementa il contatore globale */
+void segnala_errore(int codice_errore)
 {
-    printf("  ERRORE: %s\n", messaggio);
+    if (codice_errore == ERRORE_ETA) {
+        printf("  ERRORE: eta' non valida (deve essere compresa tra 18 e 120)\n");
+    } else {
+        printf("  ERRORE: codice cliente non valido (deve essere a 5 cifre)\n");
+    }
     errori_trovati = errori_trovati + 1;
 }
 
@@ -38,7 +48,7 @@ int valida_eta(int eta)
     int valida;
     valida = (eta >= 18 && eta <= 120);
     if (!valida) {
-        segnala_errore("eta' non valida (deve essere compresa tra 18 e 120)");
+        segnala_errore(ERRORE_ETA);
     }
     return valida;
 }
@@ -50,7 +60,7 @@ int valida_codice(int codice)
     int valido;
     valido = (codice >= 10000 && codice <= 99999);
     if (!valido) {
-        segnala_errore("codice cliente non valido (deve essere a 5 cifre)");
+        segnala_errore(ERRORE_CODICE);
     }
     return valido;
 }

@@ -44,62 +44,75 @@ int main(void)
     char riga[LARGHEZZA + 1];
     int completa;
     int troncate = 0;
+    int letta;          /* 0 quando l'input termina: non si legge altro */
 
     printf("=== ETICHETTA DI SPEDIZIONE ===\n");
     printf("Destinatario: ");
-    leggi_riga(destinatario, DIM);
-    printf("Via e numero civico: ");
-    leggi_riga(via, DIM);
+    letta = leggi_riga(destinatario, DIM);
+    if (letta) {
+        printf("Via e numero civico: ");
+        letta = leggi_riga(via, DIM);
+    }
 
-    do {
-        printf("CAP (5 cifre): ");
-        leggi_riga(cap, DIM);
-        if (strlen(cap) != 5 || !solo_cifre(cap)) {
-            printf("  CAP non valido.\n");
+    if (letta) {
+        do {
+            printf("CAP (5 cifre): ");
+            letta = leggi_riga(cap, DIM);
+            if (letta && (strlen(cap) != 5 || !solo_cifre(cap))) {
+                printf("  CAP non valido.\n");
+            }
+        } while (letta && (strlen(cap) != 5 || !solo_cifre(cap)));
+    }
+
+    if (letta) {
+        printf("Comune: ");
+        letta = leggi_riga(comune, DIM);
+    }
+
+    if (letta) {
+        do {
+            printf("Provincia (sigla di 2 lettere): ");
+            letta = leggi_riga(provincia, DIM);
+            if (letta && strlen(provincia) != 2) {
+                printf("  Sigla non valida.\n");
+            }
+        } while (letta && strlen(provincia) != 2);
+    }
+
+    if (letta) {
+        /* ── Composizione e stampa ────────────────────────────────────── */
+        printf("\n+--------------------------------+\n");
+
+        riga[0] = '\0';
+        completa = aggiungi(riga, LARGHEZZA + 1, destinatario);
+        troncate = troncate + !completa;
+        stampa_riga(riga);
+
+        riga[0] = '\0';
+        completa = aggiungi(riga, LARGHEZZA + 1, via);
+        troncate = troncate + !completa;
+        stampa_riga(riga);
+
+        strcpy(riga, cap);                  /* 5 cifre: c'è sempre spazio */
+        /* aggiungi() è scritta a sinistra di &&: viene chiamata sempre,
+         * anche dopo un troncamento, e completa resta 0 se un pezzo non entra */
+        completa = aggiungi(riga, LARGHEZZA + 1, " ");
+        completa = aggiungi(riga, LARGHEZZA + 1, comune) && completa;
+        completa = aggiungi(riga, LARGHEZZA + 1, " (") && completa;
+        completa = aggiungi(riga, LARGHEZZA + 1, provincia) && completa;
+        completa = aggiungi(riga, LARGHEZZA + 1, ")") && completa;
+        troncate = troncate + !completa;
+        stampa_riga(riga);
+
+        printf("+--------------------------------+\n");
+        if (troncate > 0) {
+            printf("Attenzione: %d %s, controllare l'etichetta.\n",
+                   troncate, troncate == 1 ? "riga troppo lunga" : "righe troppo lunghe");
+        } else {
+            printf("Etichetta pronta.\n");
         }
-    } while (strlen(cap) != 5 || !solo_cifre(cap));
-
-    printf("Comune: ");
-    leggi_riga(comune, DIM);
-
-    do {
-        printf("Provincia (sigla di 2 lettere): ");
-        leggi_riga(provincia, DIM);
-        if (strlen(provincia) != 2) {
-            printf("  Sigla non valida.\n");
-        }
-    } while (strlen(provincia) != 2);
-
-    /* ── Composizione e stampa ────────────────────────────────────── */
-    printf("\n+--------------------------------+\n");
-
-    riga[0] = '\0';
-    completa = aggiungi(riga, LARGHEZZA + 1, destinatario);
-    troncate = troncate + !completa;
-    stampa_riga(riga);
-
-    riga[0] = '\0';
-    completa = aggiungi(riga, LARGHEZZA + 1, via);
-    troncate = troncate + !completa;
-    stampa_riga(riga);
-
-    strcpy(riga, cap);                  /* 5 cifre: c'è sempre spazio */
-    /* aggiungi() è scritta a sinistra di &&: viene chiamata sempre,
-     * anche dopo un troncamento, e completa resta 0 se un pezzo non entra */
-    completa = aggiungi(riga, LARGHEZZA + 1, " ");
-    completa = aggiungi(riga, LARGHEZZA + 1, comune) && completa;
-    completa = aggiungi(riga, LARGHEZZA + 1, " (") && completa;
-    completa = aggiungi(riga, LARGHEZZA + 1, provincia) && completa;
-    completa = aggiungi(riga, LARGHEZZA + 1, ")") && completa;
-    troncate = troncate + !completa;
-    stampa_riga(riga);
-
-    printf("+--------------------------------+\n");
-    if (troncate > 0) {
-        printf("Attenzione: %d %s troppo lunga, controllare l'etichetta.\n",
-               troncate, troncate == 1 ? "riga" : "righe");
     } else {
-        printf("Etichetta pronta.\n");
+        printf("\n\nInput terminato: etichetta non composta.\n");
     }
 
     return 0;
@@ -124,6 +137,8 @@ int leggi_riga(char s[], int dim)
                 c = getchar();
             }
         }
+    } else {
+        s[0] = '\0';               /* input terminato: stringa vuota */
     }
     return ok;
 }

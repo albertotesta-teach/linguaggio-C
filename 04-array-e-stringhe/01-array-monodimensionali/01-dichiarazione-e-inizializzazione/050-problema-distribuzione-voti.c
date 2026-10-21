@@ -37,36 +37,39 @@ int main(void) {
      * Indice 5: ottimo       (9-10) */
     int contatori[NUM_FASCE] = {0};
 
-    /* Etichette delle fasce: array di stringhe parallelo ai contatori.
-     * Questo è l'unico array aggiuntivo, necessario solo per la stampa. */
-    char etichette[NUM_FASCE][15] = {
-        "Insuff. (1-4)",
-        "Mediocre (5) ",
-        "Suffic.  (6) ",
-        "Discreto (7) ",
-        "Buono    (8) ",
-        "Ottimo (9-10)"
-    };
-
     int voto;
     int indice_fascia;
     int i;
     int j;
     int valido;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina prima di tutti i voti */
 
     /* ------------------------------------------------------------------ */
     /* Acquisizione dei voti e aggiornamento dei contatori */
     printf("=== DISTRIBUZIONE VOTI CLASSE ===\n");
     printf("Inserisci i voti di %d studenti (da 1 a 10):\n\n", NUM_STUDENTI);
 
-    for (i = 0; i < NUM_STUDENTI; i++) {
+    for (i = 0; i < NUM_STUDENTI && !fine_input; i++) {
         valido = 0;
-        while (!valido) {
+        while (!valido && !fine_input) {
             printf("  Studente %2d: ", i + 1);
-            scanf("%d", &voto);
-            if (voto >= 1 && voto <= 10) {
+            esito = scanf("%d", &voto);
+            if (esito == EOF) {
+                /* input terminato: non ci sono altri voti da leggere */
+                fine_input = 1;
+            } else if (esito == 1 && voto >= 1 && voto <= 10) {
                 valido = 1;
             } else {
+                if (esito == 0) {
+                    /* non è un numero: si scarta il resto della riga,
+                     * altrimenti scanf la rileggerebbe all'infinito */
+                    scarta = getchar();
+                    while (scarta != '\n' && scarta != EOF) {
+                        scarta = getchar();
+                    }
+                }
                 printf("  Voto non valido. Inserire un valore da 1 a 10.\n");
             }
         }
@@ -75,7 +78,9 @@ int main(void) {
          * La logica if/else if determina in quale cella incrementare.
          * Non si usano array paralleli: il voto viene classificato
          * e si agisce direttamente sull'indice corretto. */
-        if (voto <= 4) {
+        if (!valido) {
+            indice_fascia = -1;  /* input terminato: nessun voto da contare */
+        } else if (voto <= 4) {
             indice_fascia = 0;
         } else if (voto == 5) {
             indice_fascia = 1;
@@ -89,39 +94,59 @@ int main(void) {
             indice_fascia = 5;   /* voto 9 o 10 */
         }
 
-        contatori[indice_fascia] = contatori[indice_fascia] + 1;
+        if (indice_fascia >= 0) {
+            contatori[indice_fascia] = contatori[indice_fascia] + 1;
+        }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Stampa della distribuzione con percentuale e istogramma */
-    printf("\n=== DISTRIBUZIONE ===\n");
-    printf("  Fascia          | N. | %%    | Grafico\n");
-    printf("  ----------------|----|----- |--------------------\n");
+    if (!fine_input) {
+        /* ------------------------------------------------------------------ */
+        /* Stampa della distribuzione con percentuale e istogramma */
+        printf("\n=== DISTRIBUZIONE ===\n");
+        printf("  Fascia        | N.  | %%     | Grafico\n");
+        printf("  --------------|-----|-------|--------------------\n");
 
-    for (i = 0; i < NUM_FASCE; i++) {
-        double percentuale = (double)contatori[i] / NUM_STUDENTI * 100.0;
-        printf("  %s |  %2d | %4.1f%% | ",
-               etichette[i], contatori[i], percentuale);
+        for (i = 0; i < NUM_FASCE; i++) {
+            double percentuale = (double)contatori[i] / NUM_STUDENTI * 100.0;
+            /* Etichetta della fascia: ogni etichetta è lunga 13 caratteri
+             * perché le colonne restino allineate */
+            if (i == 0) {
+                printf("  Insuff. (1-4)");
+            } else if (i == 1) {
+                printf("  Mediocre (5) ");
+            } else if (i == 2) {
+                printf("  Suffic.  (6) ");
+            } else if (i == 3) {
+                printf("  Discreto (7) ");
+            } else if (i == 4) {
+                printf("  Buono    (8) ");
+            } else {
+                printf("  Ottimo (9-10)");
+            }
+            printf(" |  %2d | %4.1f%% | ", contatori[i], percentuale);
 
-        /* Istogramma: un asterisco ogni studente nella fascia */
-        for (j = 0; j < contatori[i]; j++) {
-            printf("*");
+            /* Istogramma: un asterisco ogni studente nella fascia */
+            for (j = 0; j < contatori[i]; j++) {
+                printf("*");
+            }
+            printf("\n");
         }
         printf("\n");
+
+        /* ------------------------------------------------------------------ */
+        /* Riepilogo: quanti studenti sono sotto la sufficienza */
+        int insufficienti = contatori[0] + contatori[1];
+        int sufficienti   = NUM_STUDENTI - insufficienti;
+
+        printf("Studenti con voto insufficiente: %d su %d (%.0f%%)\n",
+               insufficienti, NUM_STUDENTI,
+               (double)insufficienti / NUM_STUDENTI * 100.0);
+        printf("Studenti con voto sufficiente  : %d su %d (%.0f%%)\n",
+               sufficienti, NUM_STUDENTI,
+               (double)sufficienti / NUM_STUDENTI * 100.0);
+    } else {
+        printf("\n\nInput terminato prima di %d voti: analisi annullata.\n", NUM_STUDENTI);
     }
-    printf("\n");
-
-    /* ------------------------------------------------------------------ */
-    /* Riepilogo: quanti studenti sono sotto la sufficienza */
-    int insufficienti = contatori[0] + contatori[1];
-    int sufficienti   = NUM_STUDENTI - insufficienti;
-
-    printf("Studenti con voto insufficiente: %d su %d (%.0f%%)\n",
-           insufficienti, NUM_STUDENTI,
-           (double)insufficienti / NUM_STUDENTI * 100.0);
-    printf("Studenti con voto sufficiente  : %d su %d (%.0f%%)\n",
-           sufficienti, NUM_STUDENTI,
-           (double)sufficienti / NUM_STUDENTI * 100.0);
 
     return 0;
 }

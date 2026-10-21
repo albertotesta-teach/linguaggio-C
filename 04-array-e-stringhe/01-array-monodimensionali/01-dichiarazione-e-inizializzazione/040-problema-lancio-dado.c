@@ -36,20 +36,34 @@ int main(void) {
     int i;
     int j;
     int valido;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina prima di tutti i lanci */
 
     /* ------------------------------------------------------------------ */
     /* Acquisizione dei lanci con validazione */
     printf("=== ANALISI LANCI DADO ===\n");
     printf("Inserisci %d lanci (valore da 1 a %d):\n\n", NUM_LANCI, NUM_FACCE);
 
-    for (i = 0; i < NUM_LANCI; i++) {
+    for (i = 0; i < NUM_LANCI && !fine_input; i++) {
         valido = 0;
-        while (!valido) {
+        while (!valido && !fine_input) {
             printf("  Lancio %2d: ", i + 1);
-            scanf("%d", &lancio);
-            if (lancio >= 1 && lancio <= NUM_FACCE) {
+            esito = scanf("%d", &lancio);
+            if (esito == EOF) {
+                /* input terminato: non ci sono altri lanci da leggere */
+                fine_input = 1;
+            } else if (esito == 1 && lancio >= 1 && lancio <= NUM_FACCE) {
                 valido = 1;
             } else {
+                if (esito == 0) {
+                    /* non è un numero: si scarta il resto della riga,
+                     * altrimenti scanf la rileggerebbe all'infinito */
+                    scarta = getchar();
+                    while (scarta != '\n' && scarta != EOF) {
+                        scarta = getchar();
+                    }
+                }
                 printf("  Valore non valido. Inserire un numero da 1 a %d.\n", NUM_FACCE);
             }
         }
@@ -57,49 +71,55 @@ int main(void) {
         /* Il valore letto diventa l'indice: faccia 1 -> indice 0, ecc.
          * Questo è il punto chiave del problema: l'array viene usato
          * come tabella di conteggio indicizzata direttamente dal dato. */
-        frequenze[lancio - 1] = frequenze[lancio - 1] + 1;
+        if (valido) {
+            frequenze[lancio - 1] = frequenze[lancio - 1] + 1;
+        }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Stampa della tabella delle frequenze con istogramma */
-    printf("\n=== RISULTATI ===\n");
-    printf("  Faccia | Conteggio | Istogramma\n");
-    printf("  -------|-----------|--------------------\n");
+    if (!fine_input) {
+        /* ------------------------------------------------------------------ */
+        /* Stampa della tabella delle frequenze con istogramma */
+        printf("\n=== RISULTATI ===\n");
+        printf("  Faccia | Conteggio | Istogramma\n");
+        printf("  -------|-----------|--------------------\n");
 
-    for (i = 0; i < NUM_FACCE; i++) {
-        printf("    %d    |    %3d    | ", i + 1, frequenze[i]);
-        for (j = 0; j < frequenze[i]; j++) {
-            printf("*");
+        for (i = 0; i < NUM_FACCE; i++) {
+            printf("    %d    |    %3d    | ", i + 1, frequenze[i]);
+            for (j = 0; j < frequenze[i]; j++) {
+                printf("*");
+            }
+            printf("\n");
         }
         printf("\n");
-    }
-    printf("\n");
 
-    /* ------------------------------------------------------------------ */
-    /* Ricerca della faccia uscita più e meno volte */
-    int max_freq = frequenze[0];
-    int min_freq = frequenze[0];
-    int faccia_max = 1;
-    int faccia_min = 1;
+        /* ------------------------------------------------------------------ */
+        /* Ricerca della faccia uscita più e meno volte */
+        int max_freq = frequenze[0];
+        int min_freq = frequenze[0];
+        int faccia_max = 1;
+        int faccia_min = 1;
 
-    for (i = 1; i < NUM_FACCE; i++) {
-        if (frequenze[i] > max_freq) {
-            max_freq = frequenze[i];
-            faccia_max = i + 1;
+        for (i = 1; i < NUM_FACCE; i++) {
+            if (frequenze[i] > max_freq) {
+                max_freq = frequenze[i];
+                faccia_max = i + 1;
+            }
+            if (frequenze[i] < min_freq) {
+                min_freq = frequenze[i];
+                faccia_min = i + 1;
+            }
         }
-        if (frequenze[i] < min_freq) {
-            min_freq = frequenze[i];
-            faccia_min = i + 1;
-        }
+
+        printf("Faccia uscita piu' spesso : %d (%d volte)\n", faccia_max, max_freq);
+        printf("Faccia uscita meno spesso : %d (%d volte)\n", faccia_min, min_freq);
+
+        /* ------------------------------------------------------------------ */
+        /* Frequenza attesa teorica per un dado equilibrato */
+        printf("\nFrequenza attesa per dado equilibrato: %.1f volte per faccia\n",
+               (double)NUM_LANCI / NUM_FACCE);
+    } else {
+        printf("\n\nInput terminato prima di %d lanci: analisi annullata.\n", NUM_LANCI);
     }
-
-    printf("Faccia uscita piu' spesso : %d (%d volte)\n", faccia_max, max_freq);
-    printf("Faccia uscita meno spesso : %d (%d volte)\n", faccia_min, min_freq);
-
-    /* ------------------------------------------------------------------ */
-    /* Frequenza attesa teorica per un dado equilibrato */
-    printf("\nFrequenza attesa per dado equilibrato: %.1f volte per faccia\n",
-           (double)NUM_LANCI / NUM_FACCE);
 
     return 0;
 }

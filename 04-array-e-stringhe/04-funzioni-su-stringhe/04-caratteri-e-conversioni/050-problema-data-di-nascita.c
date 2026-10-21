@@ -67,6 +67,9 @@ int main(void)
             printf("  Il mese %d non esiste\n", m);
         } else if (g < 1 || g > giorni_del_mese(m, a)) {
             printf("  %s %d ha %d giorni\n", nomi_mesi[m - 1], a, giorni_del_mese(m, a));
+        } else if (a == ANNO_CORRENTE &&
+                   (m > MESE_CORRENTE || (m == MESE_CORRENTE && g > GIORNO_CORRENTE))) {
+            printf("  La data e' successiva a quella di riferimento\n");
         } else {
             snprintf(per_esteso, sizeof(per_esteso), "%d %s %d", g, nomi_mesi[m - 1], a);
             eta = ANNO_CORRENTE - a;

@@ -48,6 +48,12 @@ int main(void) {
     /* Caratteri rimanenti rispetto al limite */
     int rimanenti;
 
+    /* 1 se la riga non è entrata tutta nel buffer */
+    int oltre_buffer = 0;
+
+    /* Carattere letto con getchar (int, per poter riconoscere EOF) */
+    int ch;
+
     printf("╔══════════════════════════════════════════╗\n");
     printf("║      EDITOR - ANALISI TESTO              ║\n");
     printf("║      Limite: %d caratteri               ║\n", LIMITE_MAX);
@@ -56,12 +62,19 @@ int main(void) {
     /* --- LETTURA TESTO ---
      * fgets con limite = LIMITE_MAX + 2 per gestire '\n' e '\0'. */
     printf("Inserisci il testo:\n> ");
-    fgets(testo, 283, stdin);
+    if (fgets(testo, 283, stdin) == NULL) {
+        testo[0] = '\0';           /* input terminato: testo vuoto */
+    }
 
-    /* Rimozione '\n' */
+    /* Rimozione '\n'. Se fgets ha riempito il buffer (282 caratteri) senza
+     * leggere '\n', la riga continua nell'input: lo ricordiamo per
+     * contare anche i caratteri rimasti. */
     i = 0;
     while (testo[i] != '\n' && testo[i] != '\0') {
         i++;
+    }
+    if (testo[i] == '\0' && i == 282) {
+        oltre_buffer = 1;
     }
     testo[i] = '\0';
 
@@ -93,6 +106,27 @@ int main(void) {
         }
 
         i++;
+    }
+
+    /* --- CARATTERI OLTRE IL BUFFER ---
+     * I caratteri che non sono entrati nel buffer si leggono uno alla volta
+     * con getchar e si contano con le stesse regole, così l'eccesso
+     * misurato è quello reale. */
+    if (oltre_buffer) {
+        ch = getchar();
+        while (ch != '\n' && ch != EOF) {
+            num_caratteri++;
+            if (ch == ' ') {
+                num_spazi++;
+                precedente_era_spazio = 1;
+            } else {
+                if (precedente_era_spazio) {
+                    num_parole++;
+                }
+                precedente_era_spazio = 0;
+            }
+            ch = getchar();
+        }
     }
 
     /* --- CALCOLO CARATTERI RIMANENTI --- */
@@ -129,8 +163,8 @@ int main(void) {
     printf("════════════════════════════════════════════\n");
 
     if (rimanenti < 0) {
-        printf("\n  ATTENZIONE: testo troppo lungo di %d caratteri.\n",
-               -rimanenti);
+        printf("\n  ATTENZIONE: testo troppo lungo di %d %s.\n",
+               -rimanenti, -rimanenti == 1 ? "carattere" : "caratteri");
     } else if (rimanenti == 0) {
         printf("\n  Limite raggiunto esattamente.\n");
     } else {

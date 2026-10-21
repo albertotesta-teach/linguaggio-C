@@ -37,15 +37,17 @@ int main(void)
     int errori = 0;
     int autenticato = 0;
     int cambiata = 0;
+    int fine_input = 0;     /* 1 se l'input è terminato (EOF) */
     int lung;
 
     printf("=== CAMBIO PASSWORD ===\n");
 
     /* ── 1. Verifica della password attuale ───────────────────────── */
-    while (!autenticato && errori < TENTATIVI) {
+    while (!autenticato && errori < TENTATIVI && !fine_input) {
         printf("Password attuale: ");
-        leggi_riga(inserita, DIM);
-        if (strcmp(inserita, password) == 0) {
+        if (!leggi_riga(inserita, DIM)) {
+            fine_input = 1;
+        } else if (strcmp(inserita, password) == 0) {
             autenticato = 1;
         } else {
             errori++;
@@ -54,29 +56,34 @@ int main(void)
     }
 
     /* ── 2. e 3. Nuova password e conferma ────────────────────────── */
-    while (autenticato && !cambiata) {
+    while (autenticato && !cambiata && !fine_input) {
         printf("Nuova password (%d-%d caratteri): ", MIN_LUNG, MAX_LUNG);
-        leggi_riga(nuova, DIM);
-        lung = (int) strlen(nuova);
-
-        if (lung < MIN_LUNG || lung > MAX_LUNG) {
-            printf("  Lunghezza non valida: %d caratteri.\n", lung);
-        } else if (strcmp(nuova, password) == 0) {
-            printf("  La nuova password deve essere diversa da quella attuale.\n");
+        if (!leggi_riga(nuova, DIM)) {
+            fine_input = 1;
         } else {
-            printf("Conferma la nuova password: ");
-            leggi_riga(conferma, DIM);
-            if (strcmp(nuova, conferma) != 0) {
-                printf("  Le due password non coincidono, ricomincia.\n");
+            lung = (int) strlen(nuova);
+            if (lung < MIN_LUNG || lung > MAX_LUNG) {
+                printf("  Lunghezza non valida: %d caratteri.\n", lung);
+            } else if (strcmp(nuova, password) == 0) {
+                printf("  La nuova password deve essere diversa da quella attuale.\n");
             } else {
-                strcpy(password, nuova);
-                cambiata = 1;
+                printf("Conferma la nuova password: ");
+                if (!leggi_riga(conferma, DIM)) {
+                    fine_input = 1;
+                } else if (strcmp(nuova, conferma) != 0) {
+                    printf("  Le due password non coincidono, ricomincia.\n");
+                } else {
+                    strcpy(password, nuova);
+                    cambiata = 1;
+                }
             }
         }
     }
 
     if (cambiata) {
         printf("Password cambiata (%d caratteri).\n", (int) strlen(password));
+    } else if (fine_input) {
+        printf("\nInput terminato: procedura annullata.\n");
     } else {
         printf("Troppi tentativi errati: procedura annullata.\n");
     }
@@ -101,6 +108,8 @@ int leggi_riga(char s[], int dim)
                 c = getchar();
             }
         }
+    } else {
+        s[0] = '\0';               /* input terminato: stringa vuota */
     }
     return ok;
 }

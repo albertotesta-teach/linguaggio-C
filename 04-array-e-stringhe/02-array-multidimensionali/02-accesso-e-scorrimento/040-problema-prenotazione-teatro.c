@@ -42,16 +42,30 @@ int main(void)
     int c;
     int alternativo;
     int prenotati = 0;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
 
     printf("=== TEATRO COMUNALE - BIGLIETTERIA ===\n");
     printf("File A-%c, posti 1-%d. Fila %c per terminare.\n\n",
            'A' + FILE_TEATRO - 1, POSTI, FINE);
 
     printf("Fila e posto (es. C 4): ");
-    scanf(" %c", &lettera);
+    if (scanf(" %c", &lettera) != 1) {
+        lettera = FINE;         /* input terminato: come la fila di fine */
+    }
 
     while (lettera != FINE) {
-        scanf("%d", &numero_posto);
+        esito = scanf("%d", &numero_posto);
+        if (esito != 1) {
+            if (esito == 0) {
+                /* non è un numero: si scarta il resto della riga */
+                scarta = getchar();
+                while (scarta != '\n' && scarta != EOF) {
+                    scarta = getchar();
+                }
+            }
+            numero_posto = 0;   /* posto non valido: risulterà inesistente */
+        }
         riga = lettera - 'A';
         colonna = numero_posto - 1;
 
@@ -80,7 +94,9 @@ int main(void)
         }
 
         printf("Fila e posto (es. C 4): ");
-        scanf(" %c", &lettera);
+        if (scanf(" %c", &lettera) != 1) {
+            lettera = FINE;     /* input terminato: come la fila di fine */
+        }
     }
 
     /* ── Mappa finale ─────────────────────────────────────────────── */

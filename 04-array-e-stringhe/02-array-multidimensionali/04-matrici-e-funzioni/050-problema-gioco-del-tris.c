@@ -38,16 +38,31 @@ int main(void)
     char vince = VUOTA;
     int riga;
     int colonna;
+    int letti;          /* valori convertiti da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina durante la partita */
 
     svuota(griglia);
     printf("=== TRIS ===\n");
     stampa(griglia);
 
-    while (vince == VUOTA && !griglia_piena(griglia)) {
+    while (vince == VUOTA && !griglia_piena(griglia) && !fine_input) {
         printf("Giocatore %c, riga e colonna (1-3): ", giocatore);
-        scanf("%d %d", &riga, &colonna);
+        letti = scanf("%d %d", &riga, &colonna);
+        if (letti == EOF) {
+            fine_input = 1;
+        } else if (letti != 2) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            riga = 0;           /* mossa non letta: risulterà non valida */
+        }
 
-        if (mossa_valida(griglia, riga - 1, colonna - 1)) {
+        if (fine_input) {
+            printf("\n\nInput terminato: partita interrotta.\n");
+        } else if (mossa_valida(griglia, riga - 1, colonna - 1)) {
             griglia[riga - 1][colonna - 1] = giocatore;
             stampa(griglia);
             vince = vincitore(griglia);
@@ -59,10 +74,12 @@ int main(void)
         }
     }
 
-    if (vince != VUOTA) {
-        printf("Vince il giocatore %c!\n", vince);
-    } else {
-        printf("Pareggio.\n");
+    if (!fine_input) {
+        if (vince != VUOTA) {
+            printf("Vince il giocatore %c!\n", vince);
+        } else {
+            printf("Pareggio.\n");
+        }
     }
 
     return 0;

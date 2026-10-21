@@ -41,6 +41,9 @@ int main(void) {
     int pagato_centesimi;
     int resto;
     int valido;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina prima del previsto */
     int i;
 
     /* ------------------------------------------------------------------ */
@@ -48,76 +51,100 @@ int main(void) {
     printf("=== CASSA AUTOMATICA ===\n\n");
 
     valido = 0;
-    while (!valido) {
+    while (!valido && !fine_input) {
         printf("Prezzo articolo (in centesimi, es. 135 per 1,35 euro): ");
-        scanf("%d", &prezzo_centesimi);
-        if (prezzo_centesimi > 0) {
+        esito = scanf("%d", &prezzo_centesimi);
+        if (esito == EOF) {
+            fine_input = 1;     /* input terminato */
+        } else if (esito == 1 && prezzo_centesimi > 0) {
             valido = 1;
         } else {
+            if (esito == 0) {
+                /* non è un numero: si scarta il resto della riga,
+                 * altrimenti scanf la rileggerebbe all'infinito */
+                scarta = getchar();
+                while (scarta != '\n' && scarta != EOF) {
+                    scarta = getchar();
+                }
+            }
             printf("Inserire un prezzo positivo.\n");
         }
     }
 
     valido = 0;
-    while (!valido) {
+    while (!valido && !fine_input) {
         printf("Importo pagato  (in centesimi): ");
-        scanf("%d", &pagato_centesimi);
-        if (pagato_centesimi >= prezzo_centesimi) {
+        esito = scanf("%d", &pagato_centesimi);
+        if (esito == EOF) {
+            fine_input = 1;     /* input terminato */
+        } else if (esito == 1 && pagato_centesimi >= prezzo_centesimi) {
             valido = 1;
         } else {
+            if (esito == 0) {
+                /* non è un numero: si scarta il resto della riga,
+                 * altrimenti scanf la rileggerebbe all'infinito */
+                scarta = getchar();
+                while (scarta != '\n' && scarta != EOF) {
+                    scarta = getchar();
+                }
+            }
             printf("Importo insufficiente. Inserire almeno %d centesimi.\n",
                    prezzo_centesimi);
         }
     }
 
-    resto = pagato_centesimi - prezzo_centesimi;
-    printf("\nPrezzo  : %d,%02d euro\n",
-           prezzo_centesimi / 100, prezzo_centesimi % 100);
-    printf("Pagato  : %d,%02d euro\n",
-           pagato_centesimi / 100, pagato_centesimi % 100);
-    printf("Resto   : %d,%02d euro\n\n",
-           resto / 100, resto % 100);
+    if (!fine_input) {
+        resto = pagato_centesimi - prezzo_centesimi;
+        printf("\nPrezzo  : %d,%02d euro\n",
+               prezzo_centesimi / 100, prezzo_centesimi % 100);
+        printf("Pagato  : %d,%02d euro\n",
+               pagato_centesimi / 100, pagato_centesimi % 100);
+        printf("Resto   : %d,%02d euro\n\n",
+               resto / 100, resto % 100);
 
-    /* ------------------------------------------------------------------ */
-    /* Algoritmo greedy: scorre i tagli dal più grande al più piccolo.
-     * Per ogni taglio, calcola quante monete si possono usare senza
-     * superare il resto rimanente, poi aggiorna il resto. */
-    if (resto == 0) {
-        printf("Nessun resto da restituire.\n");
-    } else {
-        printf("Composizione del resto:\n");
+        /* ------------------------------------------------------------------ */
+        /* Algoritmo greedy: scorre i tagli dal più grande al più piccolo.
+         * Per ogni taglio, calcola quante monete si possono usare senza
+         * superare il resto rimanente, poi aggiorna il resto. */
+        if (resto == 0) {
+            printf("Nessun resto da restituire.\n");
+        } else {
+            printf("Composizione del resto:\n");
 
-        for (i = 0; i < NUM_TAGLI; i++) {
-            /* Quante monete di questo taglio entrano nel resto corrente? */
-            monete_usate[i] = resto / tagli[i];
+            for (i = 0; i < NUM_TAGLI; i++) {
+                /* Quante monete di questo taglio entrano nel resto corrente? */
+                monete_usate[i] = resto / tagli[i];
 
-            /* Aggiorna il resto sottraendo le monete appena assegnate */
-            resto = resto - monete_usate[i] * tagli[i];
+                /* Aggiorna il resto sottraendo le monete appena assegnate */
+                resto = resto - monete_usate[i] * tagli[i];
 
-            /* Stampa solo i tagli effettivamente usati */
-            if (monete_usate[i] > 0) {
-                printf("  %3d cent  x %d moneta/e\n",
-                       tagli[i], monete_usate[i]);
+                /* Stampa solo i tagli effettivamente usati */
+                if (monete_usate[i] > 0) {
+                    printf("  %3d cent  x %d moneta/e\n",
+                           tagli[i], monete_usate[i]);
+                }
+            }
+
+            /* ---------------------------------------------------------------- */
+            /* Verifica finale: il resto deve essere azzerato.
+             * Con i tagli da 1 centesimo sempre disponibili, è garantito. */
+            if (resto == 0) {
+                printf("\nResto restituito correttamente.\n");
+            } else {
+                printf("\n[ERRORE] Resto non azzerabile con i tagli disponibili.\n");
             }
         }
 
-        /* ---------------------------------------------------------------- */
-        /* Verifica finale: il resto deve essere azzerato.
-         * Con i tagli da 1 centesimo sempre disponibili, è garantito. */
-        if (resto == 0) {
-            printf("\nResto restituito correttamente.\n");
-        } else {
-            printf("\n[ERRORE] Resto non azzerabile con i tagli disponibili.\n");
+        /* ------------------------------------------------------------------ */
+        /* Conteggio totale delle monete restituite */
+        int totale_monete = 0;
+        for (i = 0; i < NUM_TAGLI; i++) {
+            totale_monete = totale_monete + monete_usate[i];
         }
+        printf("Totale monete restituite: %d\n", totale_monete);
+    } else {
+        printf("\n\nInput terminato: operazione annullata.\n");
     }
-
-    /* ------------------------------------------------------------------ */
-    /* Conteggio totale delle monete restituite */
-    int totale_monete = 0;
-    for (i = 0; i < NUM_TAGLI; i++) {
-        totale_monete = totale_monete + monete_usate[i];
-    }
-    printf("Totale monete restituite: %d\n", totale_monete);
 
     return 0;
 }

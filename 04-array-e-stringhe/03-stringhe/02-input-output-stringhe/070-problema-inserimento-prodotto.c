@@ -29,14 +29,18 @@ int main(void) {
     char prezzo[10];         /* es. "12.50", max 9 caratteri + '\0' */
 
     /* Quantità disponibile a magazzino */
-    int quantita;
+    int quantita = 0;
 
     /* Indice per rimozione '\n' */
     int i;
 
+    /* Carattere letto per svuotare il buffer di input */
+    int c;
+
     /* Flags di validazione */
     int nome_valido;
     int categoria_valida;
+    int quantita_valida;
 
     printf("╔══════════════════════════════════════════╗\n");
     printf("║    TERMINALE INSERIMENTO PRODOTTI        ║\n");
@@ -50,12 +54,9 @@ int main(void) {
 
     /* Svuota il buffer di input dopo scanf per prepararsi a fgets.
      * scanf lascia '\n' nel buffer: dobbiamo consumarlo. */
-    {
-        int c;
+    c = getchar();
+    while (c != '\n' && c != EOF) {
         c = getchar();
-        while (c != '\n' && c != EOF) {
-            c = getchar();
-        }
     }
 
     /* --- LETTURA NOME PRODOTTO ---
@@ -67,6 +68,15 @@ int main(void) {
     i = 0;
     while (nome_prodotto[i] != '\n' && nome_prodotto[i] != '\0') {
         i++;
+    }
+    /* Se fgets ha riempito il buffer senza leggere '\n', il nome era
+     * più lungo di 80 caratteri: si scarta il resto della riga, altrimenti
+     * finirebbe nel campo successivo. */
+    if (nome_prodotto[i] == '\0' && i == 80) {
+        c = getchar();
+        while (c != '\n' && c != EOF) {
+            c = getchar();
+        }
     }
     nome_prodotto[i] = '\0';
 
@@ -80,6 +90,13 @@ int main(void) {
     while (categoria[i] != '\n' && categoria[i] != '\0') {
         i++;
     }
+    /* Stesso controllo per la categoria (al massimo 20 caratteri). */
+    if (categoria[i] == '\0' && i == 20) {
+        c = getchar();
+        while (c != '\n' && c != EOF) {
+            c = getchar();
+        }
+    }
     categoria[i] = '\0';
 
     /* --- LETTURA PREZZO E QUANTITÀ ---
@@ -89,10 +106,15 @@ int main(void) {
     scanf("%9s", prezzo);
 
     printf("Quantità disponibile: ");
-    scanf("%d", &quantita);
+    if (scanf("%d", &quantita) == 1 && quantita >= 0) {
+        quantita_valida = 1;
+    } else {
+        quantita_valida = 0;
+    }
 
     /* --- VALIDAZIONE CAMPI OBBLIGATORI ---
-     * Nome e categoria non possono essere vuoti. */
+     * Nome e categoria non possono essere vuoti; la quantità deve essere
+     * un intero non negativo (la sua validità è già stata controllata). */
     if (nome_prodotto[0] == '\0') {
         nome_valido = 0;
     } else {
@@ -109,7 +131,7 @@ int main(void) {
      * Solo se tutti i campi obbligatori sono validi. */
     printf("\n");
 
-    if (nome_valido && categoria_valida) {
+    if (nome_valido && categoria_valida && quantita_valida) {
         printf("════════════════════════════════════════════════\n");
         printf("  SCHEDA PRODOTTO - PRONTA PER L'ARCHIVIAZIONE \n");
         printf("════════════════════════════════════════════════\n");
@@ -121,12 +143,15 @@ int main(void) {
         printf("════════════════════════════════════════════════\n");
         printf("\nProdotto inserito correttamente nell'archivio.\n");
     } else {
-        printf("ERRORE: campi obbligatori mancanti.\n");
+        printf("ERRORE: campi obbligatori mancanti o non validi.\n");
         if (!nome_valido) {
             printf("  - Il nome del prodotto non può essere vuoto.\n");
         }
         if (!categoria_valida) {
             printf("  - La categoria non può essere vuota.\n");
+        }
+        if (!quantita_valida) {
+            printf("  - La quantità deve essere un numero intero non negativo.\n");
         }
         printf("Inserimento annullato.\n");
     }

@@ -46,6 +46,8 @@ int main(void)
     int scelta_ripiano;
     int pezzi;
     int prelevati = 0;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
 
     /* ── 1. Situazione del magazzino ──────────────────────────────── */
     printf("=== MAGAZZINO RICAMBI ===\n\n");
@@ -77,13 +79,43 @@ int main(void)
     /* ── 3. Prelievi ──────────────────────────────────────────────── */
     printf("Registrazione prelievi (scaffale 0 per terminare)\n");
     printf("Scaffale (1-%d): ", SCAFFALI);
-    scanf("%d", &scelta_scaffale);
+    esito = scanf("%d", &scelta_scaffale);
+    if (esito == EOF) {
+        scelta_scaffale = 0;     /* input terminato: come lo scaffale 0 */
+    } else if (esito == 0) {
+        /* non è un numero: si scarta il resto della riga */
+        scarta = getchar();
+        while (scarta != '\n' && scarta != EOF) {
+            scarta = getchar();
+        }
+        scelta_scaffale = -1;    /* non è un numero: posizione inesistente */
+    }
 
     while (scelta_scaffale != 0) {
         printf("Ripiano (1-%d): ", RIPIANI);
-        scanf("%d", &scelta_ripiano);
+        esito = scanf("%d", &scelta_ripiano);
+        if (esito == EOF) {
+            scelta_ripiano = 0;      /* ripiano non letto: posizione inesistente */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelta_ripiano = 0;      /* non è un numero: posizione inesistente */
+        }
         printf("Pezzi da prelevare: ");
-        scanf("%d", &pezzi);
+        esito = scanf("%d", &pezzi);
+        if (esito == EOF) {
+            pezzi = 0;               /* quantita' non letta: non valida */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            pezzi = 0;               /* non è un numero: quantita' non valida */
+        }
 
         sc = scelta_scaffale - 1;
         rp = scelta_ripiano - 1;
@@ -106,7 +138,17 @@ int main(void)
         }
 
         printf("Scaffale (1-%d): ", SCAFFALI);
-        scanf("%d", &scelta_scaffale);
+        esito = scanf("%d", &scelta_scaffale);
+        if (esito == EOF) {
+            scelta_scaffale = 0;     /* input terminato: come lo scaffale 0 */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelta_scaffale = -1;    /* non è un numero: posizione inesistente */
+        }
     }
 
     printf("\nPezzi prelevati in totale: %d\n", prelevati);

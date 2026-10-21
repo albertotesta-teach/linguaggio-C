@@ -40,41 +40,77 @@ int main(void)
     int piano_trovato = 0;
     int posto_trovato = 0;
     int liberi_piano;
+    int esito;          /* valore restituito da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
 
     printf("=== PARCHEGGIO CENTRO - CASSA AUTOMATICA ===\n");
 
     do {
         printf("\n1 - Ingresso   2 - Uscita   3 - Stato   0 - Fine\nScelta: ");
-        scanf("%d", &scelta);
+        esito = scanf("%d", &scelta);
+        if (esito == EOF) {
+            scelta = 0;             /* input terminato: si chiude la cassa */
+        } else if (esito == 0) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            scelta = -1;            /* non è un numero: scelta non valida */
+        }
 
         switch (scelta) {
             case 1:
                 printf("Numero tessera: ");
-                scanf("%d", &tessera);
-
-                trovato = 0;
-                for (piano = 0; piano < PIANI && !trovato; piano++) {
-                    for (posto = 0; posto < POSTI && !trovato; posto++) {
-                        if (parcheggio[piano][posto] == LIBERO) {
-                            trovato = 1;
-                            piano_trovato = piano;
-                            posto_trovato = posto;
+                esito = scanf("%d", &tessera);
+                if (esito != 1) {
+                    if (esito == 0) {
+                        /* non è un numero: si scarta il resto della riga */
+                        scarta = getchar();
+                        while (scarta != '\n' && scarta != EOF) {
+                            scarta = getchar();
                         }
                     }
+                    tessera = LIBERO;   /* tessera non letta */
                 }
 
-                if (trovato) {
-                    parcheggio[piano_trovato][posto_trovato] = tessera;
-                    printf("Tessera %d: piano %d, posto %d.\n",
-                           tessera, piano_trovato, posto_trovato + 1);
+                if (tessera <= 0) {
+                    printf("Tessera non valida.\n");
                 } else {
-                    printf("Parcheggio completo.\n");
+                    trovato = 0;
+                    for (piano = 0; piano < PIANI && !trovato; piano++) {
+                        for (posto = 0; posto < POSTI && !trovato; posto++) {
+                            if (parcheggio[piano][posto] == LIBERO) {
+                                trovato = 1;
+                                piano_trovato = piano;
+                                posto_trovato = posto;
+                            }
+                        }
+                    }
+
+                    if (trovato) {
+                        parcheggio[piano_trovato][posto_trovato] = tessera;
+                        printf("Tessera %d: piano %d, posto %d.\n",
+                               tessera, piano_trovato, posto_trovato + 1);
+                    } else {
+                        printf("Parcheggio completo.\n");
+                    }
                 }
                 break;
 
             case 2:
                 printf("Numero tessera: ");
-                scanf("%d", &tessera);
+                esito = scanf("%d", &tessera);
+                if (esito != 1) {
+                    if (esito == 0) {
+                        /* non è un numero: si scarta il resto della riga */
+                        scarta = getchar();
+                        while (scarta != '\n' && scarta != EOF) {
+                            scarta = getchar();
+                        }
+                    }
+                    tessera = LIBERO;   /* tessera non letta */
+                }
 
                 trovato = 0;
                 for (piano = 0; piano < PIANI && !trovato; piano++) {

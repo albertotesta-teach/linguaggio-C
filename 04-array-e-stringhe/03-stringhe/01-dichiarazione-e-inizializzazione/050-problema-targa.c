@@ -122,13 +122,14 @@ int main(void) {
     }
 
     /* --- INFORMAZIONI AGGIUNTIVE ---
-     * Alcune combinazioni di lettere iniziali sono riservate
-     * e non compaiono sulle targhe civili italiane. */
+     * Per una targa valida si mostrano alcune informazioni ricavate
+     * accedendo ai singoli caratteri per indice. */
     if (formato_valido && lettere_valide && cifre_valide) {
 
         printf("\nInformazioni aggiuntive:\n");
 
-        /* Le targhe che iniziano con FA-FZ sono assegnate alle forze armate */
+        /* Esempio di controllo su due posizioni: per le targhe della serie
+         * F (da FA a FZ) si stampa la serie, che è una normale serie civile */
         if (targa[0] == 'F' && targa[1] >= 'A' && targa[1] <= 'Z') {
             printf("  Serie %c%c: sequenza civile normale.\n",
                    targa[0], targa[1]);

@@ -45,6 +45,9 @@ int main(void)
     int c;
     int riga_utente;
     int colonna_utente;
+    int letti;          /* valori convertiti da scanf */
+    int scarta;         /* carattere scartato da una riga non valida */
+    int fine_input = 0; /* 1 se l'input termina durante la partita */
     int celle_sicure = 0;
     int scoperte_sicure = 0;
     int esplosa = 0;
@@ -64,13 +67,25 @@ int main(void)
     stampa_campo(mine, numeri, scoperte, 0);
 
     /* ── 2. Partita ───────────────────────────────────────────────── */
-    while (!esplosa && scoperte_sicure < celle_sicure) {
+    while (!esplosa && scoperte_sicure < celle_sicure && !fine_input) {
         printf("Riga e colonna (es. 3 4): ");
-        scanf("%d %d", &riga_utente, &colonna_utente);
+        letti = scanf("%d %d", &riga_utente, &colonna_utente);
+        if (letti == EOF) {
+            fine_input = 1;
+        } else if (letti != 2) {
+            /* non è un numero: si scarta il resto della riga */
+            scarta = getchar();
+            while (scarta != '\n' && scarta != EOF) {
+                scarta = getchar();
+            }
+            riga_utente = 0;    /* cella non letta: risulterà inesistente */
+        }
         r = riga_utente - 1;
         c = colonna_utente - 1;
 
-        if (r < 0 || r >= RIGHE || c < 0 || c >= COLONNE) {
+        if (fine_input) {
+            printf("\n\nInput terminato: partita interrotta.\n");
+        } else if (r < 0 || r >= RIGHE || c < 0 || c >= COLONNE) {
             printf("  Cella inesistente.\n");
         } else if (scoperte[r][c]) {
             printf("  Cella gia' scoperta.\n");
@@ -85,12 +100,14 @@ int main(void)
         }
     }
 
-    if (esplosa) {
-        printf("BOOM! Hai trovato una mina. Il campo era:\n");
-    } else {
-        printf("Complimenti, campo sminato!\n");
+    if (!fine_input) {
+        if (esplosa) {
+            printf("BOOM! Hai trovato una mina. Il campo era:\n");
+        } else {
+            printf("Complimenti, campo sminato!\n");
+        }
+        stampa_campo(mine, numeri, scoperte, 1);
     }
-    stampa_campo(mine, numeri, scoperte, 1);
 
     return 0;
 }

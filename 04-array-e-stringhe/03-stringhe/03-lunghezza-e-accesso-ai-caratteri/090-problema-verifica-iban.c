@@ -53,11 +53,17 @@ int main(void) {
     /* Flag temporaneo per i controlli sui segmenti */
     int segmento_ok;
 
+    /* Carattere letto dopo l'IBAN (int, per riconoscere EOF) */
+    int c;
+
+    /* Caratteri scritti oltre i 27 che entrano nel buffer */
+    int eccedenti = 0;
+
     printf("╔══════════════════════════════════════════╗\n");
     printf("║     VERIFICA FORMALE IBAN ITALIANO       ║\n");
     printf("╚══════════════════════════════════════════╝\n\n");
 
-    printf("Formato IBAN italiano: IT00A00000000000000000000\n");
+    printf("Formato IBAN italiano: IT00A0000000000000000000000\n");
     printf("  IT  = country code (2 lettere)\n");
     printf("  00  = check digits (2 cifre)\n");
     printf("  A   = CIN (1 lettera)\n");
@@ -68,7 +74,19 @@ int main(void) {
     /* --- LETTURA IBAN ---
      * scanf senza spazi: l'IBAN non contiene spazi nel formato compatto. */
     printf("Inserisci il codice IBAN (senza spazi): ");
-    scanf("%27s", iban);
+    if (scanf("%27s", iban) != 1) {
+        iban[0] = '\0';            /* input terminato: IBAN vuoto */
+    }
+
+    /* %27s si ferma dopo 27 caratteri anche se l'utente ne ha scritti di
+     * più: quelli in eccesso restano nell'input. Li leggiamo e li contiamo
+     * fino al primo spazio o a capo, così un IBAN troppo lungo non viene
+     * scambiato per uno di 27 caratteri. */
+    c = getchar();
+    while (c != '\n' && c != ' ' && c != '\t' && c != EOF) {
+        eccedenti++;
+        c = getchar();
+    }
 
     /* --- VERIFICA LUNGHEZZA ---
      * Calcoliamo la lunghezza manualmente e verifichiamo che sia 27. */
@@ -77,6 +95,8 @@ int main(void) {
         lunghezza++;
         i++;
     }
+
+    lunghezza = lunghezza + eccedenti;
 
     if (lunghezza == 27) {
         lunghezza_ok = 1;
@@ -148,7 +168,11 @@ int main(void) {
     /* --- OUTPUT RISULTATI --- */
     printf("\n");
     printf("════════════════════════════════════════════\n");
-    printf("  RISULTATO VERIFICA: %s\n", iban);
+    if (eccedenti > 0) {
+        printf("  RISULTATO VERIFICA: %s...\n", iban);
+    } else {
+        printf("  RISULTATO VERIFICA: %s\n", iban);
+    }
     printf("════════════════════════════════════════════\n");
 
     /* Lunghezza */
