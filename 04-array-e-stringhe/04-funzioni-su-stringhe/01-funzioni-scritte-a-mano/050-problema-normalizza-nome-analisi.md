@@ -9,69 +9,80 @@ l'iniziale maiuscola e il resto minuscolo; dopo un apostrofo o un trattino
 la lettera torna maiuscola. Il programma normalizza un nome per riga e si
 ferma con una riga vuota.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `inserito` | `char[]` | 60 | Testo scritto dall'utente |
-| `corretto` | `char[]` | 60 | Testo normalizzato (mai più lungo dell'originale) |
-| `parole` | `int` | — | Numero di parole del risultato |
+### Input
 
-| Funzione | Compito |
-|----------|---------|
-| `leggi_riga` | Lettura con `fgets` e rimozione del `'\n'` |
-| `normalizza` | Costruisce il testo normalizzato in una sola passata |
-| `conta_parole` | Conta le parole separate da un solo spazio |
-| `maiuscola`, `minuscola` | Conversione di un carattere con la differenza `'a' - 'A'` |
+| Variabile  | Tipo     | Dimensione | Descrizione                                |
+|------------|----------|------------|--------------------------------------------|
+| `inserito` | `char[]` | 60         | Nome e cognome; una riga vuota termina     |
 
-## 3. Casi d'uso e funzionalità
+### Output
+Per ogni nome: il testo inserito e quello normalizzato tra parentesi quadre
+(così si vedono gli spazi), con il numero di parole ("parola" al
+singolare). Alla fine "Fine inserimento.".
 
-### Caso d'uso 1 – Spazi e maiuscole irregolari
+### Vincoli
+- Spazi iniziali e finali eliminati, un solo spazio tra le parole
+- Iniziale di ogni parola maiuscola, altre lettere minuscole
+- Dopo un apostrofo o un trattino la lettera successiva è maiuscola
+  (D'Angelo, Anna-Maria)
+- La normalizzazione avviene in una sola passata, con un flag
+  `inizio_parola` che dice se il prossimo carattere apre una parola
+- Il risultato non è mai più lungo dell'originale, quindi basta un array
+  della stessa dimensione
+- Le parole si contano sul risultato, dove sono separate da un solo spazio;
+  una parola con trattino conta come una
+- Una riga vuota termina; una riga di soli spazi viene normalizzata in una
+  stringa vuota con 0 parole
 
-**a) Input** – `  mARIO   de  ROSSI `
+### Assunzioni
+- I nomi non contengono lettere accentate
 
-**b) Output** – `Mario De Rossi  (3 parole)`
+### Variabili di supporto
 
-**c) Variabili di supporto** – `i` (lettura), `j` (scrittura), `inizio_parola`
+| Variabile       | Tipo     | Dimensione | Descrizione                         |
+|-----------------|----------|------------|-------------------------------------|
+| `corretto`      | `char[]` | 60         | Testo normalizzato                  |
+| `parole`        | `int`    | —          | Parole del risultato                |
+| `inizio_parola` | `int`    | —          | Locale a `normalizza`               |
 
-**d) Vincoli** – uno spazio si scrive solo se il carattere precedente in
-`dest` non è uno spazio e `dest` non è vuota
+| Funzione | Descrizione |
+|---|---|
+| `int leggi_riga(char s[], int dim)` | `fgets` e rimozione del `'\n'` |
+| `void normalizza(char dest[], const char sorg[])` | Testo normalizzato in una passata |
+| `int conta_parole(const char s[])` | Parole separate da un solo spazio |
+| `char maiuscola(char c)`, `char minuscola(char c)` | Conversione con la differenza `'a' − 'A'` |
 
-**e) Assunzioni** – lettere senza accenti
+### Algoritmo in linguaggio naturale
+Normalizzazione (per ogni carattere di `sorg`):
+1. Se è uno spazio: copiarlo solo se il risultato non è vuoto e l'ultimo
+   carattere copiato non è uno spazio; porre `inizio_parola = 1`.
+2. Altrimenti copiarlo in maiuscolo se `inizio_parola` vale 1, in minuscolo
+   altrimenti; porre `inizio_parola = 1` solo se il carattere è un
+   apostrofo o un trattino.
+3. Alla fine togliere un eventuale spazio finale e chiudere con `'\0'`.
 
-**f) Algoritmo in linguaggio naturale**
-1. Scorrere la stringa con l'indice `i`; `j` indica la prossima cella libera di `dest`.
-2. Se il carattere è uno spazio: copiarlo solo se separa due parole e segnare
-   che il prossimo carattere apre una parola.
-3. Altrimenti scrivere la maiuscola se apre una parola, la minuscola se no.
-4. Al termine togliere un eventuale spazio finale e aggiungere `'\0'`.
+Programma principale: leggere un nome per riga finché la riga non è vuota,
+normalizzarlo e stamparlo con il numero di parole.
 
-### Caso d'uso 2 – Apostrofi e trattini
+## 3. Casi di test
 
-**a) Input** – `anna-maria d'angelo`
+Si inserisce una sequenza di nomi, una per riga, terminata da una riga
+vuota.
 
-**b) Output** – `Anna-Maria D'Angelo  (2 parole)`
+### Test 1 – Maiuscole e spazi irregolari
+- **Input:** `  mARIO   de  ROSSI ` (con spazi iniziali, multipli e finale)
+- **Output atteso:** `archivio : [Mario De Rossi]  (3 parole)`
 
-**c) Variabili di supporto** – `inizio_parola`
+### Test 2 – Apostrofo e trattino
+- **Input:** `anna-maria d'angelo`
+- **Output atteso:** `archivio : [Anna-Maria D'Angelo]  (2 parole)`
 
-**d) Vincoli** – dopo `'` e `-` `inizio_parola` torna a 1
+### Test 3 – Una sola parola
+- **Input:** `LUCA`
+- **Output atteso:** `archivio : [Luca]  (1 parola)`
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1: dopo aver scritto un
-apostrofo o un trattino il carattere successivo è trattato come iniziale.
-
-### Caso d'uso 3 – Fine dell'inserimento
-
-**a) Input** – riga vuota
-
-**b) Output** – "Fine inserimento."
-
-**c) Variabili di supporto** – `inserito[0]`
-
-**d) Vincoli** – una riga vuota contiene solo `'\0'` dopo la rimozione del `'\n'`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il ciclo continua finché la lettura
-riesce e il primo carattere non è `'\0'`.
+### Test 4 – Solo spazi e riga vuota
+- **Input:** una riga di soli spazi, poi una riga vuota
+- **Output atteso:** `archivio : []  (0 parole)`, poi `Fine inserimento.`

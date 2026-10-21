@@ -189,13 +189,13 @@ dopo il blocco:   contatore (globale) = 2
 
 Prodotto A (sconto 10%, IVA 22%):
   Prezzo originale:   150.00 EUR
-  Prezzo finale:      164.34 EUR
-  Risparmio:          -14.34 EUR
+  Prezzo finale:      164.70 EUR
+  Risparmio:          -14.70 EUR
 
 Prodotto B (sconto 20%, IVA 22%):
   Prezzo originale:   200.00 EUR
-  Prezzo finale:      195.12 EUR
-  Risparmio:            4.88 EUR
+  Prezzo finale:      195.20 EUR
+  Risparmio:            4.80 EUR
 
 Prodotto C (nessuno sconto, IVA 22%):
   Prezzo originale:    80.00 EUR
@@ -220,25 +220,25 @@ Prodotto D (sconto 15% + 5%, IVA 22%):
 
 Ora     Temperatura
 -------------------
-  00:00   +4.2 C
-  02:00   +3.8 C
-  04:00   +3.1 C
-  06:00   +4.5 C
-  08:00   +7.3 C
-  10:00  +11.8 C
-  12:00  +14.2 C
-  14:00  +15.6 C
-  16:00  +13.9 C
-  18:00  +10.4 C
-  20:00   +7.8 C
-  22:00   +5.9 C
+  00:00    +4.2 C
+  02:00    +3.8 C
+  04:00    +3.1 C
+  06:00    +4.5 C
+  08:00    +7.3 C
+  10:00   +11.8 C
+  12:00   +14.2 C
+  14:00   +15.6 C
+  16:00   +13.9 C
+  18:00   +10.4 C
+  20:00    +7.8 C
+  22:00    +5.9 C
 
 --- Report giornaliero ---
 Rilevazioni:   12
-Temperatura minima:   +3.1 C
+Temperatura minima:  +3.1 C
 Temperatura massima: +15.6 C
-Temperatura media:    +7.7 C
-Escursione termica:   12.5 C
+Temperatura media:   +8.5 C
+Escursione termica:  12.5 C
 ```
 
 ### 060-problema-validazione-input

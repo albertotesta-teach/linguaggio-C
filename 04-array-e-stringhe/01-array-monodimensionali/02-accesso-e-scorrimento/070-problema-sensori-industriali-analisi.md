@@ -9,72 +9,82 @@ media dell'impianto.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile      | Tipo       | Dimensione | Motivazione                                    |
-|----------------|------------|------------|------------------------------------------------|
-| `letture`      | `double[]` | 8          | Temperature in °C con decimali                 |
-| `somma`        | `double`   | —          | Accumulatore per la media                      |
-| `num_allarmi`  | `int`      | —          | Contatore sensori fuori soglia                 |
-| `stato`        | `char[]`   | 10         | Stringa "OK" o "ALLARME" costruita manualmente |
-| `SOGLIA_MIN`   | `#define`  | 10.0       | Limite inferiore accettabile                   |
-| `SOGLIA_MAX`   | `#define`  | 80.0       | Limite superiore accettabile                   |
-| `NUM_SENSORI`  | `#define`  | 8          | Dimensione array e limite cicli                |
+### Input
+
+| Variabile | Tipo       | Dimensione | Descrizione                                |
+|-----------|------------|------------|--------------------------------------------|
+| `letture` | `double[]` | 8          | Temperatura rilevata da ogni sensore (°C)  |
+
+### Output
+- La dashboard: per ogni sensore il codice (S01…S08), la temperatura con un
+  decimale e lo stato "OK" o "ALLARME";
+- l'elenco dei sensori fuori soglia, ciascuno con l'indicazione
+  "TROPPO BASSA" o "TROPPO ALTA", oppure "Tutti i sensori nella norma.";
+- la temperatura media dell'impianto e il numero di sensori in allarme.
+
+### Vincoli
+- Una lettura è in allarme se è minore di `SOGLIA_MIN` (10 °C) o maggiore di
+  `SOGLIA_MAX` (80 °C): i valori uguali alle soglie sono OK
+- Lo stato si costruisce carattere per carattere, con il terminatore
+  `'\0'`, senza funzioni di libreria
+- La media si calcola su tutti i sensori, anche quelli in allarme
+
+### Assunzioni
+- L'utente inserisce numeri; il valore delle letture non viene validato in
+  ingresso (un valore fuori soglia è un dato legittimo da segnalare)
+
+### Variabili di supporto
+
+| Variabile     | Tipo      | Dimensione | Descrizione                             |
+|---------------|-----------|------------|-----------------------------------------|
+| `stato`       | `char[]`  | 10         | "OK" o "ALLARME"                        |
+| `num_allarmi` | `int`     | —          | Numero di sensori fuori soglia          |
+| `somma`       | `double`  | —          | Accumulatore per la media               |
+| `SOGLIA_MIN`, `SOGLIA_MAX` | `#define` | — | 10.0 e 80.0 °C                    |
+| `NUM_SENSORI` | `#define` | 8          | Numero di sensori                       |
+
+### Algoritmo in linguaggio naturale
+1. Leggere la temperatura di ciascuno degli 8 sensori.
+2. Per ogni sensore costruire lo stato ("ALLARME" se fuori dall'intervallo
+   [10, 80], altrimenti "OK") e stampare la riga della dashboard.
+3. Per ogni sensore: se la lettura è sotto la soglia minima segnalarla come
+   troppo bassa, altrimenti se è sopra la massima come troppo alta; contare
+   gli allarmi. Se non ce ne sono stampare che tutti sono nella norma.
+4. Calcolare la media e stamparla con il numero di allarmi.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Per ogni caso si esegue il programma con le 8 letture indicate e si
+confronta quanto stampato con l'output atteso.
 
-### Caso d'uso 1 – Acquisizione letture
-
-**a) Input** — Valori double da tastiera, uno per sensore.
-**b) Output** — Prompt per ogni sensore.
-**d) Vincoli** — `scanf` usa `%lf` per `double`. Nessuna validazione del range in input.
-**f) Algoritmo**
+### Test 1 – Allarmi e valori sulle soglie
+- **Cosa si verifica:** 10.0 e 80.0 sono OK, 5.0 e 81.0 sono in allarme
+- **Input:** 65, 5, 42.5, 81, 10, 80, 55, 30
+- **Output atteso:**
 ```
-Per i da 0 a NUM_SENSORI - 1: leggere letture[i].
-```
-
----
-
-### Caso d'uso 2 – Dashboard con stato per sensore
-
-**a) Input** — Array `letture`, costanti `SOGLIA_MIN` e `SOGLIA_MAX`.
-**b) Output**
-```
---- DASHBOARD IMPIANTO ---
-  Sensore    | Temp (°C)   | Stato
-  -----------|-------------|-------
   S01        |     65.0 °C | OK
   S02        |      5.0 °C | ALLARME
-```
-**c) Variabili di supporto** — `stato` (`char[]`): costruita manualmente senza `strcpy`.
-**d) Vincoli** — Valori esattamente uguali alle soglie sono considerati OK (operatori `<` e `>`).
-**f) Algoritmo**
-```
-Per i da 0 a NUM_SENSORI - 1:
-  Se letture[i] fuori [SOGLIA_MIN, SOGLIA_MAX]: stato = "ALLARME".
-  Altrimenti: stato = "OK".
-  Stampare riga.
-```
+  S03        |     42.5 °C | OK
+  S04        |     81.0 °C | ALLARME
+  S05        |     10.0 °C | OK
+  S06        |     80.0 °C | OK
+  S07        |     55.0 °C | OK
+  S08        |     30.0 °C | OK
 
----
+Sensori fuori soglia [10°C - 80°C]:
+  [!] S02: 5.0°C - TEMPERATURA TROPPO BASSA
+  [!] S04: 81.0°C - TEMPERATURA TROPPO ALTA
 
-### Caso d'uso 3 – Elenco allarmi e media
-
-**a) Input** — Array `letture`.
-**b) Output**
-```
-Temperatura media impianto: 48.3°C
+Temperatura media impianto: 46.1°C
 Sensori in allarme: 2 su 8
 ```
-**d) Vincoli** — Messaggi distinti per temperatura troppo bassa e troppo alta. Media calcolata su tutti i sensori.
-**f) Algoritmo**
-```
-Per i da 0 a NUM_SENSORI - 1:
-  Se letture[i] < SOGLIA_MIN: segnalare e incrementare num_allarmi.
-  Altrimenti se letture[i] > SOGLIA_MAX: segnalare e incrementare.
-Calcolare somma e stampare media e num_allarmi.
-```
+
+### Test 2 – Impianto nella norma
+- **Cosa si verifica:** il messaggio alternativo
+- **Input:** 20, 30, 40, 50, 60, 70, 25, 35
+- **Output atteso:** tutti gli stati OK, `Tutti i sensori nella norma.`,
+  `Temperatura media impianto: 41.2°C`, `Sensori in allarme: 0 su 8`

@@ -9,72 +9,100 @@ sopravvive una cella viva con 2 o 3 vicine, nasce una cella morta con
 esattamente 3 vicine, in tutti gli altri casi la cella è morta. La griglia
 iniziale contiene un aliante e un lampeggiatore.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `mondo` | `char[][]` | 8 × (12 + 1) | Generazione attuale |
-| `appoggio` | `char[][]` | 8 × (12 + 1) | Generazione successiva in costruzione |
-| `generazione` | `int` | — | Contatore del ciclo principale |
+### Input
+Nessun input da tastiera: la griglia iniziale è inizializzata nel codice.
 
-| Funzione | Compito |
-|----------|---------|
-| `vicine_vive` | Conta le vive tra le 8 vicine con gli spostamenti `dr`, `dc` |
-| `prossima_generazione` | Scrive la nuova generazione in `nuova` leggendo solo da `attuale`, poi la ricopia |
-| `stampa` | Stampa la griglia con il numero di celle vive |
-| `conta_vive` | Conta le celle vive |
+| Variabile | Tipo       | Dimensione    | Descrizione                      |
+|-----------|------------|---------------|----------------------------------|
+| `mondo`   | `char[][]` | 8 × (12 + 1)  | Generazione attuale              |
 
-## 3. Casi d'uso e funzionalità
+### Output
+La griglia della generazione 0 e delle 4 successive, ciascuna con il numero
+di celle vive, e un messaggio finale sullo spostamento dell'aliante.
 
-### Caso d'uso 1 – Calcolo di una generazione
+### Vincoli
+- Le vicine di una cella sono le 8 celle intorno; si scorrono con gli
+  spostamenti `dr`, `dc` da −1 a +1, escludendo la cella stessa
+  (`dr = dc = 0`)
+- Le vicine fuori dalla griglia non si contano: i bordi non si collegano
+- Tutte le celle cambiano **insieme**: la nuova generazione si costruisce in
+  una seconda griglia leggendo solo da quella attuale, poi si ricopia;
+  aggiornando una sola griglia le celle già modificate falserebbero il
+  conteggio delle vicine
+- Regole: viva con 2 o 3 vicine → viva; morta con 3 vicine → viva; ogni
+  altro caso → morta
+- Il terminatore `'\0'` di ogni riga si scrive anche nella griglia di
+  appoggio
 
-**a) Input** – la griglia `mondo`
+### Assunzioni
+- Nessuna figura raggiunge i bordi nelle 4 generazioni simulate
 
-**b) Output** – `mondo` aggiornata alla generazione successiva
+### Variabili di supporto
 
-**c) Variabili di supporto** – `appoggio`, `n` (vicine vive)
+| Variabile     | Tipo       | Dimensione   | Descrizione                         |
+|---------------|------------|--------------|-------------------------------------|
+| `appoggio`    | `char[][]` | 8 × (12 + 1) | Generazione successiva in costruzione |
+| `generazione` | `int`      | —            | Contatore del ciclo principale      |
+| `RIGHE`, `COLONNE`, `GENERAZIONI`, `VIVA`, `MORTA` | `#define` | — | 8, 12, 4, '#', '.' |
 
-**d) Vincoli** – le regole si applicano tutte allo **stesso** istante: non si
-può scrivere in `mondo` mentre lo si legge (vedi `030`)
+| Funzione | Descrizione |
+|---|---|
+| `int vicine_vive(const char g[][COLONNE + 1], int r, int c)` | Vive tra le 8 vicine |
+| `void prossima_generazione(char attuale[][COLONNE + 1], char nuova[][COLONNE + 1])` | Calcola la nuova generazione e la ricopia in `attuale` |
+| `void stampa(const char g[][COLONNE + 1], int generazione)` | Griglia con numero di vive |
+| `int conta_vive(const char g[][COLONNE + 1])` | Celle vive |
 
-**e) Assunzioni** – le celle fuori dalla griglia sono considerate morte
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni cella contare le vicine vive in `attuale`.
-2. Se la cella è viva: in `nuova` resta viva con 2 o 3 vicine, altrimenti muore.
-3. Se la cella è morta: in `nuova` nasce con esattamente 3 vicine.
-4. Scrivere il `'\0'` a fine riga di `nuova`.
-5. Copiare `nuova` in `attuale`.
-
-### Caso d'uso 2 – Conteggio delle vicine
-
-**a) Input** – griglia, riga `r`, colonna `c`
-
-**b) Output** – numero da 0 a 8
-
-**c) Variabili di supporto** – `dr`, `dc`, `rv`, `cv`
-
-**d) Vincoli** – escludere `(0, 0)` e le celle fuori dalla griglia
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – due cicli su `dr` e `dc` da -1 a
-+1, sommando le celle vive valide.
-
-### Caso d'uso 3 – Simulazione di 4 generazioni
-
-**a) Input** – nessuno (configurazione iniziale fissa)
-
-**b) Output** – le 5 griglie (generazione 0–4) con il numero di celle vive
-
-**c) Variabili di supporto** – `generazione`
-
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Stampare la generazione 0.
-2. Ripetere 4 volte: calcolare la generazione successiva e stamparla.
-3. Osservare che l'aliante si è spostato di una cella in diagonale e il
-   lampeggiatore è tornato nella posizione iniziale.
+2. Per ogni generazione da 1 a 4:
+   a. per ogni cella contare le vicine vive e scrivere in `nuova` lo stato
+      dato dalle regole; chiudere ogni riga con `'\0'`;
+   b. copiare `nuova` in `attuale`;
+   c. stampare la griglia.
+3. Stampare il messaggio finale.
+
+## 3. Casi di test
+
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
+
+### Test 1 – Lampeggiatore
+- **Cosa si verifica:** le tre celle in riga diventano verticali nelle
+  generazioni dispari e tornano orizzontali in quelle pari
+- **Output atteso (righe 5–7, colonne 9–11):** generazione 1 e 3
+  `.........#..` su tre righe; generazione 2 e 4 `........###.` sulla
+  riga centrale
+
+### Test 2 – Aliante dopo 4 generazioni
+- **Cosa si verifica:** la figura torna uguale spostata di una cella in
+  basso a destra, e le celle vive restano 8 in ogni generazione
+- **Output atteso:**
+```
+Generazione 0 (celle vive: 8)
+  .#..........
+  ..#.........
+  ###.........
+  ............
+...
+Generazione 4 (celle vive: 8)
+  ............
+  ..#.........
+  ...#........
+  .###........
+```
+
+### Test 3 – Generazione intermedia
+- **Output atteso:**
+```
+Generazione 1 (celle vive: 8)
+  ............
+  #.#.........
+  .##.........
+  .#..........
+  .........#..
+  .........#..
+  .........#..
+  ............
+```

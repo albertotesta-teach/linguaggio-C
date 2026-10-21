@@ -9,166 +9,103 @@ il giorno con il guadagno e la perdita massima e segnalare i giorni sotto media.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Tutte le elaborazioni partono da **un solo array** (`prezzi`). Le variazioni
-giornaliere non vengono memorizzate in un secondo array: vengono calcolate
-al volo durante lo scorrimento e confrontate direttamente con il massimo/minimo
-corrente. Questo mostra che non è sempre necessario conservare i valori intermedi.
+### Input
+Nessun input da tastiera: i prezzi sono inizializzati nel codice.
 
-| Variabile      | Tipo      | Dimensione | Motivazione                                              |
-|----------------|-----------|------------|----------------------------------------------------------|
-| `prezzi`       | `double[]`| 10         | Prezzo di chiusura per ogni giorno; indice = giorno - 1  |
-| `somma`        | `double`  | —          | Accumulatore per la media del periodo                    |
-| `media`        | `double`  | —          | Media calcolata prima del ciclo di confronto             |
-| `guadagno_max` | `double`  | —          | Variazione positiva massima trovata finora               |
-| `perdita_max`  | `double`  | —          | Variazione negativa minima (più negativa) trovata finora |
-| `giorno_max`   | `int`     | —          | Numero del giorno con guadagno massimo                   |
-| `giorno_min`   | `int`     | —          | Numero del giorno con perdita massima                    |
-| `sotto_media`  | `int`     | —          | Contatore giorni con prezzo < media                      |
-| `GIORNI`       | `#define` | 10         | Dimensione dell'array e limite dei cicli                 |
+| Variabile | Tipo       | Dimensione | Descrizione                                     |
+|-----------|------------|------------|-------------------------------------------------|
+| `prezzi`  | `double[]` | 10         | Prezzo di chiusura; indice `i` = giorno `i+1`   |
+
+### Output
+- Per ogni giorno il prezzo e la variazione rispetto al giorno precedente,
+  in euro e in percentuale ("--" per il primo giorno, "invariato" se la
+  variazione è nulla);
+- il prezzo medio del periodo;
+- il giorno con il guadagno massimo e quello con la perdita massima;
+- l'elenco dei giorni con prezzo sotto la media, con lo scarto, e il loro
+  numero.
+
+### Vincoli
+- La variazione esiste dal secondo giorno: `prezzi[i] − prezzi[i − 1]`; la
+  percentuale è calcolata sul prezzo del giorno precedente
+- Le variazioni non vengono memorizzate: si calcolano durante lo scorrimento
+  e si confrontano subito con il massimo e il minimo correnti
+- Guadagno e perdita massimi partono dalla prima variazione disponibile
+  (giorno 2), non da zero; in caso di parità resta il primo giorno trovato
+- Un giorno è sotto la media se il suo prezzo è **strettamente** minore
+- La media va calcolata prima del confronto
+
+### Assunzioni
+- I prezzi sono positivi (servono da divisore per la percentuale)
+
+### Variabili di supporto
+
+Tutte le elaborazioni partono da **un solo array**: le variazioni giornaliere
+si ricavano scorrendolo, senza un secondo array.
+
+| Variabile      | Tipo      | Descrizione                                          |
+|----------------|-----------|------------------------------------------------------|
+| `variazione`, `perc` | `double` | Variazione assoluta e percentuale del giorno     |
+| `somma`, `media`     | `double` | Accumulatore e media del periodo                 |
+| `guadagno_max`, `perdita_max` | `double` | Variazione più alta e più bassa         |
+| `giorno_max`, `giorno_min`    | `int`    | Giorni corrispondenti                   |
+| `sotto_media`  | `int`     | Numero di giorni sotto la media                      |
+| `GIORNI`       | `#define` | 10                                                   |
+
+### Algoritmo in linguaggio naturale
+1. Stampare il prezzo del giorno 1 senza variazione.
+2. Per i giorni da 2 a 10 calcolare variazione e percentuale e stampare
+   la riga con il segno "+" se positiva, così com'è se negativa, oppure
+   "invariato".
+3. Sommare i prezzi e stampare la media.
+4. Porre guadagno e perdita massimi uguali alla variazione del giorno 2;
+   per i giorni da 3 a 10 aggiornarli quando la variazione è maggiore o
+   minore. Stampare i due giorni.
+5. Per ogni giorno con prezzo minore della media stamparlo con lo scarto e
+   contarlo; stampare il totale.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 1 – Andamento giornaliero con variazione
-
-**a) Input**
-Array `prezzi` inizializzato staticamente.
-
-**b) Output**
+### Test 1 – Variazioni giornaliere
+- **Cosa si verifica:** il segno e la percentuale sul giorno precedente
+- **Output atteso:**
 ```
-=== ANDAMENTO TITOLO ===
-  Giorno | Prezzo   | Variazione
-  -------|----------|------------
      1   |  142.50€ | --
      2   |  145.20€ | +2.70€ (+1.89%)
      3   |  143.80€ | -1.40€ (-0.96%)
-  ...
+     4   |  148.60€ | +4.80€ (+3.34%)
+     5   |  151.30€ | +2.70€ (+1.82%)
+     6   |  149.70€ | -1.60€ (-1.06%)
+     7   |  147.20€ | -2.50€ (-1.67%)
+     8   |  152.40€ | +5.20€ (+3.53%)
+     9   |  155.10€ | +2.70€ (+1.77%)
+     10  |  153.80€ | -1.30€ (-0.84%)
 ```
 
-**c) Variabili di supporto**
-- `variazione` (`double`): `prezzi[i] - prezzi[i-1]`, calcolata al volo.
-- `perc` (`double`): variazione percentuale rispetto al giorno precedente.
-
-**d) Vincoli**
-- Il ciclo parte da `i = 1` perché il giorno 0 non ha un giorno precedente.
-- I tre casi (positivo, negativo, zero) producono output distinti.
-- Il giorno 1 viene stampato separatamente prima del ciclo.
-
-**e) Assunzioni**
-- I prezzi sono sempre positivi (non si gestisce il caso prezzo = 0).
-- La variazione percentuale usa `prezzi[i-1]` come base (mai zero).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare il giorno 1 senza variazione.
-2. Per i da 1 a GIORNI - 1:
-   a. variazione = prezzi[i] - prezzi[i-1].
-   b. perc = variazione / prezzi[i-1] * 100.
-   c. Se variazione > 0: stampare con segno +.
-      Se variazione < 0: stampare con segno -.
-      Altrimenti: stampare "invariato".
-```
-
----
-
-### Caso d'uso 2 – Media del periodo
-
-**a) Input**
-Array `prezzi`.
-
-**b) Output**
+### Test 2 – Media ed estremi
+- **Output atteso:**
 ```
 Prezzo medio del periodo: 148.96€
-```
 
-**c) Variabili di supporto**
-- `somma` (`double`): accumulatore.
-- `media` (`double`): somma / GIORNI.
-
-**d) Vincoli**
-- La media va calcolata prima del ciclo di confronto (caso d'uso 3).
-- Divisione floating point: `double / int` produce `double`.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare somma = 0.0.
-2. Per i da 0 a GIORNI - 1: somma += prezzi[i].
-3. media = somma / GIORNI.
-```
-
----
-
-### Caso d'uso 3 – Giorno con guadagno e perdita massima
-
-**a) Input**
-Array `prezzi`.
-
-**b) Output**
-```
 Giorno con guadagno massimo: giorno 8 (+5.20€)
-Giorno con perdita massima : giorno 3 (-1.40€)
+Giorno con perdita massima : giorno 7 (-2.50€)
 ```
 
-**c) Variabili di supporto**
-- `guadagno_max`, `perdita_max` (`double`): estremi delle variazioni.
-- `giorno_max`, `giorno_min` (`int`): giorni corrispondenti agli estremi.
-
-**d) Vincoli**
-- L'inizializzazione usa la prima variazione disponibile (`prezzi[1] - prezzi[0]`),
-  non 0, per evitare di escludere variazioni negative o positive piccole.
-- Il ciclo parte da `i = 2` perché `i = 1` è già considerato nell'inizializzazione.
-- Le variazioni non vengono memorizzate in un array separato: vengono calcolate
-  al volo e confrontate direttamente con il massimo/minimo corrente.
-
-**e) Assunzioni**
-- Ci sono almeno 2 giorni di dati (garantito da `GIORNI = 10`).
-
-**f) Algoritmo in linguaggio naturale**
+### Test 3 – Giorni sotto la media
+- **Cosa si verifica:** il giorno 4 (148.60) è sotto la media di soli 0.36
+- **Output atteso:**
 ```
-1. Inizializzare guadagno_max = perdita_max = prezzi[1] - prezzi[0].
-2. Inizializzare giorno_max = giorno_min = 2.
-3. Per i da 2 a GIORNI - 1:
-   a. var = prezzi[i] - prezzi[i-1].
-   b. Se var > guadagno_max: aggiornare guadagno_max e giorno_max.
-   c. Se var < perdita_max: aggiornare perdita_max e giorno_min.
-4. Stampare i risultati.
-```
-
----
-
-### Caso d'uso 4 – Giorni sotto la media
-
-**a) Input**
-Array `prezzi`, variabile `media` (già calcolata).
-
-**b) Output**
-```
-Giorni con prezzo sotto la media (148.96€):
   Giorno  1: 142.50€ (-6.46€ dalla media)
   Giorno  2: 145.20€ (-3.76€ dalla media)
   Giorno  3: 143.80€ (-5.16€ dalla media)
-  Giorno  6: 149.70€ ...
-Totale giorni sotto media: 4 su 10
-```
-
-**c) Variabili di supporto**
-- `sotto_media` (`int`): contatore dei giorni con prezzo inferiore alla media.
-
-**d) Vincoli**
-- La media deve essere disponibile prima di questo ciclo (calcolata nel caso d'uso 2).
-- Il confronto usa `<` (non `<=`): un prezzo esattamente uguale alla media non conta.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare sotto_media = 0.
-2. Per i da 0 a GIORNI - 1:
-   a. Se prezzi[i] < media:
-      - Stampare giorno, prezzo e distanza dalla media.
-      - Incrementare sotto_media.
-3. Stampare totale.
+  Giorno  4: 148.60€ (-0.36€ dalla media)
+  Giorno  7: 147.20€ (-1.76€ dalla media)
+Totale giorni sotto media: 5 su 10
 ```

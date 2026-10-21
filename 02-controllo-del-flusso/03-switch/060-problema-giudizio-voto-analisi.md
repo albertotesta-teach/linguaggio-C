@@ -18,68 +18,65 @@ con i punti mancanti).
 | 9 | distinto | avanzato |
 | 10 | ottimo | avanzato |
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `voto` | `int` | Voto in decimi, senza mezzi voti |
-| `voto_valido` | `int` (0/1) | Voto nell'intervallo [1, 10] |
+### Input
+
+| Variabile | Tipo  | Significato                        |
+|-----------|-------|------------------------------------|
+| `voto`    | `int` | Voto in decimi, senza mezzi voti   |
+
+### Output
+Il giudizio, il livello di apprendimento e l'esito: "SUFFICIENTE", oppure
+"INSUFFICIENTE" con i punti mancanti alla sufficienza (al singolare se manca
+un solo punto). Per un voto fuori intervallo: "Voto N non valido."
+
+### Vincoli
+- Il voto è compreso tra 1 e 10; se non lo è nessuno `switch` viene eseguito
+- Entrambi gli `switch` hanno il `default`, anche se il voto è già stato
+  controllato
+- La sufficienza è un intervallo (voto ≥ 6): si esprime con un `if`, non
+  con lo `switch`
+
+### Assunzioni
+- L'utente inserisce un numero intero
+
+### Variabili di supporto
+
+| Variabile     | Tipo        | Significato                     |
+|---------------|-------------|---------------------------------|
+| `voto_valido` | `int` (0/1) | Voto nell'intervallo [1, 10]    |
 
 Il voto ha dieci valori discreti: due `switch` lo trasformano in giudizio e
 livello. I raggruppamenti sono diversi nei due casi (il voto 4 ha un giudizio
 proprio ma condivide il livello con 1–3), per questo gli `switch` sono due.
-L'esito riguarda un intervallo (voto ≥ 6) e si esprime con un `if`.
 
-## 3. Casi d'uso e funzionalità
-
-### Caso d'uso 1 – Voto sufficiente
-
-**a) Input** – voto 8
-
-**b) Output** – "Giudizio: buono", "Livello di apprendimento: intermedio",
-"Esito: SUFFICIENTE"
-
-**c) Variabili di supporto** – `voto_valido`
-
-**d) Vincoli** – entrambi gli `switch` hanno il `default`, anche se il voto è
-già stato controllato
-
-**e) Assunzioni** – l'utente inserisce un numero intero
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Leggere il voto.
 2. Calcolare `voto_valido`; se falso stampare un errore e terminare.
 3. Primo `switch`: stampare il giudizio.
 4. Secondo `switch`: stampare il livello di apprendimento.
 5. Se il voto è almeno 6 stampare "SUFFICIENTE", altrimenti "INSUFFICIENTE"
-   con i punti mancanti (`6 - voto`), al singolare se manca un solo punto.
+   con i punti mancanti (`6 - voto`); la scelta tra "manca/mancano" e
+   "punto/punti" si fa con il ternario.
 
-### Caso d'uso 2 – Voto insufficiente
+## 3. Casi di test
 
-**a) Input** – voto 5
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – "mediocre", "in via di acquisizione",
-"Esito: INSUFFICIENTE - manca 1 punto alla sufficienza"
+### Test 1 – Voto sufficiente
+- **Input:** voto 8
+- **Output atteso:** "Giudizio: buono", "Livello di apprendimento: intermedio",
+  "Esito: SUFFICIENTE"
 
-**c) Variabili di supporto** – nessuna
+### Test 2 – Voto insufficiente di un punto
+- **Cosa si verifica:** la forma al singolare scelta con il ternario
+- **Input:** voto 5
+- **Output atteso:** "mediocre", "in via di acquisizione",
+  "Esito: INSUFFICIENTE - manca 1 punto alla sufficienza"
 
-**d) Vincoli** – la scelta tra "manca/mancano" e "punto/punti" si fa con il
-ternario
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – Voto non valido
-
-**a) Input** – voto 11 oppure 0
-
-**b) Output** – "Voto 11 non valido."
-
-**c) Variabili di supporto** – `voto_valido`
-
-**d) Vincoli** – nessuno `switch` viene eseguito
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, passo 2.
+### Test 3 – Voto non valido
+- **Cosa si verifica:** nessuno `switch` viene eseguito
+- **Input:** voto 11 oppure 0
+- **Output atteso:** "Voto 11 non valido." (oppure "Voto 0 non valido.")

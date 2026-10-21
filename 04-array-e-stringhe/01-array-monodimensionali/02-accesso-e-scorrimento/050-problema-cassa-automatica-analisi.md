@@ -9,133 +9,113 @@ dal più grande al più piccolo, assegnando quante monete possibile per ogni tag
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-I tagli sono memorizzati in un array di interi **in centesimi** per evitare
-gli errori di arrotondamento tipici della virgola mobile. Il secondo array
-`monete_usate` è strettamente parallelo: `monete_usate[i]` conta le monete
-del taglio `tagli[i]` restituite. L'algoritmo scorre l'array una sola volta,
-aggiornando il resto a ogni iterazione.
+### Input
 
-| Variabile           | Tipo      | Dimensione | Motivazione                                              |
-|---------------------|-----------|------------|----------------------------------------------------------|
-| `tagli`             | `int[]`   | 8          | Tagli disponibili in centesimi, ordine decrescente       |
-| `monete_usate`      | `int[]`   | 8          | Numero di monete usate per ogni taglio; parallelo a `tagli` |
-| `prezzo_centesimi`  | `int`     | —          | Prezzo dell'articolo in centesimi (intero)               |
-| `pagato_centesimi`  | `int`     | —          | Importo pagato in centesimi (intero)                     |
-| `resto`             | `int`     | —          | Resto da restituire, decrementato durante l'algoritmo    |
-| `totale_monete`     | `int`     | —          | Somma di tutti gli elementi di `monete_usate`            |
-| `valido`            | `int`     | —          | Flag per la validazione dell'input                       |
-| `NUM_TAGLI`         | `#define` | 8          | Dimensione degli array e limite dei cicli                |
+| Variabile          | Tipo  | Descrizione                         |
+|--------------------|-------|-------------------------------------|
+| `prezzo_centesimi` | `int` | Prezzo dell'articolo in centesimi   |
+| `pagato_centesimi` | `int` | Importo pagato in centesimi         |
+
+### Output
+- Prezzo, importo pagato e resto in formato euro (`E,CC euro`);
+- la composizione del resto: per ogni taglio usato, il valore in centesimi e
+  il numero di monete; poi "Resto restituito correttamente.", oppure
+  "Nessun resto da restituire." se il resto è zero;
+- il numero totale di monete restituite.
+
+### Vincoli
+- Il prezzo è positivo: altrimenti viene richiesto di nuovo
+- L'importo pagato è almeno pari al prezzo: altrimenti viene richiesto di
+  nuovo, indicando il minimo
+- Gli importi sono interi in centesimi, per evitare gli errori di
+  arrotondamento dei numeri reali; la stampa in euro usa `/ 100` e `% 100`
+- I tagli sono in ordine decrescente: è la condizione perché l'algoritmo
+  greedy dia il numero minimo di monete con i tagli dell'euro
+- Il taglio da 1 centesimo garantisce che il resto si azzeri sempre
+- Si stampano solo i tagli effettivamente usati
+- Il valore restituito da `scanf` si controlla: un testo non numerico è un
+  importo non valido e il resto della riga si scarta con `getchar`; se
+  l'input termina (EOF) l'operazione viene annullata
+
+### Assunzioni
+- La cassa ha disponibilità illimitata di ogni taglio
+- Non si gestiscono importi così grandi da superare la capacità di un `int`
+
+### Variabili di supporto
+
+| Variabile       | Tipo      | Dimensione | Descrizione                                         |
+|-----------------|-----------|------------|-----------------------------------------------------|
+| `tagli`         | `int[]`   | 8          | 200, 100, 50, 20, 10, 5, 2, 1 centesimi             |
+| `monete_usate`  | `int[]`   | 8          | Monete usate per ogni taglio, parallelo a `tagli`   |
+| `resto`         | `int`     | —          | Resto ancora da restituire                          |
+| `valido`        | `int`     | —          | Flag dei cicli di validazione                       |
+| `totale_monete` | `int`     | —          | Somma di `monete_usate`                             |
+| `NUM_TAGLI`     | `#define` | 8          | Numero di tagli                                     |
+
+### Algoritmo in linguaggio naturale
+1. Leggere il prezzo ripetendo finché non è positivo.
+2. Leggere l'importo pagato ripetendo finché è minore del prezzo.
+3. Calcolare `resto = pagato − prezzo` e stampare i tre importi in euro.
+4. Se il resto è zero stampare che non c'è resto. Altrimenti, per ogni
+   taglio dal più grande al più piccolo:
+   a. `monete_usate[i] = resto / tagli[i]` (divisione intera);
+   b. `resto = resto − monete_usate[i] × tagli[i]`;
+   c. se `monete_usate[i] > 0` stampare taglio e numero di monete.
+   Alla fine, se il resto è zero, stampare la conferma.
+5. Sommare `monete_usate` e stampare il totale delle monete.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-### Caso d'uso 1 – Acquisizione e validazione dell'input
-
-**a) Input**
-Due interi inseriti da tastiera: prezzo e importo pagato, entrambi in centesimi.
-
-**b) Output**
+### Test 1 – Resto tipico
+- **Input:** prezzo 135, pagato 200
+- **Output atteso:**
 ```
-Prezzo articolo (in centesimi, es. 135 per 1,35 euro): 135
-Importo pagato  (in centesimi): 200
-
 Prezzo  : 1,35 euro
 Pagato  : 2,00 euro
 Resto   : 0,65 euro
-```
 
-**c) Variabili di supporto**
-- `valido` (`int`): flag per il ciclo `while` di validazione.
-
-**d) Vincoli**
-- Il prezzo deve essere positivo (`> 0`).
-- L'importo pagato deve essere `>= prezzo_centesimi`.
-- La stampa in formato euro usa divisione e modulo interi: `centesimi / 100` e `centesimi % 100`.
-
-**e) Assunzioni**
-- L'utente inserisce valori interi (centesimi interi, senza virgola).
-- Non si gestisce il caso di overflow (prezzi molto grandi).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Richiedere prezzo_centesimi; ripetere finché <= 0.
-2. Richiedere pagato_centesimi; ripetere finché < prezzo_centesimi.
-3. resto = pagato_centesimi - prezzo_centesimi.
-4. Stampare prezzo, pagato e resto in formato euro (/ 100 e % 100).
-```
-
----
-
-### Caso d'uso 2 – Algoritmo greedy per il resto
-
-**a) Input**
-Array `tagli`, variabile `resto`.
-
-**b) Output**
-```
 Composizione del resto:
    50 cent  x 1 moneta/e
    10 cent  x 1 moneta/e
     5 cent  x 1 moneta/e
 
 Resto restituito correttamente.
-```
-
-**c) Variabili di supporto**
-- `monete_usate[i]` (`int`): quante monete del taglio `i` vengono usate.
-- `resto` (`int`): aggiornato sottraendo le monete assegnate a ogni iterazione.
-
-**d) Vincoli**
-- `tagli` deve essere in ordine decrescente affinché l'algoritmo greedy sia
-  corretto per il sistema monetario euro.
-- `monete_usate[i] = resto / tagli[i]` usa la divisione intera (quoziente).
-- `resto = resto - monete_usate[i] * tagli[i]` equivale a `resto % tagli[i]`.
-- Con il taglio da 1 centesimo sempre presente, il resto è sempre azzerabile.
-- Si stampano solo i tagli con `monete_usate[i] > 0`.
-
-**e) Assunzioni**
-- I tagli sono fissi e includono sempre il centesimo (1), garantendo la soluzione.
-- Non si considera la disponibilità fisica limitata delle monete in cassa.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Per i da 0 a NUM_TAGLI - 1:
-   a. monete_usate[i] = resto / tagli[i].
-   b. resto = resto - monete_usate[i] * tagli[i].
-   c. Se monete_usate[i] > 0: stampare taglio e quantità.
-2. Se resto == 0: stampare "Resto restituito correttamente".
-   Altrimenti: stampare messaggio di errore.
-```
-
----
-
-### Caso d'uso 3 – Conteggio totale delle monete
-
-**a) Input**
-Array `monete_usate`.
-
-**b) Output**
-```
 Totale monete restituite: 3
 ```
 
-**c) Variabili di supporto**
-- `totale_monete` (`int`): somma degli elementi di `monete_usate`.
+### Test 2 – Resto con monete ripetute
+- **Cosa si verifica:** più monete dello stesso taglio
+- **Input:** prezzo 1, pagato 500
+- **Output atteso:** `Resto   : 4,99 euro`; tagli 200 × 2, 50 × 1, 20 × 2,
+  5 × 1, 2 × 2; `Totale monete restituite: 8`
 
-**d) Vincoli**
-- Il ciclo scorre tutto l'array, incluse le celle con valore 0 (nessun impatto sulla somma).
+### Test 3 – Importo esatto
+- **Cosa si verifica:** il ramo senza resto
+- **Input:** prezzo 250, pagato 250
+- **Output atteso:** `Resto   : 0,00 euro`, `Nessun resto da restituire.`,
+  `Totale monete restituite: 0`
 
-**e) Assunzioni**
-- `monete_usate` è stato correttamente popolato dall'algoritmo greedy.
+### Test 4 – Dati non validi
+- **Cosa si verifica:** le due validazioni
+- **Input:** prezzo 0, poi -5, poi 300; pagato 200, poi 500
+- **Output atteso:** due volte `Inserire un prezzo positivo.`, poi
+  `Importo insufficiente. Inserire almeno 300 centesimi.`; infine resto
+  2,00 euro con una moneta da 200 centesimi
 
-**f) Algoritmo in linguaggio naturale**
+### Test 5 – Testo non numerico e fine dell'input
+- **Cosa si verifica:** la validazione di un testo al posto dell'importo e la chiusura senza ciclo infinito
+- **Input:** `abc`, `135`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
 ```
-1. Inizializzare totale_monete = 0.
-2. Per i da 0 a NUM_TAGLI - 1: totale_monete += monete_usate[i].
-3. Stampare totale_monete.
+Prezzo articolo (in centesimi, es. 135 per 1,35 euro): Inserire un prezzo positivo.
+Prezzo articolo (in centesimi, es. 135 per 1,35 euro): Importo pagato  (in centesimi): 
+
+Input terminato: operazione annullata.
 ```

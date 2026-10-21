@@ -9,98 +9,93 @@ la giacenza totale.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-La struttura è organizzata per **responsabilità separate**: ogni funzione
-ha un compito preciso e il `main` si limita a coordinare le operazioni e
-gestire i casi di errore (prodotto non trovato, quantità insufficiente).
+### Input
+Nessun input da tastiera: i prodotti e le operazioni sono fissi nel codice.
 
-| Variabile   | Tipo         | Dimensione | Motivazione                                          |
-|-------------|--------------|------------|------------------------------------------------------|
-| `codici`    | `int[]`      | 6          | Identificativo numerico di ogni prodotto             |
-| `nomi`      | `char[][]`   | 6 × 20     | Descrizione del prodotto                             |
-| `quantita`  | `int[]`      | 6          | Pezzi disponibili; modificato da `aggiorna_quantita` |
-| `indice`    | `int`        | —          | Risultato di `trova_prodotto`; -1 se non trovato     |
-| `esito`     | `int`        | —          | Risultato di `aggiorna_quantita`; 0 se rifiutato     |
-| `PRODOTTI`  | `#define`    | 6          | Dimensione degli array e limite dei cicli            |
+| Variabile  | Tipo       | Dimensione | Descrizione                             |
+|------------|------------|------------|-----------------------------------------|
+| `codici`   | `int[]`    | 6          | Codice numerico del prodotto            |
+| `nomi`     | `char[][]` | 6 × 20     | Descrizione del prodotto                |
+| `quantita` | `int[]`    | 6          | Pezzi disponibili                       |
 
----
+Operazioni eseguite dal `main`: carico di 200 pezzi del codice 1003,
+scarico di 150 pezzi del codice 1005, ricerca del codice 9999.
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Il prospetto iniziale con la giacenza totale;
+- per ogni operazione l'esito: "OK" con la nuova quantità,
+  "RIFIUTATO: quantita' insufficiente" oppure
+  "ERRORE: prodotto non trovato";
+- il prospetto finale con la nuova giacenza totale.
 
----
+### Vincoli
+- La ricerca restituisce l'indice del prodotto oppure -1 se il codice non
+  esiste, e si ferma al primo trovato tramite un flag (niente `break`)
+- L'aggiornamento somma una variazione (positiva per il carico, negativa per
+  lo scarico) e non porta mai la quantità sotto zero: in quel caso
+  l'operazione è rifiutata e la quantità resta invariata
+- L'aggiornamento verifica che l'indice sia valido
+- Ogni funzione ha una sola `return`
+- Le funzioni che non modificano gli array li ricevono come `const`
 
-### Caso d'uso 1 – Ricerca per codice
+### Assunzioni
+- I codici sono univoci
 
-**a) Input**
-Array `codici`, intero `codice_cercato`.
+### Variabili di supporto
 
-**b) Output**
-Restituisce l'indice del prodotto, oppure -1 se non trovato.
+| Variabile  | Tipo      | Descrizione                                       |
+|------------|-----------|---------------------------------------------------|
+| `indice`   | `int`     | Risultato di `trova_prodotto` (-1 se assente)     |
+| `esito`    | `int`     | Risultato di `aggiorna_quantita` (1 OK, 0 rifiuto)|
+| `PRODOTTI` | `#define` | 6                                                 |
 
-**c) Funzione coinvolta**
-`trova_prodotto(codici, n, codice_cercato)`: scorrimento con flag `trovato`;
-il ciclo si ferma alla prima corrispondenza (`&& !trovato`).
+| Funzione | Descrizione |
+|---|---|
+| `int trova_prodotto(const int codici[], int n, int codice_cercato)` | Indice del codice o -1 |
+| `int aggiorna_quantita(int quantita[], int n, int indice, int delta)` | Applica la variazione se il risultato non è negativo |
+| `int giacenza_totale(const int quantita[], int n)` | Somma delle quantità |
+| `void stampa_magazzino(...)` | Prospetto con giacenza totale |
 
-**d) Vincoli**
-- Restituisce -1 come sentinella di "non trovato".
-- Non usa `break`: la condizione `&& !trovato` nel `for` controlla l'uscita anticipata.
-- Una sola `return` alla fine.
+### Algoritmo in linguaggio naturale
+Per ogni operazione:
+1. Cercare il codice con `trova_prodotto`.
+2. Se l'indice è -1 stampare che il prodotto non è stato trovato.
+3. Altrimenti chiamare `aggiorna_quantita` con la variazione: se la nuova
+   quantità sarebbe negativa l'operazione è rifiutata, altrimenti la
+   quantità viene aggiornata. Stampare l'esito.
 
-**f) Algoritmo in linguaggio naturale**
-```
-trovato = 0, risultato = -1.
-Per i da 0 a n-1, finché !trovato:
-  Se codici[i] == codice_cercato: trovato = 1, risultato = i.
-return risultato.
-```
-
----
-
-### Caso d'uso 2 – Aggiornamento della quantità
-
-**a) Input**
-Array `quantita`, `indice` (da `trova_prodotto`), `delta` (positivo=carico, negativo=scarico).
-
-**b) Output**
-Restituisce 1 (operazione eseguita) o 0 (rifiutata perché porterebbe la quantità sotto zero).
-
-**c) Funzione coinvolta**
-`aggiorna_quantita(quantita, n, indice, delta)`.
-
-**d) Vincoli**
-- L'operazione viene rifiutata se `quantita[indice] + delta < 0`.
-- L'indice deve essere valido (`>= 0 && < n`).
-- Se rifiutata, l'array non viene modificato.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Se indice in [0, n-1]:
-  nuova = quantita[indice] + delta.
-  Se nuova >= 0: quantita[indice] = nuova, esito = 1.
-  Altrimenti: esito = 0 (nessuna modifica).
-return esito.
-```
+All'inizio e alla fine stampare il prospetto con la giacenza totale.
 
 ---
 
-### Caso d'uso 3 – Stampa prospetto e giacenza totale
+## 3. Casi di test
 
-**a) Input**
-Array `codici`, `nomi`, `quantita`.
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare lo scarico e ricompilare.
 
-**b) Output**
+### Test 1 – Carico, scarico e codice inesistente
+- **Output atteso:**
 ```
-  Cod.  | Prodotto           | Qty
-  ------|--------------------|---------
-  1001  | Vite M4x10         |   500
-  ...
-  Giacenza totale: 2410 pezzi
+Operazione: carico +200 di codice 1003
+  OK: Rondella M4 -> nuova quantita': 800
+
+Operazione: scarico -150 di codice 1005
+  OK: Dado M6 -> nuova quantita': 160
+
+Operazione: ricerca codice 9999 (inesistente)
+  ERRORE: prodotto non trovato
 ```
 
-**c) Funzione coinvolta**
-`stampa_magazzino` chiama internamente `giacenza_totale` per il totale.
+### Test 2 – Giacenza totale
+- **Cosa si verifica:** il prospetto riflette le operazioni
+- **Output atteso:** `Giacenza totale: 2610 pezzi` nello stato iniziale,
+  `Giacenza totale: 2660 pezzi` nello stato finale (+200 −150)
 
-**d) Vincoli**
-- `stampa_magazzino` non modifica nessun array (`const` su tutti i parametri di input).
-- `giacenza_totale` viene riusata dentro `stampa_magazzino` senza duplicare codice.
+### Test 3 – Scarico superiore alla disponibilità
+- **Cosa si verifica:** la quantità non va sotto zero
+- **Procedura:** cambiare lo scarico del codice 1005 da -150 a -400
+  (disponibili 310)
+- **Output atteso:** `RIFIUTATO: quantita' insufficiente`; nello stato
+  finale Dado M6 resta a 310

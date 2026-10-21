@@ -238,13 +238,13 @@ Categoria: Normopeso
 Input: 200.00  1
 ```
 === Dettaglio conversione ===
-Importo originale:     200.00 EUR
-Valuta:                   USD
-Tasso di cambio:        1.0850
-Importo convertito:    217.00
-Commissione (1.5%):      3.26
+Importo originale:       200.00 EUR
+Valuta:                     USD
+Tasso di cambio:         1.0850
+Importo convertito:      217.00
+Commissione (1.5%):       3.25
 ------------------------------
-Importo netto:         213.75
+Importo netto:           213.75
 ```
 
 ---

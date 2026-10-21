@@ -9,82 +9,83 @@ identifica la faccia più e meno frequente.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+
+| Variabile | Tipo  | Descrizione                                      |
+|-----------|-------|--------------------------------------------------|
+| `lancio`  | `int` | Risultato di un lancio (1–6), letto 30 volte     |
+
+### Output
+- Una tabella con, per ogni faccia, il numero di uscite e un istogramma di
+  asterischi (un asterisco per uscita);
+- la faccia uscita più spesso e quella uscita meno spesso, con il numero di
+  uscite;
+- la frequenza attesa per un dado equilibrato (30 / 6 = 5.0).
+
+### Vincoli
+- Ogni lancio è compreso tra 1 e 6: un valore fuori intervallo viene
+  segnalato e richiesto di nuovo, senza essere contato
+- La somma delle frequenze è sempre 30
+- Il numero di asterischi di ogni riga è uguale alla frequenza della faccia
+- In caso di parità tra più facce vince la prima trovata (indice più basso),
+  perché il confronto usa `>` e `<` stretti
+- Il valore restituito da `scanf` si controlla: un testo non numerico è un
+  valore non valido e il resto della riga si scarta con `getchar`; se
+  l'input termina prima dei 30 lanci (EOF) l'analisi viene annullata
+
+### Assunzioni
+- Nessuna in particolare
+
+
+### Variabili di supporto
 
 Il punto chiave del problema è l'uso di **un solo array come tabella di
-frequenze**: il valore letto (1–6) viene trasformato direttamente in un indice
+frequenze**: il valore letto (1–6) diventa direttamente un indice
 (`lancio - 1`), così ogni cella conta le uscite della faccia corrispondente.
-Non servono array paralleli perché il dato numerico stesso funge da indice.
+Non servono array paralleli perché il dato stesso funge da indice.
 
 ```
   Faccia:      1    2    3    4    5    6
   Indice:     [0]  [1]  [2]  [3]  [4]  [5]
-  frequenze:   5    4    6    3    7    5
 ```
 
-| Variabile    | Tipo      | Dimensione | Motivazione                                            |
-|--------------|-----------|------------|--------------------------------------------------------|
-| `frequenze`  | `int[]`   | 6          | Contatore per ogni faccia; `frequenze[i]` = uscite faccia i+1 |
-| `lancio`     | `int`     | —          | Valore letto da tastiera (1–6), diventa indice         |
-| `max_freq`   | `int`     | —          | Frequenza massima trovata                              |
-| `min_freq`   | `int`     | —          | Frequenza minima trovata                               |
-| `faccia_max` | `int`     | —          | Numero della faccia più frequente                      |
-| `faccia_min` | `int`     | —          | Numero della faccia meno frequente                     |
-| `valido`     | `int`     | —          | Flag per la validazione dell'input                     |
-| `NUM_FACCE`  | `#define` | 6          | Numero di facce del dado                               |
-| `NUM_LANCI`  | `#define` | 30         | Numero totale di lanci da inserire                     |
+| Variabile    | Tipo      | Dimensione | Descrizione                                       |
+|--------------|-----------|------------|---------------------------------------------------|
+| `frequenze`  | `int[]`   | 6          | `frequenze[i]` = uscite della faccia i+1          |
+| `valido`     | `int`     | —          | Flag del ciclo di validazione                     |
+| `max_freq`, `min_freq`     | `int` | — | Frequenze estreme trovate                       |
+| `faccia_max`, `faccia_min` | `int` | — | Facce corrispondenti agli estremi               |
+| `i`, `j`     | `int`     | —          | Indice della faccia e contatore degli asterischi  |
+| `NUM_FACCE`  | `#define` | 6          | Numero di facce del dado                          |
+| `NUM_LANCI`  | `#define` | 30         | Numero di lanci da inserire                       |
+
+### Algoritmo in linguaggio naturale
+1. Inizializzare tutte le frequenze a 0.
+2. Per ciascuno dei 30 lanci:
+   a. leggere il valore ripetendo finché non è compreso tra 1 e 6
+      (con messaggio di errore per i valori non validi);
+   b. incrementare `frequenze[lancio - 1]`.
+3. Per ogni faccia stampare il numero, la frequenza e tanti asterischi
+   quanto vale la frequenza.
+4. Porre massimo e minimo uguali a `frequenze[0]` (faccia 1); per le facce
+   da 2 a 6 aggiornare il massimo se la frequenza è maggiore e il minimo se
+   è minore.
+5. Stampare faccia più e meno frequente e la frequenza attesa
+   `NUM_LANCI / NUM_FACCE`.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Per ogni caso si esegue il programma con i 30 lanci indicati e si confronta
+quanto stampato con l'output atteso.
 
-### Caso d'uso 1 – Acquisizione e conteggio dei lanci
-
-**a) Input**
-30 valori interi inseriti da tastiera, ciascuno compreso tra 1 e 6.
-
-**b) Output**
-Prompt per ogni lancio:
-```
-  Lancio  1: 
-  Lancio  2: 
-  ...
-```
-
-**c) Variabili di supporto**
-- `lancio` (`int`): valore letto, usato come indice dopo la sottrazione di 1.
-- `valido` (`int`): flag che controlla il ciclo di validazione.
-
-**d) Vincoli**
-- Solo valori nell'intervallo [1, 6] sono accettati.
-- L'aggiornamento della frequenza avviene con `frequenze[lancio - 1] + 1`
-  per mantenere la corrispondenza tra faccia e indice.
-
-**e) Assunzioni**
-- L'utente inserisce valori interi; input non numerici non sono gestiti.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare frequenze[0..5] = 0.
-2. Per i da 0 a NUM_LANCI - 1:
-   a. Inizializzare valido = 0.
-   b. Mentre !valido:
-      - Leggere lancio.
-      - Se lancio in [1, NUM_FACCE]: valido = 1.
-      - Altrimenti: stampare errore.
-   c. frequenze[lancio - 1] += 1.
-```
-
----
-
-### Caso d'uso 2 – Istogramma delle frequenze
-
-**a) Input**
-Array `frequenze`.
-
-**b) Output**
+### Test 1 – Distribuzione tipica
+- **Input:** 1 1 1 1 1 · 2 2 2 2 · 3 3 3 3 3 3 · 4 4 4 · 5 5 5 5 5 5 5 ·
+  6 6 6 6 6
+- **Output atteso:**
 ```
 === RISULTATI ===
   Faccia | Conteggio | Istogramma
@@ -95,61 +96,35 @@ Array `frequenze`.
     4    |      3    | ***
     5    |      7    | *******
     6    |      5    | *****
-```
 
-**c) Variabili di supporto**
-- `i` (`int`): indice della faccia corrente.
-- `j` (`int`): contatore per il ciclo di stampa degli asterischi.
-
-**d) Vincoli**
-- Il numero di asterischi stampati è esattamente `frequenze[i]`.
-- L'indice i corrisponde alla faccia `i + 1`.
-
-**e) Assunzioni**
-- Le frequenze sono sempre non negative.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare intestazione della tabella.
-2. Per i da 0 a NUM_FACCE - 1:
-   a. Stampare i+1 e frequenze[i].
-   b. Per j da 0 a frequenze[i] - 1: stampare "*".
-   c. Andare a capo.
-```
-
----
-
-### Caso d'uso 3 – Faccia più e meno frequente
-
-**a) Input**
-Array `frequenze`.
-
-**b) Output**
-```
 Faccia uscita piu' spesso : 5 (7 volte)
 Faccia uscita meno spesso : 4 (3 volte)
 
 Frequenza attesa per dado equilibrato: 5.0 volte per faccia
 ```
 
-**c) Variabili di supporto**
-- `max_freq`, `min_freq` (`int`): estremi correnti durante la scansione.
-- `faccia_max`, `faccia_min` (`int`): faccia corrispondente agli estremi.
+### Test 2 – Dado perfettamente equilibrato
+- **Cosa si verifica:** con tutte le frequenze uguali vince la prima faccia
+- **Input:** la sequenza 1 2 3 4 5 6 ripetuta 5 volte
+- **Output atteso:** tutte le facce con 5 uscite;
+  `Faccia uscita piu' spesso : 1 (5 volte)` e
+  `Faccia uscita meno spesso : 1 (5 volte)`
 
-**d) Vincoli**
-- `max_freq` e `min_freq` sono inizializzati a `frequenze[0]`, non a 0 o a
-  un valore arbitrario, per garantire che l'inizializzazione sia sempre valida.
-- Il ciclo parte da `i = 1` perché `i = 0` è già incluso nell'inizializzazione.
+### Test 3 – Valori non validi e una sola faccia
+- **Cosa si verifica:** la validazione e una faccia con 0 uscite
+- **Input:** 0, 7 (rifiutati), poi 30 volte il valore 3
+- **Output atteso:** due volte
+  `Valore non valido. Inserire un numero da 1 a 6.` al primo lancio;
+  `Faccia uscita piu' spesso : 3 (30 volte)` e
+  `Faccia uscita meno spesso : 1 (0 volte)`
 
-**e) Assunzioni**
-- L'array ha almeno un elemento (garantito da `NUM_FACCE >= 1`).
-
-**f) Algoritmo in linguaggio naturale**
+### Test 4 – Testo non numerico e fine dell'input
+- **Cosa si verifica:** la validazione di un testo al posto del numero e la chiusura senza ciclo infinito
+- **Input:** `tre`, `4`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
 ```
-1. Inizializzare max_freq = min_freq = frequenze[0]; faccia_max = faccia_min = 1.
-2. Per i da 1 a NUM_FACCE - 1:
-   a. Se frequenze[i] > max_freq: aggiornare max_freq e faccia_max.
-   b. Se frequenze[i] < min_freq: aggiornare min_freq e faccia_min.
-3. Stampare faccia_max, max_freq, faccia_min, min_freq.
-4. Stampare frequenza attesa = NUM_LANCI / NUM_FACCE.
+  Lancio  1:   Valore non valido. Inserire un numero da 1 a 6.
+  Lancio  1:   Lancio  2: 
+
+Input terminato prima di 30 lanci: analisi annullata.
 ```

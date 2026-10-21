@@ -9,95 +9,115 @@ altri in avanti) e rimuovere un brano per ID (spostando gli altri indietro).
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto tecnico più rilevante è l'**inserimento in posizione intermedia**:
-per fare spazio al nuovo elemento si parte dal fondo e si sposta ogni elemento
-di una posizione in avanti, includendo il tappo, poi si scrive il nuovo valore
-nella posizione liberata.
+### Input
+Nessun input da tastiera: la playlist e le operazioni sono fisse nel codice.
 
-| Variabile  | Tipo    | Dimensione | Motivazione                                              |
-|------------|---------|------------|----------------------------------------------------------|
-| `id`       | `int[]` | MAX (18)   | ID brano; terminato da TAPPO (-1)                        |
-| `durate`   | `int[]` | MAX (18)   | Durata in secondi; sincronizzato con `id`                |
-| `TAPPO`    | `#define`| -1        | Sentinella: ID e durate sono sempre ≥ 0                  |
-| `MAX`      | `#define`| 18        | Capacità totale incluso tappo e margine                  |
+| Variabile | Tipo    | Dimensione | Descrizione                                       |
+|-----------|---------|------------|---------------------------------------------------|
+| `id`      | `int[]` | `MAX` (18) | ID del brano, terminati da `TAPPO` (-1)           |
+| `durate`  | `int[]` | `MAX` (18) | Durata in secondi, tappo nella stessa posizione   |
 
----
+Playlist iniziale: 1001–1005 con durate 213, 187, 245, 198, 221 secondi.
+Operazioni: inserimento del brano 1006 (230 s) all'indice 2, rimozione del
+brano 1003.
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La playlist: numero, ID e durata `MM:SS` di ogni brano, con la durata
+  totale;
+- il brano più lungo;
+- l'esito dell'inserimento ("OK" con il numero di brani, "POSIZIONE NON
+  VALIDA" o "PLAYLIST PIENA") e la playlist aggiornata;
+- l'esito della rimozione ("OK" oppure "BRANO NON TROVATO") e la playlist
+  finale.
 
----
+### Vincoli
+- I due array hanno il tappo nella stessa posizione e ogni operazione li
+  aggiorna entrambi
+- La posizione di inserimento (0-based) è valida da 0 (in testa) fino al
+  numero di brani (in coda); oltre è rifiutata
+- Per inserire si sposta ogni elemento di una posizione in avanti
+  **partendo dal fondo** (dal tappo fino alla posizione), altrimenti si
+  sovrascriverebbero dati non ancora copiati
+- L'inserimento richiede spazio anche per il tappo
+- La rimozione sposta a sinistra gli elementi successivi, tappo compreso
+- Le funzioni lavorano con indici da 0; la stampa numera i brani da 1
+- A parità di durata il brano più lungo è il primo trovato
 
-### Caso d'uso 1 – Inserimento in posizione intermedia
+### Assunzioni
+- ID e durate sono ≥ 0, quindi -1 non è un dato valido
+- Gli ID sono univoci
 
-**a) Input** — Array `id`, `durate`, intero `pos`, nuovo ID e durata.
-**b) Output** — Restituisce 1=OK, 0=pieno, -1=posizione non valida.
+### Variabili di supporto
 
-**c) Funzione coinvolta**
-`inserisci_in_posizione`: shift in avanti da `i = len` fino a `i = pos`,
-poi scrittura del nuovo elemento in `pos`.
+| Variabile | Tipo      | Descrizione                                       |
+|-----------|-----------|---------------------------------------------------|
+| `esito`   | `int`     | Inserimento: 1 OK, 0 pieno, -1 posizione non valida |
+| `min`, `sec`, `tot` | `int` | Durate convertite per la stampa           |
+| `TAPPO`   | `#define` | -1                                                |
+| `MAX`     | `#define` | 18                                                |
 
-**d) Vincoli**
-- Il range valido di `pos` è [0, len] (incluso `len` = inserimento in fondo).
-- Lo shift parte dal tappo (`i = len`) e procede indietro fino a `i = pos`.
-  Questo garantisce che ogni elemento venga spostato prima di essere sovrascritto.
-- Il tappo viene spostato nello shift: quando `i = len`, `id[len+1] = id[len] = TAPPO`.
-- `len + 1 >= MAX` controlla che ci sia posto per l'elemento e il tappo.
-- Lo shift avviene in parallelo su entrambi gli array.
+| Funzione | Descrizione |
+|---|---|
+| `int conta_brani(const int id[])` | Indice del tappo |
+| `int durata_totale(const int durate[], const int id[])` | Somma delle durate |
+| `int brano_piu_lungo(const int durate[], const int id[])` | Indice del massimo |
+| `int cerca_brano(const int id[], int id_cercato)` | Indice o -1 |
+| `int inserisci_in_posizione(...)` | 1 OK, 0 piena, -1 posizione non valida |
+| `int rimuovi_per_id(...)` | 1 rimosso, 0 non trovato |
+| `void stampa_playlist(...)` | Playlist con durata totale |
 
-**e) Assunzioni**
-- Non ci sono duplicati: la funzione non controlla l'ID già esistente.
-
-**f) Algoritmo**
-```
-len = conta_brani(id).
-Se pos < 0 o pos > len: return -1.
-Se len + 1 >= MAX: return 0.
-Per i da len a pos (incluso), decrescente:
-  id[i+1] = id[i]; durate[i+1] = durate[i].
-id[pos] = nuovo_id; durate[pos] = nuova_durata.
-return 1.
-```
-
----
-
-### Caso d'uso 2 – Rimozione per ID
-
-**a) Input** — Array `id`, `durate`, intero `id_da_rimuovere`.
-**b) Output** — Restituisce 1 (trovato e rimosso) o 0 (non trovato).
-
-**c) Funzione coinvolta**
-`rimuovi_per_id`: trova l'indice con `cerca_brano`, poi shift all'indietro
-da `idx` fino a `len - 1`, copiando anche il tappo nell'ultima iterazione.
-
-**d) Vincoli**
-- Lo shift all'indietro è l'opposto dell'inserimento: si parte dall'elemento
-  da rimuovere e si copia ogni elemento dalla posizione successiva.
-- Il ciclo fino a `i < len` (non `i <= len`) copia il tappo perché
-  `id[len] = TAPPO` viene copiato in `id[len-1]` quando `i = len - 1`.
-
-**f) Algoritmo**
-```
-idx = cerca_brano(id, id_da_rimuovere).
-Se idx == -1: return 0.
-len = conta_brani(id).
-Per i da idx a len - 1:
-  id[i] = id[i+1]; durate[i] = durate[i+1].
-return 1.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare la playlist iniziale e il brano più lungo.
+2. Inserimento in posizione `pos`:
+   a. se `pos` è negativa o maggiore del numero di brani, rifiutare;
+   b. altrimenti, se non c'è spazio, rifiutare per playlist piena;
+   c. altrimenti, per i dal tappo fino a `pos`, copiare l'elemento `i` in
+      `i + 1`; poi scrivere il nuovo brano in `pos`.
+3. Rimozione per ID: cercare l'indice; se esiste spostare a sinistra gli
+   elementi successivi.
+4. Stampare la playlist finale.
 
 ---
 
-### Caso d'uso 3 – Durata totale e brano più lungo
+## 3. Casi di test
 
-**a) Input** — Array `id`, `durate`.
-**b) Output**
+Il programma non legge dati: si esegue con i dati del codice; i test 3–5
+richiedono di modificare i parametri delle chiamate e ricompilare.
+
+### Test 1 – Inserimento in posizione intermedia
+- **Output atteso:**
 ```
-  Durata totale: 18:24
-  Brano piu' lungo: ID 1003 (245 secondi)
+  OK -> 6 brani in playlist
+
+  N. | ID    | Durata
+  ---|-------|-------
+   1 |  1001 | 03:33
+   2 |  1002 | 03:07
+   3 |  1006 | 03:50
+   4 |  1003 | 04:05
+   5 |  1004 | 03:18
+   6 |  1005 | 03:41
+  Durata totale: 21:34
 ```
-**d) Vincoli**
-- `durata_totale` riceve anche `id[]` per sapere dove si ferma il tappo.
-- `brano_piu_lungo` restituisce l'indice; il `main` accede poi a `id[idx]` e `durate[idx]`.
-- Conversione: `minuti = secondi / 60`, `sec_resto = secondi % 60`.
+
+### Test 2 – Brano più lungo e rimozione
+- **Output atteso:** `Brano piu' lungo: ID 1003 (245 secondi)` sulla
+  playlist iniziale; dopo la rimozione `OK -> 5 brani rimanenti` e
+  `Durata totale: 17:29`
+
+### Test 3 – Inserimento in testa e in coda
+- **Cosa si verifica:** le due posizioni estreme ammesse
+- **Procedura:** usare come posizione 0, poi 5
+- **Output atteso:** con 0 il brano 1006 è il n. 1; con 5 è il n. 6;
+  in entrambi i casi `Durata totale: 21:34`
+
+### Test 4 – Posizione non valida
+- **Procedura:** usare come posizione 9
+- **Output atteso:** `POSIZIONE NON VALIDA`; la playlist non cambia e,
+  dopo la rimozione di 1003, restano 4 brani con `Durata totale: 13:39`
+
+### Test 5 – Rimozione di un brano inesistente
+- **Procedura:** rimuovere l'ID 9999 invece di 1003
+- **Output atteso:** `BRANO NON TROVATO`

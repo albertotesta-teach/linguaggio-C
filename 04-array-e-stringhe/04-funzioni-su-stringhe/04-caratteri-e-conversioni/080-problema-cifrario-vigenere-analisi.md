@@ -9,65 +9,126 @@ si ripete ciclicamente. Le lettere mantengono maiuscola o minuscola, gli
 altri caratteri restano invariati. Il programma cifra ogni frase e, come
 verifica, la decifra di nuovo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `chiave` | `char[]` | 20 | Parola chiave, portata in maiuscolo |
-| `messaggio` | `char[]` | 80 | Frase da cifrare |
-| `cifrato`, `decifrato` | `char[]` | 80 | Risultati |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `chiave` | `char[20]` | Parola chiave, richiesta finché non è valida |
+| `messaggio` | `char[80]` | Frase da cifrare, una per riga; una riga vuota termina |
+
+### Output
+
+- `Chiave non valida.` per ogni chiave rifiutata, poi `Chiave in uso: <CHIAVE>` in maiuscolo;
+  se l'input termina prima di una chiave valida,
+  `Nessuna chiave valida inserita: programma terminato.`
+- Per ogni messaggio: il testo cifrato e il testo decifrato, con
+  l'indicazione `(uguale all'originale)` oppure `(ERRORE)`.
+
+### Vincoli
+
+- La chiave deve essere non vuota e contenere solo lettere (`isalpha`);
+  viene portata in maiuscolo.
+- Lettera cifrata = `base + (c - base + spostamento + 26) % 26`, con
+  `base` = `'A'` o `'a'` a seconda della lettera e
+  `spostamento` = `(chiave[k] - 'A') × verso` (`verso` = 1 cifra, -1 decifra).
+- Sottraendo si può scendere sotto 0: si aggiunge 26 prima del `% 26`.
+- L'indice `k` della chiave avanza solo sulle lettere: spazi, cifre e
+  punteggiatura non consumano la chiave e restano invariati.
+
+### Assunzioni
+
+- Il messaggio non contiene lettere accentate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `cifrato`, `decifrato` | `char[80]` | Risultati |
+| `letta` | `int` | 1 se la lettura del messaggio è riuscita |
+| `fine_input` | `int` | 1 se l'input termina prima di una chiave valida |
+| `i` | `int` | Indice per la conversione della chiave |
+| `k` | `int` | In `vigenere`: lettere cifrate finora (posizione nella chiave = `k % lung_chiave`) |
+| `base`, `spostamento` | `char`, `int` | In `vigenere`: inizio dell'alfabeto e spostamento della lettera corrente |
 
 | Funzione | Compito |
 |----------|---------|
+| `leggi_riga` | Legge una riga e toglie il `'\n'`; a fine input restituisce una stringa vuota |
 | `chiave_valida` | Chiave non vuota con sole lettere (`isalpha`) |
 | `vigenere` | Cifra (`verso` = 1) o decifra (`verso` = -1) |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Chiave non valida
+1. Ripetere la lettura della chiave finché non è valida o l'input termina,
+   segnalando ogni chiave rifiutata; se l'input è terminato, avvisare e
+   non leggere messaggi.
+2. Convertire la chiave in maiuscolo e stamparla.
+3. Leggere un messaggio; finché la lettura riesce e il messaggio non è vuoto:
+   1. cifrarlo con `verso` = 1 e decifrare il risultato con `verso` = -1;
+   2. stampare cifrato e decifrato e confrontare il decifrato con l'originale;
+   3. leggere il messaggio successivo.
+4. In `vigenere`, per ogni carattere: se è una lettera spostarla del valore
+   della lettera `k % lung_chiave` della chiave e incrementare `k`,
+   altrimenti copiarlo invariato.
 
-**a) Input** – `luna 2`, poi `luna`
+## 3. Casi di test
 
-**b) Output** – "Chiave non valida."; "Chiave in uso: LUNA"
+### Test 1 – Chiave non valida
 
-**c) Variabili di supporto** – esito di `chiave_valida`
+- **Cosa si verifica**: chiave con caratteri non alfabetici e chiave vuota
+  vengono rifiutate; la chiave valida è portata in maiuscolo.
+- **Input**: `luna 2`, riga vuota, `luna`.
+- **Output atteso**:
+  ```
+  Chiave (solo lettere):   Chiave non valida.
+  Chiave (solo lettere):   Chiave non valida.
+  Chiave (solo lettere): Chiave in uso: LUNA
+  ```
 
-**d) Vincoli** – la chiave deve contenere almeno una lettera e solo lettere
+### Test 2 – Cifratura
 
-**e) Assunzioni** – nessuna
+- **Cosa si verifica**: spostamenti della chiave e lo spazio che non la consuma.
+- **Input**: chiave `luna`, messaggio `CIAO MONDO`, poi riga vuota.
+- **Valori intermedi attesi**: spostamenti L = 11, U = 20, N = 13, A = 0;
+  `C` + 11 = `N`, `I` + 20 = 28 % 26 = 2 → `C`; dopo lo spazio la chiave
+  riparte da `L` (`k` = 4): `M` + 11 = `X`.
+- **Output atteso**:
+  ```
+    cifrato  : NCNO XIADZ
+    decifrato: CIAO MONDO  (uguale all'originale)
+  ```
 
-**f) Algoritmo in linguaggio naturale** – ripetere la richiesta con un
-`do-while` finché la chiave è valida, poi convertirla in maiuscolo con `toupper`.
+### Test 3 – Maiuscole, minuscole e caratteri non alfabetici
 
-### Caso d'uso 2 – Cifratura
+- **Cosa si verifica**: le lettere conservano il caso, cifre e punteggiatura restano invariate.
+- **Input**: chiave `luna`, messaggio `Ci vediamo alle 16, in biblioteca!`
+- **Output atteso**:
+  ```
+    cifrato  : Nc ieocnmz uylp 16, ca btvyiznrcl!
+    decifrato: Ci vediamo alle 16, in biblioteca!  (uguale all'originale)
+  ```
 
-**a) Input** – `CIAO MONDO` con chiave `LUNA`
+### Test 4 – Giro dell'alfabeto
 
-**b) Output** – `NCNO XIADZ`
+- **Cosa si verifica**: il `% 26` riporta all'inizio dell'alfabeto in cifratura
+  e il `+ 26` evita valori negativi in decifratura.
+- **Input**: chiave `luna`, messaggio `zzz`.
+- **Valori intermedi attesi**: `z` (25) + 11 = 36 % 26 = 10 → `k`;
+  in decifratura `k` (10) − 11 + 26 = 25 → `z`.
+- **Output atteso**:
+  ```
+    cifrato  : ktm
+    decifrato: zzz  (uguale all'originale)
+  ```
 
-**c) Variabili di supporto** – `k` (indice nella chiave), `spostamento`, `base`
-
-**d) Vincoli** – `k` avanza solo sulle lettere: gli spazi non consumano la chiave
-
-**e) Assunzioni** – lettere senza accenti
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni carattere: se è una lettera, `base` = 'A' o 'a' a seconda di `isupper`.
-2. `spostamento = chiave[k % lunghezza] - 'A'`.
-3. Nuova lettera = `base + (c - base + spostamento) % 26`; incrementare `k`.
-4. Gli altri caratteri si copiano invariati.
-
-### Caso d'uso 3 – Decifratura e verifica
-
-**a) Input** – il testo cifrato di `Ci vediamo alle 16, in biblioteca!`
-
-**b) Output** – il testo originale e "(uguale all'originale)"
-
-**c) Variabili di supporto** – `verso` = -1
-
-**d) Vincoli** – sottraendo si può scendere sotto 0: si aggiunge 26 prima del `% 26`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come la cifratura con lo
-spostamento negativo; poi `strcmp` tra decifrato e messaggio originale.
+### Test 5 – Fine dell'input durante la richiesta della chiave
+- **Cosa si verifica:** se l'input termina prima di una chiave valida il
+  programma si chiude invece di ripetere la richiesta all'infinito.
+- **Input:** `luna 2`, poi fine dell'input (Ctrl+D, o input da pipe).
+- **Output atteso:**
+  ```
+  Chiave (solo lettere):   Chiave non valida.
+  Chiave (solo lettere): 
+  Nessuna chiave valida inserita: programma terminato.
+  ```

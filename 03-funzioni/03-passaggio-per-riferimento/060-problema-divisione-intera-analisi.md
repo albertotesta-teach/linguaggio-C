@@ -6,75 +6,108 @@ dalla stessa divisione e non possono essere separati in chiamate distinte senza
 inefficienza. Il passaggio per riferimento permette a ciascuna funzione di
 scrivere entrambi i risultati direttamente nelle variabili del chiamante.
 
-Conversione 1: secondi totali → ore, minuti e secondi residui (formato HH:MM:SS)
-Conversione 2: importo in centesimi → euro e centesimi residui
+- Conversione 1: secondi totali → ore, minuti e secondi residui
+- Conversione 2: importo in centesimi → euro e centesimi residui
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+Nessun input da tastiera: i valori da convertire sono passati come argomenti
+a `stampa_durata` e `stampa_importo` nel `main`.
+
+| Parametro | Tipo | Descrizione |
+|---|---|---|
+| `secondi_tot` | int | Durata totale in secondi |
+| `centesimi_tot` | int | Importo totale in centesimi |
+
+### Output
+Una riga per ogni valore convertito:
+- durate nel formato `secondi  →  Hh MMm SSs` (minuti e secondi su due cifre);
+- importi nel formato `centesimi →  E EUR e CC cent` (centesimi su due cifre).
+
+### Vincoli
+- `secondi_tot >= 0` e `centesimi_tot >= 0`; i valori negativi non sono
+  gestiti
+- Le componenti rispettano i loro intervalli: minuti e secondi tra 0 e 59,
+  centesimi residui tra 0 e 99
+- Le componenti ricompongono il valore iniziale:
+  `ore × 3600 + minuti × 60 + sec = secondi_tot` e
+  `euro × 100 + centesimi = centesimi_tot`
+
+### Assunzioni
+- I valori sono interi; non vengono validati
+
+### Variabili di supporto
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
+| `ore`, `minuti`, `sec` | int | Componenti del tempo, locali a `stampa_durata` |
+| `euro`, `centesimi` | int | Componenti dell'importo, locali a `stampa_importo` |
 
 | Funzione | Firma | Descrizione |
 |---|---|---|
 | `secondi_in_hms` | `void(int, int*, int*, int*)` | Converte secondi in h, min, sec |
 | `centesimi_in_euro` | `void(int, int*, int*)` | Converte centesimi in euro e resto |
-| `stampa_durata` | `void(int)` | Stampa secondi e forma HH:MM:SS |
-| `stampa_importo` | `void(int)` | Stampa centesimi e forma EUR+cent |
+| `stampa_durata` | `void(int)` | Stampa secondi e forma ore/minuti/secondi |
+| `stampa_importo` | `void(int)` | Stampa centesimi e forma euro/centesimi |
 
-| Variabile | Tipo | Ruolo |
-|---|---|---|
-| `secondi_tot` | int (IN) | Durata totale in secondi |
-| `ore`, `minuti`, `sec` | int* (OUT) | Componenti del tempo |
-| `centesimi_tot` | int (IN) | Importo totale in centesimi |
-| `euro`, `centesimi` | int* (OUT) | Componenti dell'importo |
+### Algoritmo in linguaggio naturale
+Durata:
+1. `*ore = secondi_tot / 3600` (divisione intera).
+2. `*minuti = (secondi_tot % 3600) / 60`.
+3. `*sec = secondi_tot % 60`.
 
-## 3. Casi d'uso e funzionalità
+Importo:
+1. `*euro = centesimi_tot / 100`.
+2. `*centesimi = centesimi_tot % 100`.
 
-### Caso d'uso 1 – Conversione di una durata tipica
+## 3. Casi di test
 
-**a) Input** – `secondi_tot = 3725`
+Il `main` esegue tutte le conversioni in sequenza: si esegue il programma
+una volta e si confronta ogni riga con l'output atteso.
 
-**b) Output** – `3725 secondi → 1h 02m 05s`
-
-**c) Variabili di supporto** – `ore`, `minuti`, `sec` locali a `stampa_durata`, popolate dalla funzione
-
-**d) Vincoli** – `secondi_tot >= 0`; valori negativi non sono gestiti
-
-**e) Assunzioni** – il valore in input è espresso in secondi interi non negativi
-
-**f) Algoritmo in linguaggio naturale**
-1. `*ore    = secondi_tot / 3600`         (divisione intera)
-2. `*minuti = (secondi_tot % 3600) / 60`  (resto della prima divisione, poi diviso 60)
-3. `*sec    = secondi_tot % 60`           (resto della divisione per 60)
-
-### Caso d'uso 2 – Conversione di un importo
-
-**a) Input** – `centesimi_tot = 1275`
-
-**b) Output** – `1275 centesimi → 12 EUR e 75 cent`
-
-**c) Variabili di supporto** – `euro`, `centesimi` locali a `stampa_importo`
-
-**d) Vincoli** – `centesimi_tot >= 0`
-
-**e) Assunzioni** – l'importo è espresso in centesimi interi non negativi
-
-**f) Algoritmo in linguaggio naturale**
-1. `*euro      = centesimi_tot / 100`   (parte intera)
-2. `*centesimi = centesimi_tot % 100`   (resto)
-
-### Caso d'uso 3 – Valori limite e casi particolari
-
-**a) Input** – `secondi_tot = 0`, `secondi_tot = 86399`, `centesimi_tot = 99`
-
-**b) Output**
+### Test 1 – Durate tipiche
+- **Input:** 3725, 7384
+- **Output atteso:**
 ```
-    0 secondi  →  0h 00m 00s
-86399 secondi  →  23h 59m 59s
-   99 centesimi →  0 EUR e 99 cent
+   3725 secondi  →  1h 02m 05s
+   7384 secondi  →  2h 03m 04s
 ```
 
-**c) Variabili di supporto** – nessuna aggiuntiva
+### Test 2 – Durate ai confini delle unità
+- **Cosa si verifica:** il passaggio da secondi a minuti e da minuti a ore
+- **Input:** 59, 60, 3600
+- **Output atteso:**
+```
+     59 secondi  →  0h 00m 59s
+     60 secondi  →  0h 01m 00s
+   3600 secondi  →  1h 00m 00s
+```
 
-**d) Vincoli** – i risultati devono essere esatti ai limiti (0 e valori massimi per un giorno)
+### Test 3 – Durate limite
+- **Cosa si verifica:** lo zero e l'ultimo secondo della giornata
+- **Input:** 0, 86399
+- **Output atteso:**
+```
+      0 secondi  →  0h 00m 00s
+  86399 secondi  →  23h 59m 59s
+```
 
-**e) Assunzioni** – i valori di input rientrano in intervalli sensati (non vengono validati)
+### Test 4 – Importi
+- **Input:** 1275, 9999, 25000
+- **Output atteso:**
+```
+   1275 centesimi →  12 EUR e 75 cent
+   9999 centesimi →  99 EUR e 99 cent
+  25000 centesimi →  250 EUR e 00 cent
+```
 
-**f) Algoritmo in linguaggio naturale** – identico ai casi precedenti; l'aritmetica intera gestisce correttamente i casi limite
+### Test 5 – Importi limite
+- **Cosa si verifica:** importi sotto l'euro e cifra tonda
+- **Input:** 0, 99, 100
+- **Output atteso:**
+```
+      0 centesimi →  0 EUR e 00 cent
+     99 centesimi →  0 EUR e 99 cent
+    100 centesimi →  1 EUR e 00 cent
+```

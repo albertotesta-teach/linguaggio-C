@@ -7,12 +7,41 @@ funzioni di calcolo hanno la stessa struttura: ricevono due `double` e
 restituiscono un `double`. La stampa è responsabilità esclusiva del main.
 La divisione per zero restituisce 0.0 come valore convenzionale.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
 
 | Variabile | Tipo | Descrizione |
 |---|---|---|
-| `a`, `b` | double | Operandi letti dall'utente |
-| `operatore` | char | Simbolo dell'operazione (+, -, *, /) |
+| `a`, `b` | double | Operandi |
+| `operatore` | char | Simbolo dell'operazione |
+
+I tre valori si inseriscono su una riga nel formato `numero operatore numero`
+(es. `12.5 + 7.3`).
+
+### Output
+La riga `a op b = risultato`, con operandi e risultato a due decimali, oppure
+il messaggio `Operatore 'x' non riconosciuto.`
+
+### Vincoli
+- L'operatore è uno tra `+`, `-`, `*`, `/`; ogni altro carattere cade nel
+  ramo `else` finale
+- Con `b == 0.0` la divisione non viene eseguita: `op_quoziente` restituisce
+  0.0, un valore che il chiamante non può distinguere da un risultato
+  legittimo
+- Le funzioni di calcolo non stampano nulla: la stampa è affidata a
+  `stampa_risultato`
+
+### Assunzioni
+- L'utente inserisce il formato `numero operatore numero` correttamente
+- L'operatore è un solo carattere
+- La limitazione della divisione per zero è accettata in questa versione:
+  tecniche più robuste arrivano nei capitoli successivi
+
+### Variabili di supporto
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
 | `risultato` | double | Valore restituito dalla funzione di calcolo |
 
 | Funzione | Firma | Descrizione |
@@ -23,74 +52,40 @@ La divisione per zero restituisce 0.0 come valore convenzionale.
 | `op_quoziente` | `double(double, double)` | Divisione; restituisce 0.0 se b == 0.0 |
 | `stampa_risultato` | `void(double, char, double, double)` | Formattazione e stampa |
 
-Tutte le funzioni di calcolo seguono la stessa firma `double(double, double)`,
-rendendo il codice uniforme e prevedibile.
+Tutte le funzioni di calcolo hanno la stessa firma `double(double, double)`,
+che rende il codice uniforme e prevedibile.
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+1. Leggere `a`, `operatore`, `b`.
+2. Se l'operatore è `+`, `-` o `*`: chiamare la funzione corrispondente e
+   stampare il risultato con `stampa_risultato`.
+3. Altrimenti, se è `/`: chiamare `op_quoziente`, che restituisce `a / b`
+   se `b` è diverso da 0.0 e 0.0 altrimenti; stampare il risultato.
+4. Altrimenti stampare che l'operatore non è riconosciuto.
 
-### Caso d'uso 1 – Operazione valida (somma, differenza, prodotto)
+## 3. Casi di test
 
-**a) Input** – `12.5 + 7.3`
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – `12.50 + 7.30 = 19.80`
+### Test 1 – Somma
+- **Input:** `12.5 + 7.3`
+- **Output atteso:** `12.50 + 7.30 = 19.80`
 
-**c) Variabili di supporto** – `risultato` riceve il valore restituito dalla funzione
+### Test 2 – Prodotto con operando negativo
+- **Input:** `6 * -1.5`
+- **Output atteso:** `6.00 * -1.50 = -9.00`
 
-**d) Vincoli** – l'operatore deve essere uno dei quattro riconosciuti
+### Test 3 – Divisione valida
+- **Input:** `10.0 / 4.0`
+- **Output atteso:** `10.00 / 4.00 = 2.50`
 
-**e) Assunzioni** – l'utente inserisce il formato `numero operatore numero` correttamente
+### Test 4 – Divisione per zero
+- **Cosa si verifica:** il valore convenzionale 0.0
+- **Input:** `8.0 / 0.0`
+- **Output atteso:** `8.00 / 0.00 = 0.00`
 
-**f) Algoritmo in linguaggio naturale**
-1. Leggere `a`, `operatore`, `b` con `scanf`
-2. Chiamare la funzione corrispondente all'operatore
-3. Chiamare `stampa_risultato` con operandi, operatore e risultato
-
-### Caso d'uso 2 – Divisione valida
-
-**a) Input** – `10.0 / 4.0`
-
-**b) Output** – `10.00 / 4.00 = 2.50`
-
-**c) Variabili di supporto** – `risultato` (double, locale a `op_quoziente`)
-
-**d) Vincoli** – `b != 0.0`
-
-**e) Assunzioni** – il divisore è un numero reale diverso da zero
-
-**f) Algoritmo in linguaggio naturale**
-1. `op_quoziente` verifica che `b != 0.0`
-2. Calcola e restituisce `a / b`
-3. Il main chiama `stampa_risultato` con il valore ottenuto
-
-### Caso d'uso 3 – Divisione per zero
-
-**a) Input** – `8.0 / 0.0`
-
-**b) Output** – `8.00 / 0.00 = 0.00`
-
-**c) Variabili di supporto** – nessuna aggiuntiva
-
-**d) Vincoli** – il valore 0.0 restituito non è distinguibile da un risultato legittimo
-
-**e) Assunzioni** – questa limitazione è accettata in questa versione del programma; tecniche più robuste verranno introdotte nei capitoli successivi
-
-**f) Algoritmo in linguaggio naturale**
-1. `op_quoziente` rileva che `b == 0.0`
-2. Restituisce 0.0 come valore convenzionale
-3. Il main chiama `stampa_risultato` e stampa il risultato convenzionale
-
-### Caso d'uso 4 – Operatore non riconosciuto
-
-**a) Input** – `5.0 ^ 2.0`
-
-**b) Output** – `Operatore '^' non riconosciuto.`
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – tutti gli operatori diversi da +, -, *, / devono cadere nel ramo else
-
-**e) Assunzioni** – l'utente inserisce un solo carattere come operatore
-
-**f) Algoritmo in linguaggio naturale**
-1. Nessuna condizione `if/else if` corrisponde all'operatore letto
-2. Il ramo `else` finale stampa il messaggio di operatore non riconosciuto
+### Test 5 – Operatore non riconosciuto
+- **Cosa si verifica:** il ramo `else` finale
+- **Input:** `5.0 ^ 2.0`
+- **Output atteso:** `Operatore '^' non riconosciuto.`

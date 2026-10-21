@@ -9,141 +9,101 @@ lettere distinte sono presenti.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è la **conversione carattere → indice**: sottraendo il codice
-ASCII di `'a'` da una lettera minuscola si ottiene un indice nell'intervallo
-[0, 25], che punta direttamente alla cella dell'array da incrementare.
-È lo stesso pattern dell'array dado, applicato a dati testuali.
+### Input
+Nessun input da tastiera: il testo è una stringa fissa nel codice.
+
+| Variabile | Tipo     | Descrizione                                  |
+|-----------|----------|----------------------------------------------|
+| `testo`   | `char[]` | Testo da analizzare, terminato da `'\0'`     |
+
+### Output
+- Una tabella con, per ogni lettera presente, il numero di occorrenze, la
+  percentuale sul totale delle lettere e un istogramma (un asterisco per
+  occorrenza);
+- il totale delle lettere analizzate;
+- la lettera più frequente e la meno frequente tra quelle presenti;
+- il numero di lettere distinte usate.
+
+### Vincoli
+- Si contano solo le lettere: spazi, cifre e punteggiatura sono ignorati
+- Le maiuscole sono convertite in minuscole (aggiungendo 32) e contate
+  insieme
+- La tabella mostra solo le lettere con almeno un'occorrenza
+- La lettera meno frequente si cerca solo tra quelle presenti, altrimenti
+  sarebbe sempre una lettera assente con 0 occorrenze
+- In caso di parità si sceglie la lettera che viene prima nell'alfabeto
+- Le percentuali si calcolano sul totale delle lettere, non dei caratteri
+
+### Assunzioni
+- La codifica è ASCII: le lettere minuscole hanno codici consecutivi
+- Il testo non contiene lettere accentate (verrebbero ignorate)
+- Il testo contiene almeno una lettera
+
+### Variabili di supporto
+
+Il punto chiave è la **conversione carattere → indice**: sottraendo `'a'` da
+una lettera minuscola si ottiene un indice tra 0 e 25.
 
 ```
   Carattere:  'a'   'b'   'c'  ...  'z'
-  Indice:      0     1     2   ...   25
-  Formula:     c - 'a'
+  Indice:      0     1     2   ...   25      (c - 'a')
 ```
 
-| Variabile         | Tipo      | Dimensione | Motivazione                                              |
-|-------------------|-----------|------------|----------------------------------------------------------|
-| `testo`           | `char[]`  | variabile  | Stringa da analizzare, terminata da `'\0'`               |
-| `frequenze`       | `int[]`   | 26         | `frequenze[i]` conta le occorrenze della lettera `'a'+i` |
-| `totale_lettere`  | `int`     | —          | Totale caratteri alfabetici trovati (per le percentuali) |
-| `indice_max`      | `int`     | —          | Indice della lettera più frequente                       |
-| `indice_min`      | `int`     | —          | Indice della lettera meno frequente (tra quelle presenti)|
-| `lettere_distinte`| `int`     | —          | Contatore celle con `frequenze[i] > 0`                   |
-| `LETTERE`         | `#define` | 26         | Dimensione dell'array (lettere dell'alfabeto)            |
+| Variabile          | Tipo      | Dimensione | Descrizione                                     |
+|--------------------|-----------|------------|-------------------------------------------------|
+| `frequenze`        | `int[]`   | 26         | `frequenze[i]` = occorrenze della lettera `'a'+i` |
+| `totale_lettere`   | `int`     | —          | Lettere trovate nel testo                       |
+| `indice_max`       | `int`     | —          | Lettera più frequente                           |
+| `indice_min`       | `int`     | —          | Lettera meno frequente (-1 finché nessuna)      |
+| `lettere_distinte` | `int`     | —          | Numero di celle con frequenza > 0               |
+| `LETTERE`          | `#define` | 26         | Lettere dell'alfabeto                           |
+
+### Algoritmo in linguaggio naturale
+1. Scorrere il testo fino a `'\0'`; per ogni carattere: se è maiuscolo
+   convertirlo in minuscolo; se è una lettera incrementare
+   `frequenze[c - 'a']` e `totale_lettere`.
+2. Per ogni lettera con frequenza positiva stampare lettera, frequenza,
+   percentuale e asterischi; stampare il totale.
+3. Scorrere le 26 lettere aggiornando l'indice del massimo e, tra le sole
+   lettere presenti, quello del minimo (partendo da -1).
+4. Stampare le lettere più e meno frequenti.
+5. Contare e stampare le lettere distinte.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il testo è fisso nel codice: il Test 2 richiede di sostituirlo e ricompilare.
 
-### Caso d'uso 1 – Scansione del testo e conteggio
-
-**a) Input**
-Stringa `testo` inizializzata staticamente nel codice.
-
-**b) Output**
-Nessun output durante la scansione; i risultati vengono stampati nei casi d'uso successivi.
-
-**c) Variabili di supporto**
-- `c` (`char`): carattere corrente, eventualmente convertito in minuscolo.
-- `i` (`int`): indice di scorrimento della stringa.
-
-**d) Vincoli**
-- Il ciclo scorre fino al terminatore `'\0'` (condizione `testo[i] != '\0'`).
-- Le maiuscole vengono convertite in minuscole aggiungendo 32 (differenza ASCII).
-- Spazi, apostrofi e qualsiasi carattere non alfabetico vengono ignorati.
-- L'aggiornamento usa `frequenze[c - 'a'] += 1`, dove `c - 'a'` è sempre in [0, 25].
-
-**e) Assunzioni**
-- Il testo contiene solo caratteri ASCII standard (nessun carattere accentato).
-- Le apostrofi nel testo (come nell'esempio "dell'impero") non sono lettere e vengono ignorati.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 1 – Testo del programma
+- **Valori intermedi attesi:** 129 lettere su 17 lettere diverse
+- **Output atteso (righe finali):**
 ```
-1. Inizializzare frequenze[0..25] = 0, totale_lettere = 0.
-2. Per i da 0 finché testo[i] != '\0':
-   a. c = testo[i].
-   b. Se c è maiuscola: c += 32 (conversione in minuscola).
-   c. Se c è minuscola (a..z):
-      - frequenze[c - 'a'] += 1.
-      - totale_lettere += 1.
+Totale lettere analizzate: 129
+
+Lettera piu' frequente : 'a'  (21 occorrenze)
+Lettera meno frequente : 'v'  (1 occorrenza/e)
+Lettere distinte usate : 17 su 26
 ```
+- **Osservazione:** anche la 'z' ha 1 occorrenza, ma vince la 'v' perché
+  viene prima nell'alfabeto
 
----
-
-### Caso d'uso 2 – Tabella delle frequenze con istogramma
-
-**a) Input**
-Array `frequenze`, variabile `totale_lettere`.
-
-**b) Output**
+### Test 2 – Maiuscole, cifre e punteggiatura
+- **Cosa si verifica:** la conversione in minuscolo, i caratteri ignorati e
+  la parità tra tutte le lettere
+- **Procedura:** sostituire il testo con `"Ciao, CIAO! 123 "`
+- **Output atteso:**
 ```
-=== ANALISI FREQUENZA LETTERE ===
+    a     |    2  |   25.0%     | **
+    c     |    2  |   25.0%     | **
+    i     |    2  |   25.0%     | **
+    o     |    2  |   25.0%     | **
 
-  Lettera | Freq. | Percentuale | Istogramma
-  --------|-------|-------------|--------------------
-    a     |   18  |   14.8%     | ******************
-    c     |    5  |    4.1%     | *****
-  ...
-```
+Totale lettere analizzate: 8
 
-**c) Variabili di supporto**
-- `perc` (`double`): percentuale sul totale.
-- `j` (`int`): contatore per la stampa degli asterischi.
-
-**d) Vincoli**
-- Si stampano solo le lettere con `frequenze[i] > 0`.
-- Il carattere stampato si ricava con `'a' + i` (inverso della conversione).
-- La percentuale usa divisione floating point.
-
-**e) Assunzioni**
-- `totale_lettere > 0` (il testo contiene almeno una lettera).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Per i da 0 a LETTERE - 1:
-   a. Se frequenze[i] > 0:
-      - perc = frequenze[i] / totale_lettere * 100.
-      - Stampare 'a'+i, frequenze[i], perc.
-      - Per j da 0 a frequenze[i]-1: stampare "*".
-```
-
----
-
-### Caso d'uso 3 – Lettera più e meno frequente, lettere distinte
-
-**a) Input**
-Array `frequenze`.
-
-**b) Output**
-```
-Lettera piu' frequente : 'a'  (18 occorrenze)
-Lettera meno frequente : 'b'  (1 occorrenza/e)
-Lettere distinte usate : 19 su 26
-```
-
-**c) Variabili di supporto**
-- `indice_max` (`int`): inizializzato a 0; aggiornato se `frequenze[i] > frequenze[indice_max]`.
-- `indice_min` (`int`): inizializzato a -1 (sentinella); aggiornato solo su celle > 0.
-
-**d) Vincoli**
-- Il minimo deve ignorare le celle con `frequenze[i] == 0`, altrimenti le lettere
-  assenti sarebbero sempre "le meno frequenti".
-- La sentinella `indice_min = -1` segnala che ancora non è stata trovata nessuna
-  lettera presente; va gestita prima di usare l'indice.
-
-**e) Assunzioni**
-- Il testo contiene almeno una lettera (altrimenti `indice_min` resterebbe -1).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare indice_max = 0, indice_min = -1.
-2. Per i da 0 a LETTERE - 1:
-   a. Se frequenze[i] > frequenze[indice_max]: indice_max = i.
-   b. Se frequenze[i] > 0 E (indice_min == -1 O frequenze[i] < frequenze[indice_min]):
-      indice_min = i.
-3. Stampare 'a'+indice_max e 'a'+indice_min con le rispettive frequenze.
-4. Contare le celle con frequenze[i] > 0 e stampare il risultato.
+Lettera piu' frequente : 'a'  (2 occorrenze)
+Lettera meno frequente : 'a'  (2 occorrenza/e)
+Lettere distinte usate : 4 su 26
 ```

@@ -9,95 +9,65 @@ numero progressivo, data e ora preimpostate.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile              | Tipo     | Dimensione | Motivazione                                        |
-|------------------------|----------|------------|----------------------------------------------------|
-| `data`                 | `char[]` | 11         | Data in formato ISO (10 caratteri + `'\0'`)        |
-| `ora`                  | `char[]` | 6          | Ora in formato HH:MM (5 caratteri + `'\0'`)        |
-| `nome_studente`        | `char[]` | 61         | Nome completo max 60 caratteri + `'\0'`            |
-| `numero_registrazione` | `int`    | —          | Contatore progressivo (simulato)                   |
-| `i`                    | `int`    | —          | Indice per scorrere la stringa e rimuovere `'\n'`  |
-| `nome_valido`          | `int`    | —          | Flag: 1 = nome inserito, 0 = campo vuoto           |
+### Input
 
----
+| Variabile       | Tipo     | Dimensione | Descrizione                                  |
+|-----------------|----------|------------|----------------------------------------------|
+| `nome_studente` | `char[]` | 61         | Nome e cognome, max 60 caratteri + `'\0'`    |
 
-## 3. Casi d'uso e funzionalità
+Data, ora e numero progressivo sono preimpostati nel codice.
 
----
+### Output
+- L'intestazione del registro con data e ora;
+- se il nome non è vuoto, il riquadro "PRESENZA REGISTRATA" con numero
+  progressivo, data, ora e studente, e la conferma; altrimenti
+  "ERRORE: nessun nome inserito. Presenza non registrata.".
 
-### Caso d'uso 1 – Lettura del nome studente
+### Vincoli
+- Il nome si legge con `fgets`, perché può contenere spazi (`scanf` con
+  `%s` si fermerebbe al primo spazio)
+- `fgets` conserva il `'\n'` finale: si scorre la stringa fino a `'\n'` o a
+  `'\0'` e lo si sostituisce con `'\0'`
+- Un nome è vuoto se, tolto il `'\n'`, il primo carattere è `'\0'`
+- `fgets` legge al massimo 60 caratteri, quindi il buffer non viene mai
+  superato
 
-**a) Input**
-Stringa digitata dall'utente da tastiera, può contenere spazi
-(es. "De Luca Giovanni").
+### Assunzioni
+- Data, ora e numero progressivo sono costanti didattiche: in un sistema
+  reale verrebbero dall'orologio e da un archivio
+- Un nome fatto di soli spazi è considerato valido
 
-**b) Output**
-Nessun output diretto: il valore viene memorizzato in `nome_studente`
-per i casi d'uso successivi.
+### Variabili di supporto
 
-**c) Variabili di supporto**
-- `i` (`int`): indice usato nel ciclo di rimozione del `'\n'`.
+| Variabile              | Tipo     | Dimensione | Descrizione                             |
+|------------------------|----------|------------|-----------------------------------------|
+| `data`                 | `char[]` | 11         | Data in formato ISO                     |
+| `ora`                  | `char[]` | 6          | Ora in formato HH:MM                    |
+| `numero_registrazione` | `int`    | —          | Numero progressivo simulato (142)       |
+| `i`                    | `int`    | —          | Indice per trovare il `'\n'`            |
+| `nome_valido`          | `int`    | —          | 1 se il nome non è vuoto                |
 
-**d) Vincoli**
-- La lunghezza massima leggibile è 60 caratteri (il buffer è 61).
-- `fgets` include `'\n'` nella stringa: deve essere rimosso prima dell'uso.
-
-**e) Assunzioni**
-- L'input proviene da `stdin` (tastiera).
-- Il nome può contenere spazi, lettere accentate non sono gestite.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Mostrare il prompt "Inserisci nome e cognome: ".
-2. Leggere la riga con fgets(nome_studente, 61, stdin).
-3. Inizializzare i a 0.
-4. Finché nome_studente[i] non è '\n' e non è '\0':
-   a. Incrementare i.
-5. Impostare nome_studente[i] a '\0' (rimuove '\n' se presente).
-```
-
----
-
-### Caso d'uso 2 – Verifica campo non vuoto
-
-**a) Input**
-La stringa `nome_studente` dopo la rimozione del `'\n'`.
-
-**b) Output**
-Nessun output diretto: imposta il flag `nome_valido`.
-
-**c) Variabili di supporto**
-- `nome_valido` (`int`): flag risultato della verifica.
-
-**d) Vincoli**
-- Una stringa vuota ha `nome_studente[0] == '\0'` dopo la rimozione del `'\n'`.
-
-**e) Assunzioni**
-- Una stringa composta solo da spazi è considerata valida
-  (controllo semplificato, adatto al livello didattico).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Se nome_studente[0] è '\0':
-   a. Impostare nome_valido a 0.
-2. Altrimenti:
-   a. Impostare nome_valido a 1.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione con data e ora.
+2. Leggere il nome con `fgets`.
+3. Scorrere fino a `'\n'` o `'\0'` e scrivervi `'\0'`.
+4. Se il primo carattere è `'\0'` il nome non è valido.
+5. Se è valido stampare la registrazione, altrimenti l'errore.
 
 ---
 
-### Caso d'uso 3 – Registrazione e stampa del log
+## 3. Casi di test
 
-**a) Input**
-`nome_valido`, `nome_studente`, `data`, `ora`, `numero_registrazione`.
+Per ogni caso si esegue il programma con l'input indicato.
 
-**b) Output**
-Se il nome è valido, scheda formattata con tutti i dati della registrazione:
+### Test 1 – Nome con spazi
+- **Cosa si verifica:** `fgets` legge anche gli spazi e il `'\n'` viene
+  rimosso (la conferma finisce subito dopo il nome)
+- **Input:** `De Luca Giovanni`
+- **Output atteso:**
 ```
-════════════════════════════════════════════════════
-  PRESENZA REGISTRATA
-════════════════════════════════════════════════════
   N. progressivo : 142
   Data           : 2024-11-15
   Ora            : 08:32
@@ -106,28 +76,7 @@ Se il nome è valido, scheda formattata con tutti i dati della registrazione:
 
 Presenza di De Luca Giovanni registrata correttamente.
 ```
-Se il nome non è valido, messaggio di errore:
-```
-ERRORE: nessun nome inserito. Presenza non registrata.
-```
 
-**c) Variabili di supporto**
-Nessuna variabile aggiuntiva: la stampa usa direttamente le variabili già dichiarate.
-
-**d) Vincoli**
-- La stampa avviene solo se `nome_valido` è 1.
-- I campi della scheda sono allineati con larghezza fissa tramite `printf`.
-
-**e) Assunzioni**
-- Data e ora sono preimpostate nel codice (non lette da orologio di sistema).
-- Il numero progressivo è simulato con un valore fisso.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Se nome_valido è 0:
-   a. Stampare messaggio di errore.
-2. Altrimenti:
-   a. Stampare intestazione della scheda.
-   b. Stampare numero progressivo, data, ora, nome studente.
-   c. Stampare riga di conferma con il nome dello studente.
-```
+### Test 2 – Nome vuoto
+- **Input:** solo Invio
+- **Output atteso:** `ERRORE: nessun nome inserito. Presenza non registrata.`

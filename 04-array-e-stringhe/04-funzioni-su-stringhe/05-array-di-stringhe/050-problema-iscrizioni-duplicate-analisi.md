@@ -7,65 +7,118 @@ ma alcuni lo hanno inviato più volte scrivendo il nome in modo diverso
 (maiuscole, spazi). Bisogna riconoscere i duplicati, indicare per ciascuno
 il modulo originale e produrre l'elenco degli iscritti senza ripetizioni.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `moduli` | `char[][]` | 10 × 28 | Nomi come sono stati scritti |
-| `normalizzati` | `char[][]` | 10 × 28 | Nomi normalizzati (parallelo) |
-| `pulito` | `char[][]` | 10 × 28 | Elenco senza duplicati (array a tappo) |
-| `n_pulito` | `int` | — | Righe usate di `pulito` |
-| `duplicato`, `duplicati` | `int` | — | Flag del modulo corrente, totale |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `moduli` | `char[10][28]` | Nomi come sono stati scritti nei moduli, in ordine di arrivo |
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da tastiera.
+
+### Output
+
+- Per ogni duplicato: numero e testo del modulo e numero e testo del
+  modulo originale.
+- Moduli ricevuti, duplicati, iscritti.
+- Elenco numerato degli iscritti senza ripetizioni.
+
+### Vincoli
+
+- Due nomi sono uguali se lo sono dopo la normalizzazione: minuscolo,
+  spazi iniziali e finali eliminati, un solo spazio tra le parole.
+- Il confronto avviene sulle copie normalizzate (`strcmp`), la stampa sugli originali.
+- Si conserva il primo modulo inviato, nell'ordine di arrivo.
+- Un modulo si confronta solo con quelli precedenti e ci si ferma al primo
+  uguale trovato.
+
+### Assunzioni
+
+- Il nome è scritto sempre nell'ordine cognome nome.
+- Non si riconoscono errori di battitura: nomi che differiscono anche per
+  una sola lettera sono persone diverse.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `normalizzati` | `char[10][28]` | Nomi normalizzati (parallelo a `moduli`) |
+| `pulito` | `char[10][28]` | Elenco senza duplicati (array riempito parzialmente) |
+| `n_pulito` | `int` | Righe usate di `pulito` |
+| `i`, `j` | `int` | Modulo corrente e modulo precedente con cui si confronta |
+| `duplicato` | `int` | Flag del modulo corrente |
+| `duplicati` | `int` | Totale dei duplicati |
 
 | Funzione | Compito |
 |----------|---------|
-| `normalizza` | Minuscolo, spazi iniziali/finali eliminati, uno spazio tra le parole |
+| `normalizza` | Copia in minuscolo, senza spazi iniziali/finali, con un solo spazio tra le parole |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Varianti dello stesso nome
-
-**a) Input** – `"Rossi Mario"`, `"ROSSI MARIO"`, `"  bianchi  sara"`
-
-**b) Output** – i moduli 3 e 5 sono duplicati dei moduli 1 e 2
-
-**c) Variabili di supporto** – `normalizzati`
-
-**d) Vincoli** – il confronto avviene sulle copie normalizzate, la stampa sugli originali
-
-**e) Assunzioni** – nomi senza lettere accentate
-
-**f) Algoritmo in linguaggio naturale**
 1. Normalizzare tutti i moduli.
-2. Per ogni modulo `i`, confrontarlo con i moduli `j < i` finché non si
-   trova un uguale (ciclo fermato dal flag).
-3. Se trovato, segnalarlo; altrimenti copiarlo nell'elenco pulito.
+2. Per ogni modulo `i`:
+   1. confrontarne la copia normalizzata con quelle dei moduli `j < i`,
+      fermandosi al primo uguale;
+   2. se è un duplicato stamparlo con il modulo originale e incrementare `duplicati`;
+   3. altrimenti copiarlo in `pulito`.
+3. Stampare i totali e l'elenco pulito.
+4. In `normalizza`: copiare in minuscolo ogni carattere diverso dallo spazio;
+   copiare uno spazio solo se il carattere precedentemente copiato non è
+   uno spazio e non si è all'inizio; alla fine togliere l'eventuale spazio finale.
 
-### Caso d'uso 2 – Nomi simili ma diversi
+## 3. Casi di test
 
-**a) Input** – `"Rossi Mario"` e `"Rossi Maria"`
+### Test 1 – Maiuscole diverse
 
-**b) Output** – entrambi nell'elenco degli iscritti
+- **Cosa si verifica**: due nomi che differiscono solo per le maiuscole.
+- **Input**: modulo 1 `Rossi Mario`, modulo 3 `ROSSI MARIO` (dati del sorgente).
+- **Valori intermedi attesi**: entrambi normalizzati in `rossi mario`.
+- **Output atteso**:
+  ```
+    modulo  3 [ROSSI MARIO] e' un duplicato del modulo 1 [Rossi Mario]
+  ```
 
-**c) Variabili di supporto** – nessuna
+### Test 2 – Spazi iniziali, finali e doppi
 
-**d) Vincoli** – `strcmp` sulle copie normalizzate: basta una lettera diversa
+- **Cosa si verifica**: la normalizzazione degli spazi.
+- **Input**: modulo 5 `  bianchi  sara`, modulo 9 `Verdi  Luca `.
+- **Valori intermedi attesi**: normalizzati in `bianchi sara` e `verdi luca`.
+- **Output atteso**:
+  ```
+    modulo  5 [  bianchi  sara] e' un duplicato del modulo 2 [Bianchi Sara]
+    modulo  9 [Verdi  Luca ] e' un duplicato del modulo 4 [Verdi Luca]
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 3 – Nome identico
 
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
+- **Cosa si verifica**: un modulo inviato due volte con lo stesso testo.
+- **Input**: moduli 6 e 10 `Neri Anna`.
+- **Output atteso**:
+  ```
+    modulo 10 [Neri Anna] e' un duplicato del modulo 6 [Neri Anna]
+  ```
 
-### Caso d'uso 3 – Elenco pulito
+### Test 4 – Nomi simili ma diversi
 
-**a) Input** – esito dei confronti
+- **Cosa si verifica**: basta una lettera diversa perché siano due iscritti.
+- **Input**: `Rossi Mario` e `Rossi Maria`.
+- **Output atteso**: nessuna riga di duplicato per il modulo 8; entrambi
+  compaiono nell'elenco degli iscritti.
 
-**b) Output** – 10 moduli, 4 duplicati, 6 iscritti con il loro elenco
+### Test 5 – Elenco pulito
 
-**c) Variabili di supporto** – `n_pulito`
-
-**d) Vincoli** – si conserva il primo modulo inviato, nell'ordine di arrivo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – ogni modulo non duplicato si copia
-con `strcpy` in `pulito[n_pulito]` e si incrementa `n_pulito`.
+- **Cosa si verifica**: totali e ordine di arrivo dell'elenco finale, con il
+  testo del primo modulo inviato.
+- **Input**: dati del sorgente.
+- **Output atteso**:
+  ```
+  Moduli ricevuti: 10, duplicati: 4, iscritti: 6
+  Elenco degli iscritti:
+    1. Rossi Mario
+    2. Bianchi Sara
+    3. Verdi Luca
+    4. Neri Anna
+    5. Gallo Paolo
+    6. Rossi Maria
+  ```

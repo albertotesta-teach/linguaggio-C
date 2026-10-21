@@ -9,114 +9,95 @@ misure fuori tolleranza.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è la **separazione tra elaborazione e presentazione**: le funzioni
-calcolano e costruiscono i dati, il `main` si occupa solo di coordinarle e
-stampare i risultati. L'array `normalizzate` è costruito da `normalizza()` a
-partire da `misure`; `scarti` è costruito da `calcola_scarti()`.
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-| Variabile        | Tipo        | Dimensione | Motivazione                                            |
-|------------------|-------------|------------|--------------------------------------------------------|
-| `misure`         | `double[]`  | 8          | Tensioni acquisite in Volt                             |
-| `normalizzate`   | `double[]`  | 8          | Output di `normalizza()`: valori in [0.0, 1.0]         |
-| `scarti`         | `double[]`  | 8          | Output di `calcola_scarti()`: differenza da nominale   |
-| `valore_atteso`  | `double`    | —          | Tensione nominale fornita dal tecnico (4.50 V)         |
-| `soglia_scarto`  | `double`    | —          | Tolleranza massima accettabile (0.5 V)                 |
-| `fuori_tolleranza`| `int`      | —          | Contatore misure con scarto > soglia                   |
-| `MISURE`         | `#define`   | 8          | Dimensione degli array e limite dei cicli              |
+| Variabile       | Tipo       | Dimensione | Descrizione                               |
+|-----------------|------------|------------|-------------------------------------------|
+| `misure`        | `double[]` | 8          | Tensioni acquisite in Volt                |
+| `valore_atteso` | `double`   | —          | Tensione nominale (4.50 V)                |
+| `soglia_scarto` | `double`   | —          | Tolleranza massima (0.5 V)                |
 
----
+### Output
+- Una tabella con, per ogni misura, il valore originale, il valore
+  normalizzato (quattro decimali) e lo scarto dal valore atteso;
+- tensione massima, tensione media, valore atteso e scarto medio;
+- il numero di misure fuori tolleranza.
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- Valore normalizzato = misura / massimo: il massimo diventa 1.0 e tutti i
+  valori cadono in [0, 1] se le misure sono non negative
+- Se il massimo è 0 la divisione non è possibile: tutti i valori
+  normalizzati valgono 0
+- Lo scarto è il valore assoluto di `misura − valore_atteso`
+- Una misura è fuori tolleranza se lo scarto è **strettamente** maggiore
+  della soglia: uno scarto di esattamente 0.5 V è accettato
+- Le funzioni calcolano e riempiono gli array; la stampa dei risultati è
+  separata dal calcolo
+- Gli array di sola lettura sono passati come `const`
 
----
+### Assunzioni
+- Le misure sono non negative
+- L'array contiene almeno un elemento
 
-### Caso d'uso 1 – Normalizzazione nell'intervallo [0.0, 1.0]
+### Variabili di supporto
 
-**a) Input**
-Array `misure`.
+| Variabile          | Tipo       | Dimensione | Descrizione                               |
+|--------------------|------------|------------|-------------------------------------------|
+| `normalizzate`     | `double[]` | 8          | Riempito da `normalizza()`                |
+| `scarti`           | `double[]` | 8          | Riempito da `calcola_scarti()`            |
+| `fuori_tolleranza` | `int`      | —          | Misure con scarto oltre la soglia         |
+| `MISURE`           | `#define`  | 8          | Numero di misure                          |
 
-**b) Output**
-Colonna `Normaliz.` nella tabella:
-```
-   1  |   3.210 V |   0.6270  |  ...
-   5  |   5.120 V |   1.0000  |  ...
-```
+| Funzione | Descrizione |
+|---|---|
+| `double massimo(const double arr[], int n)` | Valore massimo |
+| `double media(const double arr[], int n)` | Media aritmetica |
+| `void normalizza(const double src[], double dst[], int n)` | Scrive in `dst` i valori divisi per il massimo |
+| `void calcola_scarti(const double misure[], double scarti[], int n, double valore_atteso)` | Scrive in `scarti` gli scarti assoluti |
+| `void stampa_tabella(...)` | Stampa i tre array affiancati |
 
-**c) Funzione coinvolta**
-`normalizza(src, dst, n)`: trova il massimo con `massimo()`, poi divide ogni
-elemento per esso. Gestisce il caso degenere massimo = 0.
-
-**d) Vincoli**
-- Il valore massimo deve essere calcolato prima di iniziare la divisione.
-- `dst[i] = src[i] / max` produce sempre un valore in [0.0, 1.0].
-- L'elemento con valore massimo ottiene esattamente 1.0.
-
-**e) Assunzioni**
-- Tutte le misure sono non negative (tensioni).
-- Il massimo è sempre > 0 in condizioni normali.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. max = massimo(src, n).
-2. Se max == 0.0: dst[i] = 0.0 per tutti i.
-   Altrimenti: per i da 0 a n-1: dst[i] = src[i] / max.
-```
-
----
-
-### Caso d'uso 2 – Calcolo degli scarti dal valore atteso
-
-**a) Input**
-Array `misure`, scalare `valore_atteso`.
-
-**b) Output**
-Colonna `Scarto da 4.5V` nella tabella:
-```
-   1  |   3.210 V |  ...  |   1.290 V
-   4  |   5.120 V |  ...  |   0.620 V
-```
-
-**c) Funzione coinvolta**
-`calcola_scarti(misure, scarti, n, valore_atteso)`: per ogni elemento calcola
-il valore assoluto della differenza.
-
-**d) Vincoli**
-- Lo scarto è sempre non negativo (valore assoluto).
-- `diff = misure[i] - valore_atteso` può essere positiva o negativa.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Per i da 0 a n-1:
-  diff = misure[i] - valore_atteso.
-  scarti[i] = |diff|.
-```
+### Algoritmo in linguaggio naturale
+1. Chiamare `normalizza`: calcolare il massimo; se è 0 azzerare `dst`,
+   altrimenti `dst[i] = src[i] / max`.
+2. Chiamare `calcola_scarti`: `scarti[i] = |misure[i] − valore_atteso|`.
+3. Stampare la tabella.
+4. Stampare massimo e media delle misure, valore atteso e media degli
+   scarti.
+5. Contare gli scarti maggiori della soglia e stampare il conteggio.
 
 ---
 
-### Caso d'uso 3 – Misure fuori tolleranza
+## 3. Casi di test
 
-**a) Input**
-Array `scarti`, scalare `soglia_scarto`.
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**b) Output**
+### Test 1 – Normalizzazione e scarti
+- **Cosa si verifica:** la misura massima (5.12 V) vale 1.0000
+- **Output atteso:**
 ```
-Misure fuori tolleranza (scarto > 0.5 V): 2 su 8
+    1  |   3.210 V |  0.6270   |   1.290 V
+    2  |   4.850 V |  0.9473   |   0.350 V
+    3  |   2.970 V |  0.5801   |   1.530 V
+    4  |   5.120 V |  1.0000   |   0.620 V
+    5  |   4.430 V |  0.8652   |   0.070 V
+    6  |   3.760 V |  0.7344   |   0.740 V
+    7  |   5.000 V |  0.9766   |   0.500 V
+    8  |   4.180 V |  0.8164   |   0.320 V
 ```
 
-**c) Variabili di supporto**
-- `fuori_tolleranza` (`int`): contatore misure con `scarti[i] > soglia_scarto`.
-
-**d) Vincoli**
-- Il confronto avviene su `scarti[]` (già valori assoluti), non su `misure[]`.
-- La soglia è definita come variabile scalare nel `main`, non come `#define`,
-  perché potrebbe variare da campagna di misura a campagna di misura.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 2 – Statistiche e tolleranza
+- **Cosa si verifica:** la misura 7 ha scarto esattamente 0.5 V e non è
+  contata fuori tolleranza
+- **Output atteso:**
 ```
-fuori_tolleranza = 0.
-Per i da 0 a MISURE - 1:
-  Se scarti[i] > soglia_scarto: fuori_tolleranza++.
-Stampare fuori_tolleranza.
+Tensione massima   : 5.120 V
+Tensione media     : 4.190 V
+Valore atteso      : 4.500 V
+Scarto medio       : 0.677 V
+
+Misure fuori tolleranza (scarto > 0.5 V): 4 su 8
 ```

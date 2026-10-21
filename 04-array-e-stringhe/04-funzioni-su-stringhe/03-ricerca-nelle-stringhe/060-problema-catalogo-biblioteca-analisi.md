@@ -8,81 +8,121 @@ senza distinguere maiuscole e minuscole; per ogni libro trovato si mostrano
 titolo, autore, anno e disponibilità. La ricerca si ripete finché l'utente
 non inserisce una riga vuota.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `titoli` | `char[][]` | 8 × 40 | Titoli |
-| `autori` | `char[][]` | 8 × 24 | Autori (parallelo) |
-| `anni` | `int[]` | 8 | Anno di pubblicazione (parallelo) |
-| `copie` | `int[]` | 8 | Copie disponibili (parallelo) |
-| `chiave`, `chiave_min` | `char[]` | 40 | Parola cercata e sua copia in minuscolo |
-| `trovati` | `int` | — | Risultati della ricerca corrente |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `chiave` | `char[40]` | Parola chiave letta da tastiera; una riga vuota termina |
+| `titoli` | `char[8][40]` | Titoli del catalogo (nel sorgente) |
+| `autori` | `char[8][24]` | Autori (parallelo) |
+| `anni` | `int[8]` | Anno di pubblicazione (parallelo) |
+| `copie` | `int[8]` | Copie disponibili (parallelo) |
+
+### Output
+
+- Per ogni libro trovato: titolo, autore, anno e `disponibile` (copie > 0)
+  oppure `in prestito`.
+- Il numero di risultati (`1 risultato` / `N risultati`), oppure
+  `Nessun libro trovato per "<chiave>".`
+- Alla fine: `Buona lettura!`
+
+### Vincoli
+
+- La ricerca non distingue maiuscole e minuscole: chiave e campo vengono
+  entrambi convertiti in minuscolo prima di usare `strstr`.
+- Un libro compare una sola volta anche se la chiave è sia nel titolo sia nell'autore.
+- La copia in minuscolo del campo è grande quanto il campo più lungo (`LUNG_TITOLO`).
+
+### Assunzioni
+
+- Titoli e autori non contengono lettere accentate (si usa l'apostrofo, es. `citta'`).
+- `strstr` cerca una sequenza di caratteri, non una parola intera: la chiave
+  può essere trovata anche dentro un'altra parola (vedi Test 3).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `chiave_min` | `char[40]` | Chiave convertita in minuscolo |
+| `letta` | `int` | 1 se la lettura è riuscita |
+| `k` | `int` | Indice del libro in esame |
+| `trovati` | `int` | Libri trovati per la chiave corrente |
+| `testo_min` | `char[40]` | In `contiene`: copia in minuscolo del campo |
 
 | Funzione | Compito |
 |----------|---------|
-| `in_minuscolo` | Copia in minuscolo |
-| `contiene` | Converte un campo in minuscolo e lo cerca con `strstr` |
+| `leggi_riga` | Legge una riga e toglie il `'\n'` |
+| `in_minuscolo` | Copia convertendo le maiuscole |
+| `contiene` | 1 se il campo (convertito in minuscolo) contiene la chiave |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Ricerca per autore
+1. Leggere la chiave.
+2. Finché la lettura riesce e la chiave non è vuota:
+   1. convertire la chiave in minuscolo e azzerare `trovati`;
+   2. per ogni libro, se il titolo o l'autore contengono la chiave,
+      stampare la riga del libro e incrementare `trovati`;
+   3. se `trovati` è 0 stampare il messaggio di nessun risultato,
+      altrimenti il numero di risultati;
+   4. leggere la chiave successiva.
+3. Stampare il saluto finale.
 
-**a) Input** – `calvino`
+## 3. Casi di test
 
-**b) Output** – i quattro libri di Italo Calvino, con "in prestito" per quello senza copie
+### Test 1 – Ricerca per autore
 
-**c) Variabili di supporto** – `chiave_min`, `trovati`
+- **Cosa si verifica**: la chiave in minuscolo trova l'autore scritto con
+  l'iniziale maiuscola; un libro senza copie risulta in prestito.
+- **Input**: `calvino`, poi riga vuota.
+- **Output atteso**:
+  ```
+    Il barone rampante             Italo Calvino       1957  disponibile
+    Le citta' invisibili           Italo Calvino       1972  in prestito
+    Il sentiero dei nidi di ragno  Italo Calvino       1947  disponibile
+    Marcovaldo                     Italo Calvino       1963  disponibile
+    4 risultati
+  ```
 
-**d) Vincoli** – la chiave e il campo devono essere entrambi in minuscolo
+### Test 2 – Chiave scritta in maiuscolo
 
-**e) Assunzioni** – lettere senza accenti
+- **Cosa si verifica**: anche la chiave viene convertita; singolare di "risultato".
+- **Input**: `PROMESSI`, poi riga vuota.
+- **Output atteso**:
+  ```
+    I promessi sposi               Alessandro Manzoni  1840  disponibile
+    1 risultato
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Convertire la chiave in minuscolo.
-2. Per ogni libro: se titolo o autore la contengono, stampare il libro e contarlo.
-3. Stampare il numero di risultati o "Nessun libro trovato".
+### Test 3 – Chiave contenuta in altre parole
 
-### Caso d'uso 2 – Ricerca per titolo in maiuscolo
+- **Cosa si verifica**: `strstr` trova la sequenza anche dentro una parola
+  ("invisibili" contiene "il").
+- **Input**: `il`, poi riga vuota.
+- **Output atteso**:
+  ```
+    Il barone rampante             Italo Calvino       1957  disponibile
+    Le citta' invisibili           Italo Calvino       1972  in prestito
+    Il sentiero dei nidi di ragno  Italo Calvino       1947  disponibile
+    Il fu Mattia Pascal            Luigi Pirandello    1904  in prestito
+    4 risultati
+  ```
 
-**a) Input** – `PROMESSI`
+### Test 4 – Chiave presente in più autori
 
-**b) Output** – I promessi sposi, 1 risultato
+- **Cosa si verifica**: la ricerca sull'autore trova autori diversi con lo stesso nome.
+- **Input**: `Italo`, poi riga vuota.
+- **Valori intermedi attesi**: `trovati` = 5 (quattro libri di Calvino e uno di Svevo).
+- **Output atteso** (ultima riga): `  5 risultati`
 
-**c) Variabili di supporto** – come nel caso 1
+### Test 5 – Nessun risultato
 
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – Parola contenuta in altre parole
-
-**a) Input** – `il`
-
-**b) Output** – anche "Le città invisibili", perché "invisibili" contiene "il"
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – `strstr` cerca una sequenza di caratteri, non una parola intera
-
-**e) Assunzioni** – il comportamento è accettato per una ricerca semplice
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1 (per la parola
-intera si veda `030-conta-occorrenze.c`).
-
-### Caso d'uso 4 – Nessun risultato
-
-**a) Input** – `Eco`
-
-**b) Output** – "Nessun libro trovato per "Eco"."
-
-**c) Variabili di supporto** – `trovati` = 0
-
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – dopo lo scorrimento, se `trovati`
-vale 0 si stampa il messaggio.
+- **Cosa si verifica**: messaggio quando nessun libro corrisponde; nel
+  messaggio la chiave è stampata come è stata scritta.
+- **Input**: `Eco`, poi riga vuota.
+- **Output atteso**:
+  ```
+    Nessun libro trovato per "Eco".
+  Parola chiave (riga vuota per uscire): Buona lettura!
+  ```

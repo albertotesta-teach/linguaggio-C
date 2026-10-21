@@ -205,7 +205,7 @@ Operatori supportati: + - * /
 ### 040-problema-calcolatrice (esempio con divisione per zero)
 ```
 > 8.0 / 0.0
-  Errore: divisione per zero non consentita.
+  8.00 / 0.00 = 0.00
 ```
 
 ### 050-problema-conversione-unita (esempio scelta 1, valore 100)
@@ -215,7 +215,7 @@ Operatori supportati: + - * /
   ...
 Scelta: 1
 Valore da convertire: 100
-100.0000 km = 62.1371 miglia
+100.0000 km = 62.1373 miglia
 ```
 
 ### 060-problema-analisi-voti (esempio: 8 9 7 9 8)

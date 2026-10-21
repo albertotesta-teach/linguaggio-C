@@ -9,85 +9,99 @@ di un tipo specifico scorrendo l'array al contrario.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile    | Tipo      | Dimensione | Motivazione                                              |
-|--------------|-----------|------------|----------------------------------------------------------|
-| `log_eventi` | `int[]`   | MAX (25)   | Codici eventi > 0; terminato da TAPPO (0)                |
-| `TAPPO`      | `#define` | 0          | Sentinella: 0 è illegale come codice (i codici sono > 0) |
-| `MAX`        | `#define` | 25         | Capacità totale incluso il tappo                         |
+### Input
+Nessun input da tastiera: il log è inizializzato nel codice.
+
+| Variabile    | Tipo    | Dimensione | Descrizione                                 |
+|--------------|---------|------------|---------------------------------------------|
+| `log_eventi` | `int[]` | `MAX` (25) | Codici degli eventi, terminati da `TAPPO` (0) |
+
+### Output
+- Il log: posizione, codice e categoria (INFO, WARNING, ERROR, oppure "???"
+  per un codice fuori dalle tre categorie);
+- il totale degli eventi e, per ogni categoria, numero e percentuale;
+- la posizione e il codice dell'ultimo ERROR e dell'ultimo WARNING, oppure
+  il messaggio che non ce ne sono;
+- una valutazione finale: "Sistema OK" se non ci sono errori, "Attenzione"
+  se gli errori sono meno del 20%, "CRITICO" altrimenti.
+
+### Vincoli
+- La categoria si ricava con la divisione intera `codice / 100`: 1 = INFO,
+  2 = WARNING, 3 = ERROR, qualsiasi altro valore = sconosciuto
+- Il tappo 0 non può essere un codice valido, perché i codici sono > 0
+- L'ultimo evento di una categoria si cerca scorrendo **al contrario**, dalla
+  posizione prima del tappo verso l'inizio, fermandosi al primo trovato con
+  un flag (niente `break`)
+- Gli eventi di categoria sconosciuta sono contati nel totale ma non in
+  nessuna categoria: in quel caso le percentuali non sommano a 100
+- La soglia critica è il 20% di errori: a esattamente il 20% il sistema è
+  già CRITICO
+
+### Assunzioni
+- Il log non è vuoto (il totale è usato come divisore)
+
+### Variabili di supporto
+
+| Variabile | Tipo      | Descrizione                                   |
+|-----------|-----------|-----------------------------------------------|
+| `totale`, `n_info`, `n_warn`, `n_err` | `int` | Conteggi              |
+| `idx`     | `int`     | Indice dell'ultimo evento trovato (-1 se nessuno) |
+| `TAPPO`   | `#define` | 0                                             |
+| `MAX`     | `#define` | 25                                            |
+
+| Funzione | Descrizione |
+|---|---|
+| `int conta_eventi(const int log[])` | Indice del tappo |
+| `int categoria(int codice)` | 1, 2, 3 oppure 0 se sconosciuta |
+| `int conta_per_categoria(const int log[], int cat)` | Eventi di una categoria |
+| `int ultimo_per_categoria(const int log[], int cat)` | Indice dell'ultimo evento, -1 se assente |
+| `void stampa_log(const int log[])` | Log con etichette |
+
+### Algoritmo in linguaggio naturale
+1. Stampare il log scorrendo fino al tappo, con l'etichetta della categoria.
+2. Contare il totale e gli eventi di ogni categoria; stampare numeri e
+   percentuali.
+3. Per ERROR e WARNING: partire dall'ultimo evento e scorrere all'indietro
+   fino a trovare un evento della categoria o fino all'inizio; stampare il
+   risultato.
+4. Se non ci sono errori stampare "Sistema OK"; altrimenti, se gli errori
+   sono meno del 20% del totale stampare un avviso, altrimenti "CRITICO".
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il log è fisso nel codice: i test 2 e 3 richiedono di modificarlo e
+ricompilare.
 
-### Caso d'uso 1 – Classificazione per categoria
-
-**a) Input** — Array `log_eventi`.
-**b) Output**
+### Test 1 – Log con errori oltre la soglia
+- **Input:** 101, 102, 201, 103, 301, 202, 104, 302, 105, 203, 303, 106
+- **Output atteso:**
 ```
 Totale eventi : 12
 INFO          : 6  (50%)
 WARNING       : 3  (25%)
 ERROR         : 3  (25%)
-```
-**c) Funzioni coinvolte**
-- `categoria(codice)`: restituisce `codice / 100` se in [1,3], altrimenti 0.
-  La divisione intera per 100 classifica automaticamente: 101/100=1, 250/100=2, 305/100=3.
-- `conta_per_categoria`: scorre il log chiamando `categoria()` per ogni evento.
 
-**d) Vincoli**
-- `categoria()` restituisce 0 per codici fuori range [100, 399]: gestito con `if`.
-- Le percentuali usano divisione floating point.
-
-**f) Algoritmo — `categoria`**
-```
-cat = codice / 100.
-Se cat in [1, 3]: return cat.
-Altrimenti: return 0.
-```
-
----
-
-### Caso d'uso 2 – Ultimo evento per categoria
-
-**a) Input** — Array `log_eventi`, intero `cat`.
-**b) Output**
-```
 Ultimo ERROR  : posizione 11, codice 303
 Ultimo WARNING: posizione 10, codice 203
-```
-**c) Funzione coinvolta**
-`ultimo_per_categoria`: trova prima la posizione dell'ultimo elemento valido
-(`conta_eventi() - 1`), poi scorre all'indietro con `i--` finché non trova
-un evento della categoria cercata o arriva a `i = 0`.
 
-**d) Vincoli**
-- Il ciclo parte dall'ultimo elemento valido (`fine`), non dal tappo.
-- Usa `i >= 0 && !trovato` come condizione: nessun `break`.
-- Restituisce -1 come sentinella se nessun evento della categoria è presente.
-
-**f) Algoritmo**
-```
-fine = conta_eventi(log) - 1.
-i = fine, trovato = 0, risultato = -1.
-Mentre i >= 0 && !trovato:
-  Se categoria(log[i]) == cat: trovato = 1, risultato = i.
-  i--.
-return risultato.
+CRITICO: errori superiori al 20% del log.
 ```
 
----
+### Test 2 – Errori sotto la soglia
+- **Cosa si verifica:** il ramo "Attenzione"
+- **Input:** 101, 102, 201, 103, 104, 202, 105, 107, 108, 203, 301, 109
+- **Output atteso:** `ERROR         : 1  (8%)`,
+  `Ultimo ERROR  : posizione 11, codice 301`,
+  `Attenzione: 1 errori presenti (8% del totale).`
 
-### Caso d'uso 3 – Valutazione stato del sistema
-
-**a) Input** — Contatori `n_err`, `totale`.
-**b) Output**
-```
-Attenzione: 3 errori presenti (25% del totale).
-```
-**d) Vincoli**
-- Tre livelli: nessun errore → OK; errori < 20% → ATTENZIONE; errori ≥ 20% → CRITICO.
-- Il confronto `(double)n_err / totale < 0.20` evita la divisione intera.
+### Test 3 – Nessun errore e codice sconosciuto
+- **Cosa si verifica:** la ricerca senza risultato, il ramo "Sistema OK" e un
+  codice fuori categoria
+- **Input:** 101, 102, 201, 103, 450, 202, 104, 107, 105, 203, 108, 106
+- **Output atteso:** la riga `5  |  450   | ???`; INFO 8 (67%), WARNING 3
+  (25%), ERROR 0 (0%); `Nessun ERROR nel log.` e
+  `Sistema OK: nessun errore nel log.`

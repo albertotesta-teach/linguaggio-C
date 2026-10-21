@@ -6,74 +6,79 @@ unità comuni di lunghezza, massa e temperatura. L'utente sceglie il tipo di
 conversione e inserisce il valore; il programma stampa il risultato usando la
 funzione di conversione appropriata.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Costante | Valore | Descrizione |
-|---|---|---|
-| `KM_PER_MIGLIO` | 1.60934 | Fattore km → miglia |
-| `CM_PER_POLLICE` | 2.54 | Fattore cm → pollici |
-| `KG_PER_LIBBRA` | 0.453592 | Fattore kg → libbre |
-| `G_PER_ONCIA` | 28.3495 | Fattore g → once |
+### Input
 
 | Variabile | Tipo | Descrizione |
 |---|---|---|
-| `scelta` | int | Numero del menu scelto dall'utente |
+| `scelta` | int | Numero della conversione nel menu (1–10) |
 | `valore` | double | Quantità da convertire |
+
+### Output
+Il menu delle conversioni e, dopo l'inserimento, la riga
+`valore unità = risultato unità`: con quattro decimali per lunghezze e masse
+(scelte 1–7), con due decimali per le temperature (scelte 8–10). Per una
+scelta fuori intervallo: `Scelta non valida.`
+
+### Vincoli
+- `scelta` è compresa tra 1 e 10
+- Il valore viene richiesto prima di controllare la scelta: anche con una
+  scelta non valida l'utente deve inserirlo
+- Una temperatura convertita in Kelvin non può essere negativa (sotto lo
+  zero assoluto); il programma non lo verifica
+
+### Assunzioni
+- L'utente inserisce valori numerici validi
+- I fattori di conversione sono approssimati alle cifre indicate nelle
+  costanti
+
+### Variabili di supporto
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
 | `risultato` | double | Valore convertito restituito dalla funzione |
 
-Le funzioni di conversione seguono tutte la stessa firma: ricevono un `double`
-e restituiscono un `double`. Questo schema uniforme rende il codice prevedibile
-e facilmente estendibile.
+| Costante | Valore | Descrizione |
+|---|---|---|
+| `KM_PER_MIGLIO` | 1.60934 | Chilometri in un miglio |
+| `CM_PER_POLLICE` | 2.54 | Centimetri in un pollice |
+| `KG_PER_LIBBRA` | 0.453592 | Chilogrammi in una libbra |
+| `G_PER_ONCIA` | 28.3495 | Grammi in un'oncia |
 
-## 3. Casi d'uso e funzionalità
+Le dieci funzioni di conversione hanno tutte la stessa firma: ricevono un
+`double` e restituiscono un `double`. Lo schema uniforme rende il codice
+prevedibile e facile da estendere.
 
-### Caso d'uso 1 – Conversione di lunghezza (km → miglia)
+### Algoritmo in linguaggio naturale
+1. Stampare il menu e leggere la scelta.
+2. Leggere il valore da convertire.
+3. In base alla scelta (catena `if/else if`), chiamare la funzione di
+   conversione corrispondente, assegnare il risultato e stamparlo.
+4. Se la scelta non corrisponde a nessuna conversione, stampare
+   `Scelta non valida.`
 
-**a) Input** – scelta `1`, valore `100.0`
+## 3. Casi di test
 
-**b) Output** – `100.0000 km = 62.1371 miglia`
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**c) Variabili di supporto** – `risultato = km_in_miglia(valore)`
+### Test 1 – Lunghezza (km → miglia)
+- **Input:** scelta `1`, valore `100`
+- **Valori intermedi attesi:** 100 / 1.60934 = 62.13727…
+- **Output atteso:** `100.0000 km = 62.1373 miglia`
 
-**d) Vincoli** – il valore deve essere un numero reale positivo (assunto per semplicità)
+### Test 2 – Temperatura (Celsius → Fahrenheit)
+- **Input:** scelta `8`, valore `100`
+- **Output atteso:** `100.00 C = 212.00 F`
 
-**e) Assunzioni** – l'utente inserisce valori numerici validi
+### Test 3 – Temperatura (Celsius → Kelvin) allo zero assoluto
+- **Cosa si verifica:** il caso limite inferiore della scala Kelvin
+- **Input:** scelta `10`, valore `-273.15`
+- **Output atteso:** `-273.15 C = 0.00 K`
 
-**f) Algoritmo in linguaggio naturale**
-1. Leggere `scelta`
-2. Leggere `valore`
-3. Chiamare `km_in_miglia(valore)` e assegnare il risultato
-4. Stampare con quattro cifre decimali
-
-### Caso d'uso 2 – Conversione di temperatura (Celsius → Kelvin)
-
-**a) Input** – scelta `10`, valore `-273.15`
-
-**b) Output** – `-273.15 C = 0.00 K`
-
-**c) Variabili di supporto** – `risultato = celsius_in_kelvin(valore)`
-
-**d) Vincoli** – il risultato non deve essere inferiore a 0 K (zero assoluto); controllo non implementato in questa versione
-
-**e) Assunzioni** – l'utente conosce i limiti fisici della conversione
-
-**f) Algoritmo in linguaggio naturale**
-1. Leggere scelta `10` e valore
-2. Chiamare `celsius_in_kelvin(valore)`: aggiunge 273.15
-3. Stampare il risultato con due cifre decimali
-
-### Caso d'uso 3 – Scelta non valida
-
-**a) Input** – scelta `0` o `11`
-
-**b) Output** – `Scelta non valida.`
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – qualsiasi valore di `scelta` fuori dall'intervallo 1–10 deve produrre il messaggio di errore
-
-**e) Assunzioni** – l'utente inserisce un intero
-
-**f) Algoritmo in linguaggio naturale**
-1. Nessuno dei blocchi `if/else if` corrisponde alla scelta
-2. Il ramo `else` finale stampa `Scelta non valida.`
+### Test 4 – Scelta non valida
+- **Cosa si verifica:** il ramo `else` finale; il valore viene chiesto
+  comunque
+- **Input:** scelta `11` (oppure `0`), valore qualsiasi
+- **Output atteso:** `Scelta non valida.`

@@ -9,135 +9,93 @@ media e trovare le 3 strade più trafficate tramite ricerca ripetuta del massimo
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto tecnico più rilevante è la ricerca delle **top-3** senza algoritmo
-di ordinamento: si eseguono 3 passaggi di ricerca del massimo, escludendo
-ogni volta le strade già selezionate tramite un array di flag `selezionato`.
-Questo anticipa concettualmente il selection sort del capitolo 11.
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-| Variabile          | Tipo       | Dimensione | Motivazione                                             |
-|--------------------|------------|------------|---------------------------------------------------------|
-| `nomi`             | `char[][]` | 8 × 25     | Nome di ogni strada                                     |
-| `veicoli`          | `int[]`    | 8          | Veicoli rilevati in un'ora; parallelo a `nomi`          |
-| `selezionato`      | `int[]`    | 8          | Flag: 1 se la strada è già stata inserita nel top-N     |
-| `somma`            | `int`      | —          | Accumulatore per la media                               |
-| `congestionate`    | `int`      | —          | Contatore strade sopra `SOGLIA_CONGESTIONE`             |
-| `indice_max`       | `int`      | —          | Indice del massimo corrente nella ricerca ripetuta      |
-| `SOGLIA_CONGESTIONE`| `#define` | 800        | Soglia veicoli/h oltre la quale una strada è congestionata |
-| `TOP_N`            | `#define`  | 3          | Numero di strade da mostrare nella classifica           |
-| `STRADE`           | `#define`  | 8          | Dimensione degli array e limite dei cicli               |
+| Variabile | Tipo       | Dimensione | Descrizione                                |
+|-----------|------------|------------|--------------------------------------------|
+| `nomi`    | `char[][]` | 8 × 25     | Nome della strada                          |
+| `veicoli` | `int[]`    | 8          | Veicoli rilevati in un'ora, parallelo a `nomi` |
 
----
+### Output
+- Il riepilogo: nome, veicoli/h e stato ("CONGESTA" o "SCORREVOLE") di ogni
+  strada;
+- l'elenco delle strade congestionate, oppure
+  "Nessuna strada congestionata.";
+- la densità media (senza decimali) e il numero di strade congestionate;
+- le 3 strade più trafficate in ordine decrescente.
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- Una strada è congestionata se i veicoli sono **strettamente** più di
+  `SOGLIA_CONGESTIONE` (800): una strada con 800 veicoli è scorrevole
+- La classifica si costruisce senza ordinare l'array: si cerca il massimo
+  `TOP_N` volte, escludendo a ogni passo le strade già selezionate
+- A parità di veicoli precede la strada che compare prima nell'array
+- Lo stato si costruisce carattere per carattere con `'\0'` finale
 
----
+### Assunzioni
+- `TOP_N` non supera il numero di strade
 
-### Caso d'uso 1 – Riepilogo con stato per strada
+### Variabili di supporto
 
-**a) Input**
-Array `nomi` e `veicoli`.
+| Variabile            | Tipo      | Dimensione | Descrizione                                  |
+|----------------------|-----------|------------|----------------------------------------------|
+| `stato`              | `char[]`  | 15         | "CONGESTA" o "SCORREVOLE"                    |
+| `somma`              | `int`     | —          | Veicoli totali                               |
+| `congestionate`      | `int`     | —          | Numero di strade sopra soglia                |
+| `selezionato`        | `int[]`   | 8          | 1 se la strada è già in classifica           |
+| `indice_max`         | `int`     | —          | Massimo della ricerca corrente (-1 se nessuno) |
+| `SOGLIA_CONGESTIONE` | `#define` | 800        | Soglia in veicoli/h                          |
+| `TOP_N`              | `#define` | 3          | Strade in classifica                         |
+| `STRADE`             | `#define` | 8          | Numero di strade                             |
 
-**b) Output**
-```
-=== RILEVAMENTO TRAFFICO URBANO ===
-  Strada                 | Veicoli/h | Stato
-  -----------------------|-----------|----------
-  Via Roma               |     620   | SCORREVOLE
-  Corso Italia           |     950   | CONGESTA
-  ...
-```
+La ricerca ripetuta del massimo anticipa l'idea del selection sort
+(capitolo 11).
 
-**c) Variabili di supporto**
-- `stato` (`char[]`): stringa costruita manualmente per ogni strada.
-
-**d) Vincoli**
-- Il confronto usa `>` (la soglia esatta non è congestionata).
-- La stringa `stato` deve terminare con `'\0'`.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Per i da 0 a STRADE - 1:
-  Se veicoli[i] > SOGLIA_CONGESTIONE: stato = "CONGESTA".
-  Altrimenti: stato = "SCORREVOLE".
-  Stampare nomi[i], veicoli[i], stato.
-```
+### Algoritmo in linguaggio naturale
+1. Per ogni strada costruire lo stato e stampare la riga del riepilogo.
+2. Sommare i veicoli; stampare le strade sopra soglia e contarle; se non ce
+   ne sono stampare il messaggio. Stampare media e numero di congestionate.
+3. Per j da 1 a `TOP_N`:
+   a. cercare la strada con più veicoli tra quelle non ancora selezionate;
+   b. segnarla come selezionata e stamparla in posizione j.
 
 ---
 
-### Caso d'uso 2 – Strade congestionate e media
+## 3. Casi di test
 
-**a) Input**
-Array `veicoli`.
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare i veicoli e ricompilare.
 
-**b) Output**
+### Test 1 – Strade congestionate e media
+- **Input:** veicoli 620, 950, 430, 1120, 780, 870, 310, 1050
+- **Output atteso:**
 ```
 Strade congestionate (> 800 veicoli/h):
-  [!] Corso Italia       : 950 veicoli/h
-  [!] Viale Europa       : 1120 veicoli/h
-  [!] Corso Vittorio     : 870 veicoli/h
-  [!] Piazza Duomo       : 1050 veicoli/h
+  [!] Corso Italia           : 950 veicoli/h
+  [!] Viale Europa           : 1120 veicoli/h
+  [!] Corso Vittorio         : 870 veicoli/h
+  [!] Piazza Duomo           : 1050 veicoli/h
 
 Densita' media : 766 veicoli/h
 Congestionate  : 4 su 8 strade
 ```
 
-**c) Variabili di supporto**
-- `somma` (`int`): calcolato nello stesso ciclo delle strade congestionate.
-- `congestionate` (`int`): contatore.
-
-**d) Vincoli**
-- Somma e conteggio vengono aggiornati nello stesso ciclo per efficienza.
-
-**f) Algoritmo in linguaggio naturale**
-```
-somma = 0, congestionate = 0.
-Per i da 0 a STRADE - 1:
-  somma += veicoli[i].
-  Se veicoli[i] > SOGLIA_CONGESTIONE: stampare e incrementare congestionate.
-Stampare media e congestionate.
-```
-
----
-
-### Caso d'uso 3 – Top-N strade più trafficate
-
-**a) Input**
-Array `veicoli`, array `selezionato` (inizializzato a zero).
-
-**b) Output**
+### Test 2 – Classifica delle 3 strade più trafficate
+- **Output atteso:**
 ```
 Top-3 strade piu' trafficate:
-  1° posto: Viale Europa          (1120 veicoli/h)
-  2° posto: Piazza Duomo          (1050 veicoli/h)
-  3° posto: Corso Italia          (950 veicoli/h)
+  1° posto: Viale Europa           (1120 veicoli/h)
+  2° posto: Piazza Duomo           (1050 veicoli/h)
+  3° posto: Corso Italia           (950 veicoli/h)
 ```
 
-**c) Variabili di supporto**
-- `selezionato[i]` (`int`): 0 finché la strada non è stata scelta; poi 1.
-- `indice_max` (`int`): indice del massimo corrente nel passaggio j-esimo.
-- `j` (`int`): contatore del passaggio (1, 2, 3).
-
-**d) Vincoli**
-- `indice_max` viene inizializzato a -1 come sentinella prima di ogni passaggio
-  interno, per poter gestire il caso in cui tutte le strade siano già selezionate.
-- La condizione `!selezionato[i]` filtra le strade già scelte.
-- Dopo ogni passaggio, `selezionato[indice_max] = 1` esclude quella strada dai
-  passaggi successivi.
-
-**e) Assunzioni**
-- `TOP_N <= STRADE` (non si può chiedere più strade di quante ce ne siano).
-- Non ci sono pareggi nel conteggio veicoli.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Inizializzare selezionato[0..STRADE-1] = 0.
-Per j da 1 a TOP_N:
-  indice_max = -1.
-  Per i da 0 a STRADE - 1:
-    Se !selezionato[i]:
-      Se indice_max == -1 o veicoli[i] > veicoli[indice_max]: indice_max = i.
-  selezionato[indice_max] = 1.
-  Stampare j, nomi[indice_max], veicoli[indice_max].
-```
+### Test 3 – Nessuna strada congestionata e valore sulla soglia
+- **Cosa si verifica:** 800 non supera la soglia e il messaggio alternativo
+- **Procedura:** porre i veicoli a `{620, 700, 430, 500, 800, 650, 310, 750}`
+- **Output atteso:** Via Mazzini (800) `SCORREVOLE`;
+  `Nessuna strada congestionata.`, `Densita' media : 595 veicoli/h`,
+  `Congestionate  : 0 su 8 strade`; classifica Via Mazzini, Piazza Duomo,
+  Corso Italia

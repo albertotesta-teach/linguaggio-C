@@ -7,7 +7,9 @@ della sede) e li inserisce in un biglietto da visita testuale con bordo ASCII.
 I dati non numerici (nome, ruolo, via, città) sono testo fisso, nel rispetto
 dei vincoli del capitolo 01-introduzione.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
 
 | Variabile          | Tipo  | Significato                              |
 |--------------------|-------|------------------------------------------|
@@ -17,17 +19,42 @@ dei vincoli del capitolo 01-introduzione.
 | `numero_civico`    | `int` | Numero civico della sede                 |
 | `cap`              | `int` | Codice di avviamento postale             |
 
-Non si usano array né stringhe.
+### Output
+Un biglietto da visita racchiuso in un bordo ASCII, con il testo fisso
+(nome, ruolo, ragione sociale, via, città) e i valori inseriti nei campi
+corrispondenti. Il prefisso è stampato sempre su tre cifre (`%03d`).
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- Il prefisso ha al massimo 3 cifre
+- Tutti i valori sono interi positivi
+- I vincoli non vengono verificati dal programma
 
-### Caso d'uso 1 – Azienda storica, numero breve
+### Assunzioni
+- I dati inseriti sono validi e realistici (nessuna validazione)
+- Il testo fisso (nome, ruolo, via, città) non cambia tra un'esecuzione
+  e l'altra
+- Il bordo ha larghezza fissa: con valori lunghi l'allineamento del bordo
+  destro può variare, comportamento accettabile in un esempio introduttivo
 
-**a) Input**
-- prefisso = 2, numero = 1234567, anno_fondazione = 1985
-- numero_civico = 10, cap = 20121
+### Variabili di supporto
+Nessuna: i valori letti sono stampati direttamente. Non si usano array
+né stringhe.
 
-**b) Output**
+### Algoritmo in linguaggio naturale
+1. Acquisire prefisso, numero di telefono, anno di fondazione, numero
+   civico e CAP.
+2. Stampare riga per riga il biglietto, inserendo i valori nei campi
+   corretti con gli specificatori di formato.
+
+## 3. Casi di test
+
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
+
+### Test 1 – Biglietto completo (caso tipico)
+- **Input:** prefisso = 2, numero = 1234567, anno_fondazione = 1985,
+  numero_civico = 10, cap = 20121
+- **Output atteso:**
 ```
 +--------------------------------------+
 |                                      |
@@ -43,70 +70,23 @@ Non si usano array né stringhe.
 +--------------------------------------+
 ```
 
-**c) Variabili di supporto**
-- Nessuna: i valori sono stampati direttamente
-
-**d) Vincoli**
-- Il bordo ha larghezza fissa; valori molto grandi possono sforare il bordo
-
-**e) Assunzioni**
-- I dati inseriti sono validi e ragionevoli
-- Il testo fisso (nome, ruolo, via, città) non cambia tra un'esecuzione e l'altra
-
-**f) Algoritmo in linguaggio naturale**
-1. Acquisire prefisso, numero, anno fondazione, numero civico, CAP
-2. Stampare riga per riga il biglietto con i valori inseriti nei campi corretti
-
----
-
-### Caso d'uso 2 – Prefisso con tre cifre
-
-**a) Input**
-- prefisso = 11, numero = 9876543, anno_fondazione = 2010
-- numero_civico = 5, cap = 10100
-
-**b) Output**
+### Test 2 – Prefisso a due cifre
+- **Cosa si verifica:** `%03d` completa il prefisso con lo zero iniziale
+- **Input:** prefisso = 11, numero = 9876543, anno_fondazione = 2010,
+  numero_civico = 5, cap = 10100
+- **Output atteso (riga del telefono):**
 ```
 |   Tel: 011 / 9876543          |
 ```
 
-**c) Variabili di supporto**
-- Nessuna
-
-**d) Vincoli**
-- `%03d` garantisce sempre tre cifre per il prefisso
-
-**e) Assunzioni**
-- Il prefisso è al massimo 3 cifre
-
-**f) Algoritmo in linguaggio naturale**
-- Identico al caso d'uso 1
-
----
-
-### Caso d'uso 3 – Azienda recente, numero civico alto
-
-**a) Input**
-- prefisso = 6, numero = 55512300, anno_fondazione = 2022
-- numero_civico = 128, cap = 40127
-
-**b) Output**
+### Test 3 – Valori più lunghi (numero civico a tre cifre, telefono a otto cifre)
+- **Cosa si verifica:** il comportamento del bordo destro con valori lunghi
+- **Input:** prefisso = 6, numero = 55512300, anno_fondazione = 2022,
+  numero_civico = 128, cap = 40127
+- **Output atteso (righe che cambiano):**
 ```
 |   ACME S.r.l.  (dal 2022)          |
 |   Via Roma, 128                      |
 |   40127  Milano                     |
 |   Tel: 006 / 55512300          |
 ```
-
-**c) Variabili di supporto**
-- Nessuna
-
-**d) Vincoli**
-- Con numero civico a 3 cifre l'allineamento del bordo destro può variare;
-  questo comportamento è accettabile in un esempio introduttivo
-
-**e) Assunzioni**
-- Valori inseriti coerenti con la realtà (no validazione)
-
-**f) Algoritmo in linguaggio naturale**
-- Identico al caso d'uso 1

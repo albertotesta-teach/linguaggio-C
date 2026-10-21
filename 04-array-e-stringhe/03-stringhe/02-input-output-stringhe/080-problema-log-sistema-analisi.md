@@ -10,128 +10,74 @@ poi compone e stampa la riga di log nel formato standard:
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile       | Tipo     | Dimensione | Motivazione                                             |
-|-----------------|----------|------------|---------------------------------------------------------|
-| `timestamp`     | `char[]` | 20         | Data e ora preimpostate (19 caratteri + `'\0'`)         |
-| `applicazione`  | `char[]` | 14         | Nome app preimpostato (13 caratteri + `'\0'`)           |
-| `codice_evento` | `char[]` | 21         | Identificatore senza spazi, max 20 caratteri + `'\0'`   |
-| `descrizione`   | `char[]` | 201        | Testo libero con spazi, max 200 caratteri + `'\0'`      |
-| `scelta_livello`| `int`    | —          | Intero 1/2/3 scelto dall'utente                         |
-| `livello`       | `char[]` | 6          | Stringa del livello (es. "INFO "), 5 caratteri + `'\0'` |
-| `i`             | `int`    | —          | Indice per rimozione `'\n'` da fgets                    |
+### Input
 
----
+| Variabile        | Tipo     | Dimensione | Descrizione                                 |
+|------------------|----------|------------|---------------------------------------------|
+| `scelta_livello` | `int`    | —          | 1 = INFO, 2 = WARN, 3 = ERROR               |
+| `codice_evento`  | `char[]` | 21         | Identificatore senza spazi, max 20 caratteri |
+| `descrizione`    | `char[]` | 201        | Testo con spazi, max 200 caratteri          |
 
-## 3. Casi d'uso e funzionalità
+Timestamp e nome dell'applicazione sono preimpostati nel codice.
 
----
+### Output
+- La riga di log nel formato
+  `[TIMESTAMP] [LIVELLO] APPLICAZIONE CODICE: descrizione`;
+- il dettaglio dei cinque campi.
 
-### Caso d'uso 1 – Selezione del livello di severità
+### Vincoli
+- Il livello è sempre di 5 caratteri ("INFO ", "WARN ", "ERROR"), così le
+  righe di log restano allineate; si costruisce carattere per carattere,
+  perché le funzioni su stringhe arrivano nella sezione 04
+- Qualsiasi scelta diversa da 1 e 2 è trattata come ERROR
+- Il codice si legge con `scanf("%20s")`, la descrizione con `fgets`
+- Prima di ogni lettura successiva a una `scanf` si scarta il resto della
+  riga, compreso il `'\n'`: è il punto chiave dell'uso combinato di `scanf` e
+  `fgets`
+- Il `'\n'` finale della descrizione si sostituisce con `'\0'`
 
-**a) Input**
-Intero da tastiera: 1 = INFO, 2 = WARN, qualsiasi altro valore = ERROR.
+### Assunzioni
+- Il timestamp è una costante didattica
 
-**b) Output**
-Nessun output diretto: il buffer `livello` viene popolato con la stringa
-corrispondente al livello scelto.
+### Variabili di supporto
 
-**c) Variabili di supporto**
-- `scelta_livello` (`int`): valore letto da `scanf`.
-- `livello` (`char[]`): stringa risultante, popolata carattere per carattere.
+| Variabile      | Tipo     | Dimensione | Descrizione                         |
+|----------------|----------|------------|-------------------------------------|
+| `timestamp`    | `char[]` | 20         | Data e ora preimpostate             |
+| `applicazione` | `char[]` | 14         | Nome dell'applicazione              |
+| `livello`      | `char[]` | 6          | Livello di 5 caratteri + `'\0'`     |
+| `i`, `c`       | `int`    | —          | Indice per il `'\n'` e carattere scartato |
 
-**d) Vincoli**
-- Il buffer `livello` ha dimensione 6 (5 caratteri + `'\0'`).
-- Tutti i livelli hanno esattamente 5 caratteri per allineamento nel log.
-
-**e) Assunzioni**
-- Valori diversi da 1 e 2 vengono tutti trattati come ERROR.
-- La copia carattere per carattere è intenzionale: `strcpy` non è ancora
-  stato introdotto.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Mostrare il menu dei livelli.
-2. Leggere scelta_livello con scanf.
-3. Se scelta_livello è 1: copiare "INFO " in livello.
-4. Se scelta_livello è 2: copiare "WARN " in livello.
-5. Altrimenti: copiare "ERROR" in livello.
-6. Aggiungere '\0' in posizione 5.
-```
-
----
-
-### Caso d'uso 2 – Lettura codice evento e descrizione
-
-**a) Input**
-Codice evento (senza spazi) e descrizione (con spazi) da tastiera.
-
-**b) Output**
-Nessun output diretto: i valori sono memorizzati in `codice_evento`
-e `descrizione`.
-
-**c) Variabili di supporto**
-- Blocco locale `c` (`int`): usato per svuotare il buffer dopo ogni `scanf`.
-- `i` (`int`): indice per rimozione `'\n'` da `fgets`.
-
-**d) Vincoli**
-- Il buffer deve essere svuotato dal `'\n'` residuo dopo ogni `scanf`
-  che precede una `fgets`.
-- La rimozione del `'\n'` da `fgets` è obbligatoria prima dell'uso
-  della stringa.
-
-**e) Assunzioni**
-- Il codice evento non contiene spazi (convenzione applicativa).
-- La descrizione può contenere qualsiasi carattere inclusi spazi e punteggiatura.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Svuotare il buffer: getchar() fino a '\n' o EOF.
-2. Leggere codice_evento con scanf("%20s", codice_evento).
-3. Svuotare nuovamente il buffer.
-4. Leggere descrizione con fgets(descrizione, 201, stdin).
-5. Rimuovere '\n' da descrizione con ciclo while.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione e il timestamp; mostrare i livelli e leggere la
+   scelta.
+2. Costruire la stringa del livello in base alla scelta.
+3. Scartare il resto della riga; leggere il codice con `scanf`.
+4. Scartare il resto della riga; leggere la descrizione con `fgets` e
+   rimuovere il `'\n'`.
+5. Stampare la riga di log e il dettaglio dei campi.
 
 ---
 
-### Caso d'uso 3 – Composizione e stampa della riga di log
+## 3. Casi di test
 
-**a) Input**
-Tutti i campi: `timestamp`, `livello`, `applicazione`,
-`codice_evento`, `descrizione`.
+Per ogni caso si inseriscono livello, codice e descrizione.
 
-**b) Output**
-Riga di log nel formato standard e riepilogo dei singoli campi:
+### Test 1 – Evento di avviso con spazi nella descrizione
+- **Input:** `2`, `DISK_LOW`, `Spazio su disco inferiore al 10%`
+- **Output atteso:**
 ```
-════════════════════════════════════════════════════════════
-  RIGA DI LOG GENERATA
-════════════════════════════════════════════════════════════
-[2024-11-15 08:45:22] [ERROR] GestMagazzino DB_CONN_ERR: Connessione al database fallita
-════════════════════════════════════════════════════════════
-
-Dettaglio campi:
-  Timestamp    : 2024-11-15 08:45:22
-  Livello      : ERROR
-  Applicazione : GestMagazzino
-  Codice       : DB_CONN_ERR
-  Descrizione  : Connessione al database fallita
+[2024-11-15 08:45:22] [WARN ] GestMagazzino DISK_LOW: Spazio su disco inferiore al 10%
 ```
 
-**c) Variabili di supporto**
-Nessuna variabile aggiuntiva.
+### Test 2 – Evento informativo
+- **Input:** `1`, `AUTH_OK`, `Login utente admin`
+- **Output atteso:**
+  `[2024-11-15 08:45:22] [INFO ] GestMagazzino AUTH_OK: Login utente admin`
 
-**d) Vincoli**
-- Il formato della riga di log deve rispettare la struttura:
-  `[timestamp] [livello] applicazione codice: descrizione`.
-
-**e) Assunzioni**
-- La scrittura su file di log è simulata (output solo su `stdout`).
-- Il formato è fisso e non configurabile dall'utente.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare la riga di log con printf usando tutti i campi.
-2. Stampare il riepilogo dei singoli campi con etichette allineate.
-```
+### Test 3 – Livello non previsto
+- **Cosa si verifica:** ogni valore diverso da 1 e 2 diventa ERROR
+- **Input:** `7`, `X`, `Test`
+- **Output atteso:** `[2024-11-15 08:45:22] [ERROR] GestMagazzino X: Test`

@@ -23,11 +23,11 @@ Ogni carattere occupa **1 byte**. La dimensione dell'array deve sempre includere
 | `020-inizializzazione.c` | I quattro modi di inizializzare una stringa: array di char, stringa letterale, array sovradimensionato, assegnazione manuale |
 | `030-memoria-e-terminatore.c` | Visualizzazione cella per cella della memoria: indice, carattere e valore ASCII |
 | `040-problema-codice-fiscale.c` | Scenario reale: scheda anagrafica studente, estrazione di informazioni dal codice fiscale |
-| `040-problema-codice-fiscale-analisi.md` | Analisi dettagliata di `040-problema-codice-fiscale.c`: casi d'uso, variabili, vincoli, algoritmi |
+| `040-problema-codice-fiscale-analisi.md` | Analisi dettagliata di `040-problema-codice-fiscale.c`: input, output, vincoli, variabili, algoritmo e casi di test |
 | `050-problema-targa.c` | Scenario reale: analisi e verifica del formato di una targa automobilistica italiana |
-| `050-problema-targa-analisi.md` | Analisi dettagliata di `050-problema-targa.c`: casi d'uso, variabili, vincoli, algoritmi |
+| `050-problema-targa-analisi.md` | Analisi dettagliata di `050-problema-targa.c`: input, output, vincoli, variabili, algoritmo e casi di test |
 | `060-problema-codice-prodotto.c` | Scenario reale: estrazione componenti e confronto categorie di codici prodotto di magazzino |
-| `060-problema-codice-prodotto-analisi.md` | Analisi dettagliata di `060-problema-codice-prodotto.c`: casi d'uso, variabili, vincoli, algoritmi |
+| `060-problema-codice-prodotto-analisi.md` | Analisi dettagliata di `060-problema-codice-prodotto.c`: input, output, vincoli, variabili, algoritmo e casi di test |
 
 ---
 

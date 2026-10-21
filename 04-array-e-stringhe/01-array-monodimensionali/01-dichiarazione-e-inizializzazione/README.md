@@ -61,12 +61,16 @@ Ogni elemento occupa `sizeof(tipo)` byte. Gli indirizzi sono consecutivi:
 | `010-dichiarazione-base.c` | Dichiarazione, assegnazione per indice, stampa diretta e con ciclo, `sizeof` |
 | `020-inizializzazione.c` | Cinque modalità di inizializzazione: lista completa, dimensione dedotta, lista parziale, `{0}`, costante `#define` |
 | `030-array-in-memoria.c` | Visualizzazione degli indirizzi di ogni cella, offset e dimensione in byte |
-| `040-problema-registro-voti.c` | Registro voti di 8 studenti: stampa tabellare, media, minimo, massimo, promossi/bocciati |
-| `040-problema-registro-voti-analisi.md` | Analisi di `040-problema-registro-voti.c`: variabili, casi d'uso, algoritmi |
-| `050-problema-inventario-magazzino.c` | Inventario 6 prodotti: prospetto con valore per riga, prodotti in esaurimento, totali |
-| `050-problema-inventario-magazzino-analisi.md` | Analisi di `050-problema-inventario-magazzino.c`: variabili, casi d'uso, algoritmi |
-| `060-problema-temperature-settimanali.c` | Temperature 7 giorni: media, giorni sopra media, variazione giornaliera |
-| `060-problema-temperature-settimanali-analisi.md` | Analisi di `060-problema-temperature-settimanali.c`: variabili, casi d'uso, algoritmi |
+| `040-problema-lancio-dado.c` | Conteggio di 30 lanci di un dado con un array di contatori e istogramma |
+| `040-problema-lancio-dado-analisi.md` | Analisi di `040-problema-lancio-dado.c`: analisi del problema e casi di test |
+| `050-problema-distribuzione-voti.c` | Distribuzione dei voti di 20 studenti per fasce, con percentuali e istogramma |
+| `050-problema-distribuzione-voti-analisi.md` | Analisi di `050-problema-distribuzione-voti.c`: analisi del problema e casi di test |
+| `060-problema-registro-voti.c` | Registro voti di 8 studenti: stampa tabellare, media, minimo, massimo, promossi/bocciati |
+| `060-problema-registro-voti-analisi.md` | Analisi di `060-problema-registro-voti.c`: analisi del problema e casi di test |
+| `070-problema-inventario-magazzino.c` | Inventario 6 prodotti: prospetto con valore per riga, prodotti in esaurimento, totali |
+| `070-problema-inventario-magazzino-analisi.md` | Analisi di `070-problema-inventario-magazzino.c`: analisi del problema e casi di test |
+| `080-problema-temperature-settimanali.c` | Temperature 7 giorni: media, giorni sopra media, variazione giornaliera |
+| `080-problema-temperature-settimanali-analisi.md` | Analisi di `080-problema-temperature-settimanali.c`: analisi del problema e casi di test |
 
 ---
 
@@ -82,14 +86,20 @@ gcc -Wall -Wextra -o 020-inizializzazione 020-inizializzazione.c
 gcc -Wall -Wextra -o 030-array-in-memoria 030-array-in-memoria.c
 ./030-array-in-memoria
 
-gcc -Wall -Wextra -o 040-problema-registro-voti 040-problema-registro-voti.c
-./040-problema-registro-voti
+gcc -Wall -Wextra -o 040-problema-lancio-dado 040-problema-lancio-dado.c
+./040-problema-lancio-dado
 
-gcc -Wall -Wextra -o 050-problema-inventario-magazzino 050-problema-inventario-magazzino.c
-./050-problema-inventario-magazzino
+gcc -Wall -Wextra -o 050-problema-distribuzione-voti 050-problema-distribuzione-voti.c
+./050-problema-distribuzione-voti
 
-gcc -Wall -Wextra -o 060-problema-temperature-settimanali 060-problema-temperature-settimanali.c
-./060-problema-temperature-settimanali
+gcc -Wall -Wextra -o 060-problema-registro-voti 060-problema-registro-voti.c
+./060-problema-registro-voti
+
+gcc -Wall -Wextra -o 070-problema-inventario-magazzino 070-problema-inventario-magazzino.c
+./070-problema-inventario-magazzino
+
+gcc -Wall -Wextra -o 080-problema-temperature-settimanali 080-problema-temperature-settimanali.c
+./080-problema-temperature-settimanali
 ```
 
 ---
@@ -185,7 +195,101 @@ Riepilogo:
 ```
 *(Gli indirizzi esadecimali variano a ogni esecuzione.)*
 
-### 040-problema-registro-voti
+### 040-problema-lancio-dado
+*(output dipendente dall'input – esempio con 30 lanci)*
+```
+=== ANALISI LANCI DADO ===
+Inserisci 30 lanci (valore da 1 a 6):
+
+  Lancio  1: 1
+  Lancio  2: 1
+  Lancio  3: 1
+  Lancio  4: 1
+  Lancio  5: 1
+  Lancio  6: 2
+  Lancio  7: 2
+  Lancio  8: 2
+  Lancio  9: 2
+  Lancio 10: 3
+  Lancio 11: 3
+  Lancio 12: 3
+  Lancio 13: 3
+  Lancio 14: 3
+  Lancio 15: 3
+  Lancio 16: 4
+  Lancio 17: 4
+  Lancio 18: 4
+  Lancio 19: 5
+  Lancio 20: 5
+  Lancio 21: 5
+  Lancio 22: 5
+  Lancio 23: 5
+  Lancio 24: 5
+  Lancio 25: 5
+  Lancio 26: 6
+  Lancio 27: 6
+  Lancio 28: 6
+  Lancio 29: 6
+  Lancio 30: 6
+
+=== RISULTATI ===
+  Faccia | Conteggio | Istogramma
+  -------|-----------|--------------------
+    1    |      5    | *****
+    2    |      4    | ****
+    3    |      6    | ******
+    4    |      3    | ***
+    5    |      7    | *******
+    6    |      5    | *****
+
+Faccia uscita piu' spesso : 5 (7 volte)
+Faccia uscita meno spesso : 4 (3 volte)
+
+Frequenza attesa per dado equilibrato: 5.0 volte per faccia
+```
+
+### 050-problema-distribuzione-voti
+*(output dipendente dall'input – esempio con 20 voti)*
+```
+=== DISTRIBUZIONE VOTI CLASSE ===
+Inserisci i voti di 20 studenti (da 1 a 10):
+
+  Studente  1: 3
+  Studente  2: 4
+  Studente  3: 2
+  Studente  4: 5
+  Studente  5: 5
+  Studente  6: 6
+  Studente  7: 6
+  Studente  8: 6
+  Studente  9: 6
+  Studente 10: 6
+  Studente 11: 7
+  Studente 12: 7
+  Studente 13: 7
+  Studente 14: 7
+  Studente 15: 8
+  Studente 16: 8
+  Studente 17: 8
+  Studente 18: 8
+  Studente 19: 9
+  Studente 20: 10
+
+=== DISTRIBUZIONE ===
+  Fascia        | N.  | %     | Grafico
+  --------------|-----|-------|--------------------
+  Insuff. (1-4) |   3 | 15.0% | ***
+  Mediocre (5)  |   2 | 10.0% | **
+  Suffic.  (6)  |   5 | 25.0% | *****
+  Discreto (7)  |   4 | 20.0% | ****
+  Buono    (8)  |   4 | 20.0% | ****
+  Ottimo (9-10) |   2 | 10.0% | **
+
+Studenti con voto insufficiente: 5 su 20 (25%)
+Studenti con voto sufficiente  : 15 su 20 (75%)
+```
+
+### 060-problema-registro-voti
 ```
 ============================================
       REGISTRO VOTI - MATEMATICA
@@ -210,7 +314,7 @@ Studenti promossi  : 7 su 8
 Studenti bocciati  : 1 su 8
 ```
 
-### 050-problema-inventario-magazzino
+### 070-problema-inventario-magazzino
 ```
 ==========================================================
                   INVENTARIO MAGAZZINO
@@ -233,7 +337,7 @@ Giacenza totale    : 224 pezzi
 Valore magazzino   : 149.10 euro
 ```
 
-### 060-problema-temperature-settimanali
+### 080-problema-temperature-settimanali
 ```
 =================================
   TEMPERATURE SETTIMANA CORRENTE
@@ -253,15 +357,16 @@ Giorni sopra la media (> 19.8 °C):
   Martedi': 21.0 °C (+1.2 rispetto alla media)
   Mercoledi': 23.4 °C (+3.6 rispetto alla media)
   Giovedi': 22.1 °C (+2.3 rispetto alla media)
-Totale: 3 giorni su 7
+  Venerdi': 19.8 °C (+0.0 rispetto alla media)
+Totale: 4 giorni su 7
 
 Variazione giornaliera:
-  Lunedi' -> Martedi': +2.5 °C (in salita)
-  Martedi' -> Mercoledi': +2.4 °C (in salita)
-  Mercoledi' -> Giovedi': -1.3 °C (in discesa)
-  Giovedi' -> Venerdi': -2.3 °C (in discesa)
-  Venerdi' -> Sabato: -2.3 °C (in discesa)
-  Sabato -> Domenica: -1.3 °C (in discesa)
+  giorno 1 -> giorno 2: +2.5 °C (in salita)
+  giorno 2 -> giorno 3: +2.4 °C (in salita)
+  giorno 3 -> giorno 4: -1.3 °C (in discesa)
+  giorno 4 -> giorno 5: -2.3 °C (in discesa)
+  giorno 5 -> giorno 6: -2.3 °C (in discesa)
+  giorno 6 -> giorno 7: -1.3 °C (in discesa)
 ```
 
 ---

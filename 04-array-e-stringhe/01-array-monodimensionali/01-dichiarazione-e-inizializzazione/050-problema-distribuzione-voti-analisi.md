@@ -9,142 +9,117 @@ con percentuali e istogramma e produce un riepilogo sui sufficienti e insufficie
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è la **mappatura voto → indice fascia** tramite una catena
-`if/else if`: il voto letto viene classificato e si incrementa direttamente
-la cella corrispondente nell'array dei contatori. Non servono array paralleli
-perché la classificazione è espressa dalla logica condizionale.
+### Input
 
-```
-  Voto:    1-4   5     6     7     8    9-10
-  Indice:  [0]   [1]   [2]   [3]   [4]  [5]
-  Label:   Ins.  Med.  Suf.  Dis.  Buo. Ott.
-```
+| Variabile | Tipo  | Descrizione                               |
+|-----------|-------|-------------------------------------------|
+| `voto`    | `int` | Voto di uno studente (1–10), letto 20 volte |
 
-| Variabile       | Tipo       | Dimensione | Motivazione                                         |
-|-----------------|------------|------------|-----------------------------------------------------|
-| `contatori`     | `int[]`    | 6          | Un contatore per ciascuna delle 6 fasce             |
-| `etichette`     | `char[][]` | 6 × 15     | Stringhe descrittive, usate solo per la stampa      |
-| `voto`          | `int`      | —          | Voto letto da tastiera (1–10)                       |
-| `indice_fascia` | `int`      | —          | Fascia determinata dalla mappatura del voto         |
-| `insufficienti` | `int`      | —          | Somma dei contatori delle fasce 0 e 1               |
-| `sufficienti`   | `int`      | —          | `NUM_STUDENTI - insufficienti`                      |
-| `valido`        | `int`      | —          | Flag per la validazione dell'input                  |
-| `NUM_STUDENTI`  | `#define`  | 20         | Numero di voti da inserire                          |
-| `NUM_FASCE`     | `#define`  | 6          | Numero di fasce di rendimento                       |
+### Output
+- Una tabella con, per ogni fascia, il numero di studenti, la percentuale
+  (un decimale) e un istogramma di asterischi;
+- il numero e la percentuale di studenti insufficienti (voto 1–5) e
+  sufficienti (voto 6–10).
 
----
+| Fascia | Voti | Indice |
+|--------|------|--------|
+| Insufficiente | 1–4 | 0 |
+| Mediocre | 5 | 1 |
+| Sufficiente | 6 | 2 |
+| Discreto | 7 | 3 |
+| Buono | 8 | 4 |
+| Ottimo | 9–10 | 5 |
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- Ogni voto è compreso tra 1 e 10: un valore fuori intervallo viene
+  segnalato e richiesto di nuovo
+- La mappatura voto → fascia copre tutti i voti validi, senza sovrapposizioni
+  e senza vuoti
+- La somma dei contatori è sempre 20, e insufficienti + sufficienti = 20
+- La soglia di sufficienza è 6 inclusa: gli insufficienti sono le fasce 0 e 1
+- Le percentuali si calcolano con una divisione reale
+- Il valore restituito da `scanf` si controlla: un testo non numerico è un
+  voto non valido e il resto della riga si scarta con `getchar`; se
+  l'input termina prima dei 20 voti (EOF) l'analisi viene annullata
 
----
+### Assunzioni
+- Le fasce sono fissate a priori
 
-### Caso d'uso 1 – Acquisizione e classificazione dei voti
+### Variabili di supporto
 
-**a) Input**
-20 valori interi inseriti da tastiera, ciascuno compreso tra 1 e 10.
+Il punto chiave è la **mappatura voto → indice di fascia** con una catena
+`if/else if`: il voto viene classificato e si incrementa direttamente la cella
+corrispondente dell'array dei contatori.
 
-**b) Output**
-Prompt per ogni studente:
-```
-  Studente  1: 
-  Studente  2: 
-  ...
-```
+| Variabile       | Tipo       | Dimensione | Descrizione                                   |
+|-----------------|------------|------------|-----------------------------------------------|
+| `contatori`     | `int[]`    | 6          | Un contatore per ciascuna fascia              |
+| `indice_fascia` | `int`      | —          | Fascia determinata dalla mappatura            |
+| `valido`        | `int`      | —          | Flag del ciclo di validazione                 |
+| `percentuale`   | `double`   | —          | Percentuale della fascia sul totale           |
+| `insufficienti`, `sufficienti` | `int` | — | Riepilogo finale                           |
+| `NUM_STUDENTI`  | `#define`  | 20         | Numero di voti da inserire                    |
+| `NUM_FASCE`     | `#define`  | 6          | Numero di fasce                               |
 
-**c) Variabili di supporto**
-- `voto` (`int`): valore letto.
-- `indice_fascia` (`int`): risultato della mappatura.
-- `valido` (`int`): flag per il ciclo di validazione.
-
-**d) Vincoli**
-- Solo valori in [1, 10] sono accettati.
-- La mappatura `voto → indice_fascia` deve coprire tutti i valori validi
-  senza sovrapposizioni e senza vuoti.
-- `indice_fascia` è sempre nell'intervallo [0, NUM_FASCE - 1].
-
-**e) Assunzioni**
-- L'utente inserisce valori interi.
-- Le fasce sono definite a priori e non cambiano durante l'esecuzione.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare contatori[0..5] = 0.
-2. Per i da 0 a NUM_STUDENTI - 1:
-   a. Inizializzare valido = 0.
-   b. Mentre !valido: leggere voto, validare, impostare valido = 1 se corretto.
-   c. Determinare indice_fascia con if/else if sul voto.
-   d. contatori[indice_fascia] += 1.
-```
+### Algoritmo in linguaggio naturale
+1. Inizializzare tutti i contatori a 0.
+2. Per ciascuno dei 20 studenti:
+   a. leggere il voto ripetendo finché non è compreso tra 1 e 10;
+   b. determinare l'indice di fascia con la catena `if/else if`;
+   c. incrementare `contatori[indice_fascia]`.
+3. Per ogni fascia calcolare la percentuale `contatori[i] / 20 × 100` e
+   stampare l'etichetta della fascia (scelta con `if/else if`), il
+   contatore, la percentuale e gli asterischi.
+4. Calcolare `insufficienti = contatori[0] + contatori[1]` e
+   `sufficienti = 20 − insufficienti`, e stamparli con le percentuali.
 
 ---
 
-### Caso d'uso 2 – Distribuzione con percentuale e istogramma
+## 3. Casi di test
 
-**a) Input**
-Array `contatori` e `etichette`.
+Per ogni caso si esegue il programma con i 20 voti indicati e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output**
+### Test 1 – Classe con tutte le fasce
+- **Input:** 3 4 2 5 5 6 6 6 6 6 7 7 7 7 8 8 8 8 9 10
+- **Output atteso:**
 ```
-=== DISTRIBUZIONE ===
-  Fascia          | N. | %    | Grafico
-  ----------------|----|----- |--------------------
-  Insuff. (1-4)   |   3 | 15.0% | ***
-  Mediocre (5)    |   2 | 10.0% | **
-  Suffic.  (6)    |   5 | 25.0% | *****
-  Discreto (7)    |   4 | 20.0% | ****
-  Buono    (8)    |   4 | 20.0% | ****
-  Ottimo (9-10)   |   2 | 10.0% | **
-```
+  Insuff. (1-4) |   3 | 15.0% | ***
+  Mediocre (5)  |   2 | 10.0% | **
+  Suffic.  (6)  |   5 | 25.0% | *****
+  Discreto (7)  |   4 | 20.0% | ****
+  Buono    (8)  |   4 | 20.0% | ****
+  Ottimo (9-10) |   2 | 10.0% | **
 
-**c) Variabili di supporto**
-- `percentuale` (`double`): `contatori[i] / NUM_STUDENTI * 100`.
-- `j` (`int`): contatore per la stampa degli asterischi.
-
-**d) Vincoli**
-- La percentuale si calcola con divisione floating point.
-- Il numero di asterischi è esattamente `contatori[i]`.
-
-**e) Assunzioni**
-- `NUM_STUDENTI > 0` per evitare divisione per zero.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare intestazione della tabella.
-2. Per i da 0 a NUM_FASCE - 1:
-   a. percentuale = contatori[i] / NUM_STUDENTI * 100.
-   b. Stampare etichette[i], contatori[i], percentuale.
-   c. Per j da 0 a contatori[i] - 1: stampare "*".
-```
-
----
-
-### Caso d'uso 3 – Riepilogo sufficienti e insufficienti
-
-**a) Input**
-Array `contatori`.
-
-**b) Output**
-```
 Studenti con voto insufficiente: 5 su 20 (25%)
 Studenti con voto sufficiente  : 15 su 20 (75%)
 ```
 
-**c) Variabili di supporto**
-- `insufficienti` (`int`): `contatori[0] + contatori[1]` (fasce 1–4 e 5).
-- `sufficienti` (`int`): `NUM_STUDENTI - insufficienti`.
+### Test 2 – Voti ai confini delle fasce
+- **Cosa si verifica:** 4 è insufficiente, 5 mediocre, 6 sufficiente
+- **Input:** sette volte 4, sei volte 5, sette volte 6
+- **Output atteso:** Insuff. 7 (35.0%), Mediocre 6 (30.0%), Suffic. 7
+  (35.0%), le altre fasce a 0 senza asterischi;
+  `Studenti con voto insufficiente: 13 su 20 (65%)` e
+  `Studenti con voto sufficiente  : 7 su 20 (35%)`
 
-**d) Vincoli**
-- `insufficienti + sufficienti` deve essere sempre uguale a `NUM_STUDENTI`.
-- La soglia di sufficienza è 6 (inclusa): le fasce 0 e 1 coprono i voti 1–5.
+### Test 3 – Voti non validi e una sola fascia
+- **Cosa si verifica:** la validazione e una fascia al 100%
+- **Input:** 0, 11 (rifiutati), poi 20 volte il voto 10
+- **Output atteso:** due volte
+  `Voto non valido. Inserire un valore da 1 a 10.` al primo studente;
+  la fascia Ottimo con 20 studenti, `100.0%` e 20 asterischi;
+  `Studenti con voto insufficiente: 0 su 20 (0%)`
 
-**e) Assunzioni**
-- Tutti i voti sono stati correttamente registrati nei contatori.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 4 – Testo non numerico e fine dell'input
+- **Cosa si verifica:** la validazione di un testo al posto del voto e la chiusura senza ciclo infinito
+- **Input:** `otto`, `8`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
 ```
-1. insufficienti = contatori[0] + contatori[1].
-2. sufficienti = NUM_STUDENTI - insufficienti.
-3. Stampare insufficienti, sufficienti e le rispettive percentuali.
+  Studente  1:   Voto non valido. Inserire un valore da 1 a 10.
+  Studente  1:   Studente  2: 
+
+Input terminato prima di 20 voti: analisi annullata.
 ```

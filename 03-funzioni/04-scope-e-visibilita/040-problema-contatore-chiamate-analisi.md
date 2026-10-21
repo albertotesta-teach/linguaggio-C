@@ -8,69 +8,101 @@ Le variabili globali sono la soluzione naturale: non è necessario passarle
 come parametri a ogni funzione, e la loro durata coincide con quella del
 programma.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+Nessun input da tastiera: prezzi e percentuali di sconto dei quattro
+prodotti sono assegnati nel `main`.
+
+| Prodotto | Prezzo | Operazioni |
+|---|---|---|
+| A | 150.00 | sconto 10%, IVA |
+| B | 200.00 | sconto 20%, IVA |
+| C | 80.00 | solo IVA |
+| D | 300.00 | sconto 15%, poi sconto 5%, IVA |
+
+### Output
+Per ogni prodotto: prezzo originale, prezzo finale e differenza tra i due
+(etichettata "Risparmio"). Al termine il riepilogo con il numero di
+chiamate di ciascuna funzione e il totale.
+
+### Vincoli
+- Ogni funzione monitorata incrementa il proprio contatore all'inizio, prima
+  di qualsiasi calcolo
+- I contatori non vengono mai azzerati: contano le chiamate dell'intera
+  esecuzione
+- Due sconti in cascata non equivalgono alla somma delle percentuali:
+  15% e poi 5% non è uno sconto del 20%
+- Il riepilogo va chiamato dopo tutte le operazioni
+
+### Assunzioni
+- La percentuale di sconto è un intero tra 0 e 100
+- L'IVA è fissa al 22%
+- La riga "Risparmio" è `originale − finale`: diventa negativa quando
+  l'IVA pesa più dello sconto
+
+### Variabili di supporto
 
 | Variabile globale | Tipo | Descrizione |
 |---|---|---|
-| `chiamate_calcola_sconto` | int | Numero di invocazioni di `calcola_sconto` |
-| `chiamate_calcola_iva` | int | Numero di invocazioni di `calcola_iva` |
-| `chiamate_stampa_prezzo` | int | Numero di invocazioni di `stampa_prezzo` |
+| `chiamate_calcola_sconto` | int | Invocazioni di `calcola_sconto` |
+| `chiamate_calcola_iva` | int | Invocazioni di `calcola_iva` |
+| `chiamate_stampa_prezzo` | int | Invocazioni di `stampa_prezzo` |
+
+| Variabile locale al main | Tipo | Descrizione |
+|---|---|---|
+| `prezzo`, `scontato`, `finale` | double | Prezzo originale, dopo lo sconto, con IVA |
 
 | Funzione | Firma | Descrizione |
 |---|---|---|
-| `calcola_sconto` | `double(double, int)` | Applica uno sconto percentuale; incrementa il proprio contatore |
-| `calcola_iva` | `double(double)` | Aggiunge IVA al 22%; incrementa il proprio contatore |
-| `stampa_prezzo` | `void(double, double)` | Stampa prezzo originale, finale e risparmio; incrementa il proprio contatore |
-| `stampa_riepilogo_chiamate` | `void(void)` | Legge i tre contatori globali e stampa il riepilogo |
+| `calcola_sconto` | `double(double, int)` | Applica uno sconto percentuale |
+| `calcola_iva` | `double(double)` | Aggiunge IVA al 22% |
+| `stampa_prezzo` | `void(double, double)` | Stampa prezzo originale, finale e differenza |
+| `stampa_riepilogo_chiamate` | `void(void)` | Legge i tre contatori e stampa il riepilogo |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+1. Per ogni prodotto: applicare gli sconti previsti con `calcola_sconto`
+   (zero, una o due volte), poi l'IVA con `calcola_iva`, poi stampare con
+   `stampa_prezzo`. Ogni chiamata incrementa il contatore della funzione.
+2. Chiamare `stampa_riepilogo_chiamate`, che stampa i tre contatori e la
+   loro somma.
 
-### Caso d'uso 1 – Prodotto con sconto singolo e IVA
+## 3. Casi di test
 
-**a) Input** – `prezzo = 150.00`, sconto 10%
+Il programma esegue in sequenza i quattro prodotti e il riepilogo: si
+esegue una volta e si confronta ogni blocco con l'output atteso.
 
-**b) Output**
+### Test 1 – Prodotto A: sconto singolo
+- **Valori intermedi attesi:** scontato = 150 − 15 = 135.00;
+  finale = 135 × 1.22 = 164.70
+- **Output atteso:**
 ```
 Prodotto A (sconto 10%, IVA 22%):
   Prezzo originale:   150.00 EUR
-  Prezzo finale:      164.34 EUR
-  Risparmio:          -14.34 EUR
+  Prezzo finale:      164.70 EUR
+  Risparmio:          -14.70 EUR
 ```
 
-**c) Variabili di supporto** – `prezzo`, `scontato`, `finale` (double, locali al main)
+### Test 2 – Prodotto B: sconto che supera l'IVA
+- **Cosa si verifica:** la differenza diventa positiva
+- **Valori intermedi attesi:** scontato = 160.00; finale = 195.20
+- **Output atteso:** prezzo finale 195.20, risparmio 4.80
 
-**d) Vincoli** – il contatore viene incrementato all'inizio di ogni funzione, prima di qualsiasi calcolo
+### Test 3 – Prodotto C: nessuno sconto
+- **Cosa si verifica:** `calcola_sconto` non viene chiamata
+- **Output atteso:** prezzo finale 97.60, risparmio -17.60
 
-**e) Assunzioni** – la percentuale di sconto è un intero tra 0 e 100
+### Test 4 – Prodotto D: due sconti in cascata
+- **Valori intermedi attesi:** 300 → 255.00 (−15%) → 242.25 (−5%);
+  finale = 242.25 × 1.22 = 295.545 → 295.55
+- **Output atteso:** prezzo finale 295.55, risparmio 4.45 (con uno sconto
+  unico del 20% il prezzo finale sarebbe 292.80)
 
-**f) Algoritmo in linguaggio naturale**
-1. Chiamare `calcola_sconto(150.0, 10)` → incrementa contatore, calcola `150 - 15 = 135`
-2. Chiamare `calcola_iva(135.0)` → incrementa contatore, calcola `135 * 1.22 = 164.70`
-3. Chiamare `stampa_prezzo(150.0, 164.70)` → incrementa contatore, stampa le righe
-
-### Caso d'uso 2 – Prodotto con doppio sconto in sequenza
-
-**a) Input** – `prezzo = 300.00`, sconto 15% poi 5%
-
-**b) Output** – prezzo finale con due sconti applicati in cascata; `chiamate_calcola_sconto` raggiunge 4 a fine programma
-
-**c) Variabili di supporto** – `scontato` viene riusato dopo il secondo sconto
-
-**d) Vincoli** – i due sconti non sono equivalenti a uno sconto del 20% (sono applicati in cascata)
-
-**e) Assunzioni** – l'ordine degli sconti non importa per il risultato finale
-
-**f) Algoritmo in linguaggio naturale**
-1. `scontato = calcola_sconto(300.0, 15)` → 255.0
-2. `scontato = calcola_sconto(255.0,  5)` → 242.25
-3. `finale   = calcola_iva(242.25)` → 295.55
-4. `stampa_prezzo(300.0, 295.55)`
-
-### Caso d'uso 3 – Riepilogo delle chiamate
-
-**a) Input** – nessuno (legge i contatori globali)
-
-**b) Output**
+### Test 5 – Riepilogo delle chiamate
+- **Cosa si verifica:** i contatori globali sommano le chiamate di tutti i
+  prodotti: `calcola_sconto` 1 + 1 + 0 + 2, `calcola_iva` e `stampa_prezzo`
+  una volta per prodotto
+- **Output atteso:**
 ```
 === Riepilogo chiamate ===
   calcola_sconto:  4
@@ -78,13 +110,3 @@ Prodotto A (sconto 10%, IVA 22%):
   stampa_prezzo:   4
   Totale:          12
 ```
-
-**c) Variabili di supporto** – nessuna (legge direttamente le variabili globali)
-
-**d) Vincoli** – il riepilogo deve essere chiamato dopo tutte le operazioni
-
-**e) Assunzioni** – i contatori non vengono azzerati tra un prodotto e l'altro (contano le chiamate totali)
-
-**f) Algoritmo in linguaggio naturale**
-1. Leggere i tre contatori globali
-2. Calcolare e stampare il totale come loro somma

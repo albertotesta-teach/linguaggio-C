@@ -8,82 +8,83 @@ il più e meno presente e contare quanti dipendenti sono sotto la soglia dell'80
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile             | Tipo         | Dimensione | Motivazione                                          |
-|-----------------------|--------------|------------|------------------------------------------------------|
-| `nomi`                | `char[][]`   | 6 × 20     | Nome di ogni dipendente                              |
-| `presenze`            | `int[]`      | 6          | Giorni di presenza; parallelo a `nomi`               |
-| `GIORNI_LAVORATIVI`   | `#define`    | 22         | Denominatore per il calcolo della percentuale        |
-| `SOGLIA_PRESENZA`     | `#define`    | 80.0       | Soglia minima accettabile                            |
-| `DIPENDENTI`          | `#define`    | 6          | Dimensione degli array e limite dei cicli            |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
+
+| Variabile  | Tipo       | Dimensione | Descrizione                               |
+|------------|------------|------------|-------------------------------------------|
+| `nomi`     | `char[][]` | 6 × 20     | Cognome e nome del dipendente             |
+| `presenze` | `int[]`    | 6          | Giorni di presenza, parallelo a `nomi`    |
+
+### Output
+- Il prospetto: nome, giorni di presenza, percentuale (un decimale) e stato
+  "REGOLARE" o "ATTENZIONE";
+- il dipendente più presente e quello meno presente, con giorni e
+  percentuale;
+- il numero di dipendenti sotto la soglia.
+
+### Vincoli
+- Percentuale = presenze / 22 × 100, con divisione reale
+- Lo stato è "REGOLARE" se la percentuale è almeno l'80% (soglia inclusa),
+  altrimenti "ATTENZIONE"
+- Con 22 giorni l'80% corrisponde a 17.6 giorni: 18 giorni sono regolari,
+  17 no
+- A parità di presenze si sceglie il primo dipendente dell'array
+- Lo stato si costruisce carattere per carattere con `'\0'` finale
+
+### Assunzioni
+- 0 ≤ presenze ≤ 22
+
+### Variabili di supporto
+
+| Variabile           | Tipo      | Descrizione                        |
+|---------------------|-----------|------------------------------------|
+| `perc`              | `double`  | Percentuale del dipendente         |
+| `avviso`            | `char[15]`| "REGOLARE" o "ATTENZIONE"          |
+| `idx`               | `int`     | Indice del dipendente trovato      |
+| `GIORNI_LAVORATIVI` | `#define` | 22                                 |
+| `SOGLIA_PRESENZA`   | `#define` | 80.0                               |
+| `DIPENDENTI`        | `#define` | 6                                  |
+
+| Funzione | Descrizione |
+|---|---|
+| `double percentuale_presenza(int giorni_presenti, int giorni_totali)` | Percentuale di un dipendente |
+| `int dipendente_piu_presente(const int presenze[], int n)` | Indice del massimo |
+| `int dipendente_meno_presente(const int presenze[], int n)` | Indice del minimo |
+| `int conta_sotto_soglia(...)` | Dipendenti sotto la soglia |
+| `void stampa_prospetto(...)` | Prospetto con stato |
+
+### Algoritmo in linguaggio naturale
+1. Per ogni dipendente calcolare la percentuale, scegliere lo stato e
+   stampare la riga.
+2. Trovare e stampare il più presente e il meno presente.
+3. Contare e stampare i dipendenti con percentuale minore della soglia.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 1 – Prospetto con stato
-
-**a) Input** — Array `nomi`, `presenze`, costanti `GIORNI_LAVORATIVI`, `SOGLIA_PRESENZA`.
-**b) Output**
+### Test 1 – Prospetto
+- **Cosa si verifica:** 18 giorni (81.8%) è regolare, 17 giorni (77.3%) no
+- **Output atteso:**
 ```
-  Dipendente       | Giorni | Perc.  | Stato
-  -----------------|--------|--------|----------
   Rossi Anna       |   22   | 100.0% | REGOLARE
   Bianchi Carlo    |   18   |  81.8% | REGOLARE
+  Verdi Elena      |   20   |  90.9% | REGOLARE
   Ferrari Marco    |   15   |  68.2% | ATTENZIONE
+  Russo Giulia     |   21   |  95.5% | REGOLARE
+  Conti Pietro     |   17   |  77.3% | ATTENZIONE
 ```
-**c) Funzione coinvolta**
-`stampa_prospetto`: chiama `percentuale_presenza` per ogni dipendente.
-**d) Vincoli**
-- `percentuale_presenza` è una funzione a sé per evitare duplicazione
-  tra `stampa_prospetto` e `conta_sotto_soglia`.
-- La stringa `avviso` è costruita manualmente senza `strcpy`.
 
----
-
-### Caso d'uso 2 – Dipendente più e meno presente
-
-**a) Input** — Array `presenze`.
-**b) Output**
+### Test 2 – Estremi e conteggio
+- **Output atteso:**
 ```
 Piu' presente   : Rossi Anna (22 gg - 100.0%)
 Meno presente   : Ferrari Marco (15 gg - 68.2%)
-```
-**c) Funzioni coinvolte**
-`dipendente_piu_presente` e `dipendente_meno_presente`: entrambe restituiscono
-un indice; il `main` usa l'indice per accedere a `nomi[]` e chiama
-`percentuale_presenza` per la stampa.
-
-**d) Vincoli**
-- Le funzioni restituiscono l'indice, non il valore: il `main` accede ai dati
-  tramite indice, mantenendo la separazione tra logica e presentazione.
-
----
-
-### Caso d'uso 3 – Conteggio sotto soglia
-
-**a) Input** — Array `presenze`, costanti `GIORNI_LAVORATIVI`, `SOGLIA_PRESENZA`.
-**b) Output**
-```
 Sotto soglia    : 2 dipendenti su 6
-```
-**c) Funzione coinvolta**
-`conta_sotto_soglia`: chiama `percentuale_presenza` internamente per ogni
-elemento, evitando di duplicare la formula.
-
-**d) Vincoli**
-- La soglia è `SOGLIA_PRESENZA` (80.0); il confronto usa `<` (non `<=`).
-- `percentuale_presenza` è la stessa funzione usata in `stampa_prospetto`:
-  un solo punto di definizione della formula garantisce coerenza.
-
-**f) Algoritmo in linguaggio naturale**
-```
-contatore = 0.
-Per i da 0 a n-1:
-  Se percentuale_presenza(presenze[i], giorni_totali) < soglia:
-    contatore++.
-return contatore.
 ```

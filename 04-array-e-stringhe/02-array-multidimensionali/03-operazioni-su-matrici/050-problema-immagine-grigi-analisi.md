@@ -8,70 +8,108 @@ mostrarla a schermo con caratteri di diversa "pienezza", calcolarne la
 luminosità media e applicare tre operazioni: negativo, soglia (bianco/nero)
 e specchio orizzontale.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `originale` | `int[][]` | 6 × 10 | Luminosità dei pixel, non viene modificata |
-| `risultato` | `int[][]` | 6 × 10 | Matrice di lavoro per ogni operazione |
-| `livello` | `int` | — | Luminosità ridotta a 0-4 (`valore / 52`) per la stampa |
-| `somma` | `long` | — | Accumulatore per la media |
-| `appoggio` | `int` | — | Variabile per lo scambio |
+### Input
+Nessun input da tastiera: l'immagine è inizializzata nel codice.
 
-| Livello | 0 | 1 | 2 | 3 | 4 |
-|---------|---|---|---|---|---|
-| Carattere | spazio | `..` | `oo` | `OO` | `@@` |
+| Variabile   | Tipo      | Dimensione | Descrizione                                    |
+|-------------|-----------|------------|------------------------------------------------|
+| `originale` | `int[][]` | 6 × 10     | Luminosità dei pixel (0 nero, 255 bianco)      |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- L'immagine originale disegnata a caratteri e la luminosità media;
+- il negativo;
+- la versione a soglia, solo bianco o nero;
+- lo specchio orizzontale (la freccia punta a sinistra).
 
-### Caso d'uso 1 – Visualizzazione e luminosità media
+Ogni pixel si disegna con due caratteri secondo il suo livello:
 
-**a) Input** – matrice `originale`
+| Livello (`valore / 52`) | 0 | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|---|
+| Carattere | spazi | `..` | `oo` | `OO` | `@@` |
 
-**b) Output** – la freccia disegnata e "Luminosita' media: 74.0"
+### Vincoli
+- L'immagine originale non viene modificata: ogni operazione scrive in
+  `risultato`
+- Negativo: ogni pixel diventa `255 − valore`
+- Soglia: bianco se il valore è **strettamente** maggiore di 128, nero
+  altrimenti
+- Specchio: in ogni riga la colonna c si scambia con `LARGHEZZA − 1 − c`,
+  solo per la prima metà delle colonne (altrimenti ogni coppia verrebbe
+  scambiata due volte e l'immagine tornerebbe com'era)
+- La media si accumula in un `long` e si calcola con una divisione reale
 
-**c) Variabili di supporto** – `livello`, `somma`
+### Assunzioni
+- Tutti i valori sono tra 0 e 255, quindi il livello è tra 0 e 4
 
-**d) Vincoli** – ogni pixel occupa due caratteri, per compensare la forma
-rettangolare dei caratteri del terminale
+### Variabili di supporto
 
-**e) Assunzioni** – valori tra 0 e 255
+| Variabile   | Tipo      | Dimensione | Descrizione                            |
+|-------------|-----------|------------|----------------------------------------|
+| `risultato` | `int[][]` | 6 × 10     | Matrice di lavoro di ogni operazione   |
+| `livello`   | `int`     | —          | Luminosità ridotta a 0–4               |
+| `somma`     | `long`    | —          | Accumulatore per la media              |
+| `appoggio`  | `int`     | —          | Variabile per lo scambio               |
+| `ALTEZZA`, `LARGHEZZA`, `BIANCO`, `NERO`, `SOGLIA` | `#define` | — | 6, 10, 255, 0, 128 |
 
-**f) Algoritmo in linguaggio naturale** – per ogni pixel calcolare il livello,
-stampare il carattere corrispondente e sommare il valore; dividere la somma
-per il numero di pixel.
+### Algoritmo in linguaggio naturale
+1. Disegnare l'originale convertendo ogni pixel in livello e carattere, e
+   sommare i valori; stampare la media.
+2. Negativo: riempire `risultato` con `255 − originale` e disegnarlo.
+3. Soglia: riempire `risultato` con 255 o 0 e disegnarlo (`@@` o spazi).
+4. Specchio: copiare l'originale in `risultato`, poi in ogni riga scambiare
+   le colonne simmetriche della prima metà; disegnarlo.
 
-### Caso d'uso 2 – Negativo e soglia
+## 3. Casi di test
 
-**a) Input** – matrice `originale`
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**b) Output** – la freccia scura su sfondo chiaro; la freccia in bianco e nero
-(solo la punta supera la soglia 128)
+### Test 1 – Originale e media
+- **Output atteso:**
+```
+  |          OO        |
+  |          @@OO      |
+  |..........@@@@@@    |
+  |..........@@@@@@    |
+  |          @@OO      |
+  |          OO        |
+Luminosita' media: 74.0
+```
 
-**c) Variabili di supporto** – `risultato`
+### Test 2 – Negativo
+- **Cosa si verifica:** lo sfondo scuro diventa chiaro e viceversa
+- **Output atteso:**
+```
+  |@@@@@@@@@@..@@@@@@@@|
+  |@@@@@@@@@@  ..@@@@@@|
+  |oooooooooo      @@@@|
+  |oooooooooo      @@@@|
+  |@@@@@@@@@@  ..@@@@@@|
+  |@@@@@@@@@@..@@@@@@@@|
+```
 
-**d) Vincoli** – `originale` non cambia: entrambe le operazioni scrivono in
-`risultato`
+### Test 3 – Soglia
+- **Cosa si verifica:** l'asta (valore 100, sotto la soglia) scompare, resta
+  solo la punta
+- **Output atteso:**
+```
+  |          @@        |
+  |          @@@@      |
+  |          @@@@@@    |
+  |          @@@@@@    |
+  |          @@@@      |
+  |          @@        |
+```
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Negativo: per ogni pixel `risultato = 255 - originale`.
-2. Soglia: per ogni pixel `risultato = 255` se `originale > 128`, altrimenti 0.
-
-### Caso d'uso 3 – Specchio orizzontale
-
-**a) Input** – matrice `originale`
-
-**b) Output** – la freccia rivolta a sinistra
-
-**c) Variabili di supporto** – `appoggio`
-
-**d) Vincoli** – in ogni riga si scambiano solo le colonne della prima metà
-con le simmetriche (`LARGHEZZA - 1 - c`), come nell'inversione di un array
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – copiare `originale` in `risultato`,
-poi per ogni riga e per c da 0 a metà larghezza scambiare `[r][c]` e
-`[r][LARGHEZZA - 1 - c]`.
+### Test 4 – Specchio orizzontale
+- **Output atteso:**
+```
+  |        OO          |
+  |      OO@@          |
+  |    @@@@@@..........|
+  |    @@@@@@..........|
+  |      OO@@          |
+  |        OO          |
+```

@@ -111,6 +111,74 @@ Con puts:   prima
 seconda
 ```
 
+### 020-input-con-scanf
+*(output dipendente dall'input – esempio)*
+```
+=== LETTURA DATI UTENTE CON scanf ===
+
+Inserisci il tuo nome (senza spazi): Mario
+Inserisci il tuo cognome (senza spazi): Rossi
+Inserisci il tuo codice utente (es. USR00042): USR00042
+
+==============================
+  SCHEDA UTENTE
+==============================
+Nome        : Mario
+Cognome     : Rossi
+Codice      : USR00042
+==============================
+
+--- Dimostrazione del limite di scanf ---
+Inserisci nome e cognome separati da spazio: Mario Rossi
+scanf ha letto solo: "Mario"
+(il cognome è rimasto nel buffer di input)
+
+NOTA: per leggere stringhe con spazi, usa fgets.
+Vedi 030-input-con-fgets.c per gli esempi.
+```
+
+### 030-input-con-fgets
+*(output dipendente dall'input – esempio)*
+```
+=== LETTURA DATI CON fgets ===
+
+Inserisci nome e cognome: Mario Rossi
+Inserisci il tuo indirizzo: Via Roma 12, Alessandria
+Inserisci una nota (max 200 caratteri): Consegnare entro venerdi
+
+========================================
+  RIEPILOGO DATI INSERITI
+========================================
+Nome completo : Mario Rossi
+Indirizzo     : Via Roma 12, Alessandria
+Nota          : Consegnare entro venerdi
+========================================
+
+SUGGERIMENTO: usa fgets per input con spazi, scanf per token.
+```
+
+### 040-input-output-combinati
+*(output dipendente dall'input – esempio)*
+```
+=== INSERIMENTO NUOVO CONTATTO ===
+
+Nome: Mario
+Cognome: Rossi
+Città: Alessandria
+Email: mario.rossi@email.it
+Telefono (senza spazi): 3331234567
+
+╔══════════════════════════════════════╗
+║         SCHEDA CONTATTO              ║
+╠══════════════════════════════════════╣
+║ Nome      : Mario                    ║
+║ Cognome   : Rossi                    ║
+║ Città     : Alessandria              ║
+║ Email     : mario.rossi@email.it     ║
+║ Telefono  : 3331234567               ║
+╚══════════════════════════════════════╝
+```
+
 ### 050-problema-registro-presenze
 *(input: "De Luca Giovanni")*
 ```
@@ -145,6 +213,33 @@ Caratteri rimanenti  : 123
 Utilizzo: [##........] 23%
 
 Messaggio pronto per l'invio.
+```
+
+### 070-problema-inserimento-prodotto
+*(output dipendente dall'input – esempio)*
+```
+╔══════════════════════════════════════════╗
+║    TERMINALE INSERIMENTO PRODOTTI        ║
+║    Magazzino Centrale - Reparto IT       ║
+╚══════════════════════════════════════════╝
+
+Codice prodotto (es. ELE-042): ELE-042
+Nome prodotto (es. Cavo HDMI 2m): Cavo HDMI 2m
+Categoria merceologica: Cavi e connettori
+Prezzo (es. 12.50): 12.50
+Quantità disponibile: 25
+
+════════════════════════════════════════════════
+  SCHEDA PRODOTTO - PRONTA PER L'ARCHIVIAZIONE
+════════════════════════════════════════════════
+  Codice      : ELE-042
+  Nome        : Cavo HDMI 2m
+  Categoria   : Cavi e connettori
+  Prezzo      : 12.50 EUR
+  Disponibile : 25 pz
+════════════════════════════════════════════════
+
+Prodotto inserito correttamente nell'archivio.
 ```
 
 ### 080-problema-log-sistema

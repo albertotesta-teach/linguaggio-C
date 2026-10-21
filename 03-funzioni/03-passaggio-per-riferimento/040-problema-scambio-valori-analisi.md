@@ -7,12 +7,35 @@ del chiamante, operazione impossibile con il solo passaggio per valore. Il
 programma dimostra anche come chiamate ripetute a `scambia()` possano ordinare
 tre numeri in ordine crescente.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+Nessun input da tastiera: i valori sono assegnati nel `main`.
 
 | Variabile | Tipo | Descrizione |
 |---|---|---|
-| `primo`, `secondo`, `terzo` | int | Valori da scambiare/ordinare nel main |
-| `temp` | int (locale a `scambia`) | Variabile temporanea per lo scambio |
+| `primo`, `secondo`, `terzo` | int | Valori da scambiare o ordinare |
+
+### Output
+- Per lo scambio: i valori di `primo` e `secondo` prima e dopo la chiamata.
+- Per l'ordinamento: le terne prima e dopo `ordina_tre`, in ordine crescente.
+
+### Vincoli
+- `scambia` riceve gli indirizzi delle variabili (`int *`): solo così può
+  modificare le variabili del chiamante; con il passaggio per valore
+  scambierebbe solo copie locali
+- I puntatori passati non sono `NULL`
+- `ordina_tre` deve funzionare anche con valori uguali e con valori negativi
+
+### Assunzioni
+- Le due variabili passate a `scambia` sono distinte
+- Con tre elementi bastano tre confronti tra coppie adiacenti
+
+### Variabili di supporto
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
+| `temp` | int (locale a `scambia`) | Conserva un valore durante lo scambio |
 
 | Funzione | Firma | Descrizione |
 |---|---|---|
@@ -20,55 +43,48 @@ tre numeri in ordine crescente.
 | `ordina_tre` | `void(int*, int*, int*)` | Ordina tre interi in ordine crescente |
 | `stampa_tre` | `void(int, int, int)` | Stampa tre valori su una riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+Scambio:
+1. Salvare `*a` in `temp`.
+2. Copiare `*b` in `*a`.
+3. Copiare `temp` in `*b`.
 
-### Caso d'uso 1 – Scambio di due variabili
+Ordinamento di tre valori (bubble sort a tre elementi):
+1. Se `*x > *y`: scambiare x e y.
+2. Se `*y > *z`: scambiare y e z (il massimo finisce in fondo).
+3. Se `*x > *y`: scambiare x e y (sistema i primi due).
 
-**a) Input** – `primo = 42`, `secondo = 7`
+## 3. Casi di test
 
-**b) Output** – `primo = 7`, `secondo = 42`
+Il programma esegue in sequenza i casi presenti nel `main`: si esegue una
+volta e si confronta ogni blocco con l'output atteso.
 
-**c) Variabili di supporto** – `temp` (int) locale a `scambia`, usata per non perdere un valore durante lo scambio
+### Test 1 – Scambio di due variabili
+- **Input:** `primo = 42`, `secondo = 7`
+- **Output atteso:**
+```
+Prima dello scambio:  primo=42  secondo=7
+Dopo  lo scambio:     primo=7  secondo=42
+```
 
-**d) Vincoli** – i puntatori passati non devono essere `NULL`
+### Test 2 – Ordinamento di tre valori distinti
+- **Input:** 9, 3, 6
+- **Output atteso:** `Prima:   9  3  6` e `Dopo:    3  6  9`
 
-**e) Assunzioni** – le due variabili sono distinte (non si passa due volte lo stesso indirizzo)
+### Test 3 – Tre valori uguali
+- **Cosa si verifica:** nessuno scambio viene eseguito e i valori restano
+  invariati
+- **Input:** 1, 1, 1
+- **Output atteso:** `Dopo:    1  1  1`
 
-**f) Algoritmo in linguaggio naturale**
-1. Salvare `*a` in `temp`
-2. Copiare `*b` in `*a`
-3. Copiare `temp` in `*b`
+### Test 4 – Valori con un negativo
+- **Input:** 100, -5, 42
+- **Output atteso:** `Dopo:    -5  42  100`
 
-### Caso d'uso 2 – Ordinamento di tre numeri
-
-**a) Input** – `primo = 9`, `secondo = 3`, `terzo = 6`
-
-**b) Output** – `primo = 3`, `secondo = 6`, `terzo = 9`
-
-**c) Variabili di supporto** – nessuna aggiuntiva (usa `scambia` internamente)
-
-**d) Vincoli** – funziona correttamente anche con valori uguali
-
-**e) Assunzioni** – tre elementi: bastano due passaggi di confronto
-
-**f) Algoritmo in linguaggio naturale** (bubble sort a 3 elementi)
-1. Se `*x > *y`: scambia x e y (il minore va a sinistra)
-2. Se `*y > *z`: scambia y e z (il massimo va a destra)
-3. Se `*x > *y`: scambia x e y (eventuale correzione del secondo elemento)
-
-### Caso d'uso 3 – Tentativo errato (passaggio per valore)
-
-**a) Input** – qualsiasi coppia di valori
-
-**b) Output** – le variabili del chiamante rimangono invariate
-
-**c) Variabili di supporto** – `a`, `b`, `temp` sono tutte locali e scompaiono a fine funzione
-
-**d) Vincoli** – N/A: il caso errato è mostrato come commento didattico nel codice
-
-**e) Assunzioni** – N/A
-
-**f) Algoritmo in linguaggio naturale**
-1. La funzione riceve copie di `primo` e `secondo`
-2. Le copie vengono scambiate localmente
-3. Le copie scompaiono: `primo` e `secondo` nel main restano invariati
+### Test 5 – Versione errata con passaggio per valore
+- **Cosa si verifica:** perché il passaggio per riferimento è necessario
+- **Procedura:** scrivere la funzione `scambia_sbagliata(int a, int b)`
+  riportata nel commento del `main`, chiamarla con `primo = 42` e
+  `secondo = 7` e stampare le variabili
+- **Output atteso:** `primo=42  secondo=7`: le variabili del chiamante non
+  cambiano

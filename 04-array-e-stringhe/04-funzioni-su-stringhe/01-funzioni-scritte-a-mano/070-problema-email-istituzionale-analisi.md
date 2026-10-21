@@ -9,66 +9,91 @@ Se la parte prima della `@` supera 25 caratteri, il nome viene ridotto
 all'iniziale. Il programma stampa gli indirizzi e le liste di distribuzione
 di docenti e studenti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `nomi` | `char[][]` | 7 × 30 | Nomi (anche composti) |
-| `cognomi` | `char[][]` | 7 × 30 | Cognomi (parallelo) |
-| `ruoli` | `char[]` | 7 | `'S'` studente, `'D'` docente (parallelo) |
-| `email` | `char[][]` | 7 × 60 | Indirizzi costruiti (parallelo) |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice in tre array
+paralleli.
 
-| Funzione | Compito |
-|----------|---------|
-| `crea_email` | Applica le regole e compone l'indirizzo |
-| `solo_lettere` | Tiene solo le lettere, in minuscolo |
-| `copia`, `concatena`, `lunghezza` | Funzioni di base scritte a mano |
+| Variabile | Tipo       | Dimensione | Descrizione                                 |
+|-----------|------------|------------|---------------------------------------------|
+| `nomi`    | `char[][]` | 7 × 30     | Nomi, anche composti                        |
+| `cognomi` | `char[][]` | 7 × 30     | Cognomi                                     |
+| `ruoli`   | `char[]`   | 7          | `'S'` studente, `'D'` docente               |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- L'elenco con nome, cognome, ruolo e indirizzo email di ogni persona;
+- la lista dei docenti e quella degli studenti, nell'ordine dell'elenco.
 
-### Caso d'uso 1 – Nome composto e apostrofo
+### Vincoli
+- Di nome e cognome si tengono solo le lettere, in minuscolo: spazi e
+  apostrofi spariscono ("Maria Grazia" "D'Angelo" → mariagrazia.dangelo)
+- Parte locale = nome + `.` + cognome; se supera `MAX_LOCALE` (25)
+  caratteri, del nome resta solo l'iniziale
+- Dominio: `@scuola.edu.it` per i docenti, `@studenti.scuola.edu.it` per
+  ogni altro ruolo
+- L'indirizzo si costruisce con `copia` e `concatena`, scritte a mano
+- Il buffer dell'email (60) contiene la parte locale più lunga ammessa più
+  il dominio più lungo
 
-**a) Input** – `Maria Grazia`, `D'Angelo`, `'D'`
+### Assunzioni
+- I nomi non contengono lettere accentate
+- Nome e cognome hanno almeno una lettera
 
-**b) Output** – `mariagrazia.dangelo@scuola.edu.it`
+### Variabili di supporto
 
-**c) Variabili di supporto** – `parte_nome`, `parte_cognome`
+| Variabile | Tipo       | Dimensione | Descrizione                          |
+|-----------|------------|------------|--------------------------------------|
+| `email`   | `char[][]` | 7 × 60     | Indirizzi costruiti, parallelo       |
+| `parte_nome`, `parte_cognome` | `char[]` | 30 | Locali a `crea_email`    |
+| `MAX_LOCALE` | `#define` | 25      | Lunghezza massima della parte locale |
 
-**d) Vincoli** – `email` deve contenere tutto l'indirizzo più `'\0'` (60 celle)
+| Funzione | Descrizione |
+|---|---|
+| `void crea_email(char email[], const char nome[], const char cognome[], char ruolo)` | Applica le regole |
+| `void solo_lettere(char dest[], const char sorg[])` | Solo lettere, in minuscolo |
+| `void copia(...)`, `void concatena(...)`, `int lunghezza(...)` | Funzioni di base |
 
-**e) Assunzioni** – lettere senza accenti
+### Algoritmo in linguaggio naturale
+1. Per ogni persona costruire l'indirizzo:
+   a. ricavare nome e cognome con le sole lettere minuscole;
+   b. se nome + 1 + cognome supera 25 caratteri, troncare il nome dopo
+      l'iniziale;
+   c. copiare il nome, aggiungere il punto, il cognome e il dominio del
+      ruolo.
+2. Stampare l'elenco.
+3. Stampare gli indirizzi dei docenti, poi quelli degli studenti.
 
-**f) Algoritmo in linguaggio naturale**
-1. Ridurre nome e cognome alle sole lettere minuscole.
-2. Comporre: nome, `"."`, cognome, dominio scelto in base al ruolo.
+## 3. Casi di test
 
-### Caso d'uso 2 – Parte locale troppo lunga
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**a) Input** – `Maria Vittoria`, `Dell'Acqua Bianchi`, `'S'`
+### Test 1 – Indirizzi
+- **Cosa si verifica:** nomi composti, apostrofi, cognomi con spazio e
+  riduzione all'iniziale ("mariavittoria.dellacquabianchi" avrebbe 30
+  caratteri)
+- **Output atteso:**
+```
+  Luca            Ferrari             S  luca.ferrari@studenti.scuola.edu.it
+  Maria Grazia    D'Angelo            D  mariagrazia.dangelo@scuola.edu.it
+  Paolo           Esposito            S  paolo.esposito@studenti.scuola.edu.it
+  Maria Vittoria  Dell'Acqua Bianchi  S  m.dellacquabianchi@studenti.scuola.edu.it
+  Sara            Colombo             D  sara.colombo@scuola.edu.it
+  Giovanni        La Rosa             S  giovanni.larosa@studenti.scuola.edu.it
+  Elena           Ricci               D  elena.ricci@scuola.edu.it
+```
 
-**b) Output** – `m.dellacquabianchi@studenti.scuola.edu.it`
-
-**c) Variabili di supporto** – lunghezze delle due parti
-
-**d) Vincoli** – la parte locale (nome + punto + cognome) non supera 25 caratteri
-
-**e) Assunzioni** – il cognome da solo sta nel limite
-
-**f) Algoritmo in linguaggio naturale** – se la somma delle lunghezze più il
-punto supera il limite, si tronca `parte_nome` dopo la prima lettera
-scrivendo `'\0'` nella cella 1.
-
-### Caso d'uso 3 – Liste di distribuzione
-
-**a) Input** – array `ruoli`
-
-**b) Output** – elenco docenti e elenco studenti
-
-**c) Variabili di supporto** – `k`
-
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – due scorrimenti dell'array parallelo:
-il primo stampa gli indirizzi con ruolo `'D'`, il secondo quelli con `'S'`.
+### Test 2 – Liste di distribuzione
+- **Output atteso:**
+```
+Lista docenti:
+  mariagrazia.dangelo@scuola.edu.it
+  sara.colombo@scuola.edu.it
+  elena.ricci@scuola.edu.it
+Lista studenti:
+  luca.ferrari@studenti.scuola.edu.it
+  paolo.esposito@studenti.scuola.edu.it
+  m.dellacquabianchi@studenti.scuola.edu.it
+  giovanni.larosa@studenti.scuola.edu.it
+```

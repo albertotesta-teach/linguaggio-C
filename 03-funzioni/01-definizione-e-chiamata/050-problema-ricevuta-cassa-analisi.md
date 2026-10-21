@@ -7,11 +7,44 @@ prodotti acquistati con quantità e prezzi, riepilogo con IVA e totale, piede
 con numero scontrino e data. Ogni sezione è indipendente e può essere
 aggiornata senza toccare le altre.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-I dati degli articoli e i totali sono fissi nel codice (versione semplificata
-senza input utente). I valori numerici usano il tipo `double` per la gestione
-delle cifre decimali nella valuta.
+### Input
+Nessuno: in questa versione semplificata articoli, quantità, prezzi e totali
+sono fissi nel codice.
+
+### Output
+Una ricevuta composta da:
+- intestazione del negozio (ragione sociale, indirizzo, P.IVA, telefono);
+- tabella dei prodotti con le colonne Prodotto, Qta, Prezzo, Totale;
+- riepilogo con subtotale, IVA, totale, metodo di pagamento e resto;
+- piede con numero dello scontrino, cassa, data e ora.
+
+Le sezioni sono divise da una riga di trattini sempre uguale.
+
+### Vincoli
+- Le colonne della tabella sono allineate: intestazione e righe usano le
+  stesse larghezze di campo (`%-20s`, `%3d`, `%6.2f`, `%7.2f`)
+- I nomi dei prodotti non superano 20 caratteri
+- Il totale di ogni riga è prezzo × quantità, e il subtotale è la somma
+  dei totali di riga
+- Il separatore è stampato sempre dalla stessa funzione, così è identico
+  in tutti i punti della ricevuta
+
+### Assunzioni
+- Un solo metodo di pagamento (carta), quindi il resto è sempre 0
+- IVA al 5% applicata agli alimentari
+- I totali sono calcolati a mano e scritti nel codice; il calcolo
+  automatico arriva con i parametri (sezione 02)
+- Il terminale è largo almeno 40 caratteri
+
+### Variabili di supporto
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
+| `subtotale` | double | Somma dei totali di riga (IVA esclusa) |
+| `iva` | double | IVA al 5% del subtotale |
+| `totale` | double | Subtotale + IVA |
 
 | Funzione | Tipo | Descrizione |
 |---|---|---|
@@ -20,81 +53,55 @@ delle cifre decimali nella valuta.
 | `stampa_prodotti` | void | Tabella articoli con qta, prezzo unitario, totale riga |
 | `stampa_riepilogo` | void | Subtotale, IVA, totale, metodo di pagamento |
 | `stampa_piede_ricevuta` | void | Numero scontrino, data, ora, messaggio |
-| `stampa_ricevuta` | void | Compositore: chiama tutte le sezioni in ordine |
+| `stampa_ricevuta` | void | Chiama tutte le sezioni in ordine |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione del negozio.
+2. Stampare il separatore.
+3. Stampare la tabella dei prodotti: intestazione delle colonne, separatore,
+   una riga per articolo.
+4. Stampare separatore, subtotale e IVA.
+5. Stampare separatore, totale, separatore.
+6. Stampare il metodo di pagamento e il resto.
+7. Stampare il piede con numero dello scontrino, data e ora.
 
-### Caso d'uso 1 – Stampa ricevuta completa
+## 3. Casi di test
 
-**a) Input** – nessuno (dati fissi nel codice)
+Il programma non legge dati: si esegue una volta e si controlla quanto
+stampato.
 
-**b) Output**
+### Test 1 – Ricevuta completa
+- **Input:** nessuno
+- **Valori intermedi attesi:** totali di riga 2.70, 2.20, 2.97, 6.50, 4.40;
+  subtotale 18.77; IVA 18.77 × 0.05 = 0.9385 → 0.94; totale 19.71
+- **Output atteso (parte centrale):**
 ```
-        SUPERMERCATO BIANCHI
-       Corso Italia 45 - Torino
-       P.IVA 01234567890
-       Tel. 011-9876543
-------------------------------------
 Prodotto             Qta Prezzo  Totale
 ------------------------------------
 Latte intero 1L        2   1.35    2.70
-...
+Pane di casa           1   2.20    2.20
+Passata pomodoro       3   0.99    2.97
+Olio extravergine      1   6.50    6.50
+Pasta 500g             4   1.10    4.40
 ------------------------------------
-TOTALE:                       19.71
+Subtotale (IVA escl.):       18.77
+IVA (5% alimentari):          0.94
 ------------------------------------
-  Scontrino N. 00247  Cassa: 03
-  Data: 20/03/2024   Ora: 10:42
+TOTALE:                      19.71
+------------------------------------
+Pagamento: CARTA             19.71
+Resto:                        0.00
 ```
 
-**c) Variabili di supporto**
-- `subtotale`, `iva`, `totale`: double, calcolati manualmente per coerenza con i prodotti
+### Test 2 – Allineamento delle colonne
+- **Cosa si verifica:** le larghezze di campo dell'intestazione coincidono
+  con quelle delle righe
+- **Procedura:** nell'output del Test 1 controllare che le cifre dei prezzi e
+  dei totali siano incolonnate sotto le rispettive intestazioni
+- **Output atteso:** colonne Qta, Prezzo e Totale allineate a destra
 
-**d) Vincoli**
-- Le colonne della tabella prodotti devono essere allineate
-- Il totale deve essere coerente con la somma dei prodotti
-
-**e) Assunzioni**
-- Un solo metodo di pagamento (carta)
-- IVA al 5% applicata agli alimentari
-
-**f) Algoritmo in linguaggio naturale**
-1. Stampa intestazione negozio
-2. Stampa separatore
-3. Stampa tabella prodotti (intestazione colonne + righe articoli)
-4. Stampa separatore
-5. Calcola e stampa subtotale, IVA, totale
-6. Stampa separatore
-7. Stampa metodo di pagamento e resto
-8. Stampa piede con numero scontrino e data
-
-### Caso d'uso 2 – Verifica allineamento colonne
-
-**a) Input** – nessuno
-
-**b) Output** – colonne Prodotto, Qta, Prezzo, Totale perfettamente allineate
-
-**c) Variabili di supporto** – larghezze di campo gestite da `printf` con `%-20s`, `%3d`, `%6.2f`, `%7.2f`
-
-**d) Vincoli** – i nomi dei prodotti non devono superare 20 caratteri
-
-**e) Assunzioni** – il terminale è largo almeno 40 caratteri
-
-**f) Algoritmo in linguaggio naturale**
-1. Stampare l'intestazione con gli stessi specificatori di formato delle righe dati
-2. Per ogni prodotto usare `printf("%-20s %3d %6.2f %7.2f\n", ...)`
-
-### Caso d'uso 3 – Riutilizzo del separatore
-
-**a) Input** – nessuno
-
-**b) Output** – riga di trattini identica in tutti i punti della ricevuta
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – il separatore deve essere lungo esattamente quanto le colonne
-
-**e) Assunzioni** – la larghezza è fissa a 36 caratteri
-
-**f) Algoritmo in linguaggio naturale**
-1. Chiamare `stampa_separatore_ricevuta()` ogni volta che serve una riga di divisione
-2. La funzione stampa sempre la stessa stringa di trattini
+### Test 3 – Coerenza dei totali
+- **Cosa si verifica:** i valori scritti a mano nel codice sono corretti
+- **Procedura:** sommare i totali di riga stampati e confrontarli con il
+  subtotale; verificare che subtotale + IVA dia il totale
+- **Output atteso:** 18.77 + 0.94 = 19.71

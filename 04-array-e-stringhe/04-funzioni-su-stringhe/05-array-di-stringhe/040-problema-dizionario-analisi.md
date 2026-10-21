@@ -8,65 +8,118 @@ lingua. Se la parola non c'è, suggerisce le voci che iniziano con le stesse
 due lettere. Maiuscole e minuscole non contano. Le ricerche continuano fino
 a una riga vuota.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `italiano` | `char[][]` | 10 × 16 | Voci in italiano, in minuscolo |
-| `inglese` | `char[][]` | 10 × 16 | Traduzioni (parallelo) |
-| `parola` | `char[]` | 30 | Parola cercata, convertita in minuscolo |
-| `suggerimenti` | `int` | — | Voci suggerite |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `parola` | `char[30]` | Parola cercata, letta da tastiera; una riga vuota termina |
+| `italiano` | `char[10][16]` | Voci in italiano, in minuscolo (nel sorgente) |
+| `inglese` | `char[10][16]` | Traduzioni (parallelo a `italiano`) |
+
+### Output
+
+- `IT -> EN: <italiano> = <inglese>` oppure `EN -> IT: <inglese> = <italiano>`.
+- Se la parola non c'è: `"<parola>" non e' nel dizionario.` seguito da una
+  riga `Forse cercavi: <voce> (<traduzione>)` per ogni suggerimento,
+  oppure `Nessun suggerimento.`
+
+### Vincoli
+
+- La parola si converte in minuscolo prima della ricerca.
+- Si cerca nell'inglese solo se la ricerca nell'italiano fallisce.
+- I suggerimenti sono le voci (di entrambe le lingue) che iniziano con le
+  stesse due lettere della parola (`strncmp(voce, parola, 2)`); si cercano
+  solo se la parola ha almeno 2 lettere.
+
+### Assunzioni
+
+- Le voci del dizionario sono già in minuscolo e senza accenti.
+- Nessuna parola compare in entrambe le lingue.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `letta` | `int` | 1 se la lettura è riuscita |
+| `k` | `int` | Indice della voce trovata (-1 se assente) |
+| `suggerimenti` | `int` | Voci suggerite nelle due lingue |
+| `trovate` | `int` | In `suggerisci`: voci suggerite in un elenco |
 
 | Funzione | Compito |
 |----------|---------|
+| `leggi_riga` | Legge una riga e toglie il `'\n'` |
 | `in_minuscolo` | `tolower` su ogni carattere |
 | `cerca` | Indice della parola in un elenco con `strcmp`, oppure -1 |
-| `suggerisci` | Stampa le voci con le stesse prime due lettere (`strncmp`) |
+| `suggerisci` | Stampa le voci con le stesse prime due lettere e restituisce quante sono |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Parola italiana
+1. Leggere una parola.
+2. Finché la lettura riesce e la parola non è vuota:
+   1. convertirla in minuscolo;
+   2. cercarla nell'italiano: se c'è stampare la traduzione inglese;
+   3. altrimenti cercarla nell'inglese: se c'è stampare la traduzione italiana;
+   4. altrimenti segnalare che non c'è, stampare i suggerimenti
+      dell'italiano e dell'inglese e, se sono zero, `Nessun suggerimento.`;
+   5. leggere la parola successiva.
 
-**a) Input** – `Scuola`
+## 3. Casi di test
 
-**b) Output** – `IT -> EN: scuola = school`
+### Test 1 – Parola italiana con maiuscola
 
-**c) Variabili di supporto** – `k`
+- **Cosa si verifica**: conversione in minuscolo e traduzione IT → EN.
+- **Input**: `Scuola`, poi riga vuota.
+- **Valori intermedi attesi**: `parola` = `scuola`, `k` = 1 in `italiano`.
+- **Output atteso**:
+  ```
+    IT -> EN: scuola = school
+  ```
 
-**d) Vincoli** – la parola va convertita in minuscolo prima della ricerca
+### Test 2 – Parola inglese
 
-**e) Assunzioni** – il dizionario è scritto in minuscolo
+- **Cosa si verifica**: ricerca nell'inglese dopo il fallimento nell'italiano.
+- **Input**: `BOOK`, poi riga vuota.
+- **Output atteso**:
+  ```
+    EN -> IT: book = libro
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Convertire la parola in minuscolo.
-2. Cercarla nell'elenco italiano: se `k != -1` stampare `inglese[k]`.
+### Test 3 – Parola sconosciuta con suggerimento
 
-### Caso d'uso 2 – Parola inglese
+- **Cosa si verifica**: suggerimenti nell'italiano e nell'inglese.
+- **Input**: `quadro`, `teach`, poi riga vuota.
+- **Output atteso**:
+  ```
+    "quadro" non e' nel dizionario.
+    Forse cercavi: quaderno (notebook)
+    "teach" non e' nel dizionario.
+    Forse cercavi: teacher (insegnante)
+  ```
 
-**a) Input** – `BOOK`
+### Test 4 – Suggerimenti in entrambe le lingue
 
-**b) Output** – `EN -> IT: book = libro`
+- **Cosa si verifica**: `suggerimenti` somma i risultati delle due chiamate.
+- **Input**: `pe`, poi riga vuota.
+- **Valori intermedi attesi**: `suggerimenti` = 1 + 1 = 2.
+- **Output atteso**:
+  ```
+    "pe" non e' nel dizionario.
+    Forse cercavi: penna (pen)
+    Forse cercavi: pen (penna)
+  ```
 
-**c) Variabili di supporto** – `k`
+### Test 5 – Nessun suggerimento
 
-**d) Vincoli** – si cerca nell'inglese solo se la ricerca nell'italiano fallisce
-
-**e) Assunzioni** – nessuna parola compare in entrambe le lingue
-
-**f) Algoritmo in linguaggio naturale** – stessa ricerca nell'elenco inglese,
-con traduzione da `italiano[k]`.
-
-### Caso d'uso 3 – Parola sconosciuta
-
-**a) Input** – `quadro`; `teach`; `gatto`
-
-**b) Output** – "Forse cercavi: quaderno (notebook)"; "Forse cercavi: teacher (insegnante)"; "Nessun suggerimento."
-
-**c) Variabili di supporto** – `suggerimenti`
-
-**d) Vincoli** – i suggerimenti hanno senso solo se la parola ha almeno 2 lettere
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – in entrambi gli elenchi stampare le
-voci con `strncmp(voce, parola, 2) == 0`; se il totale è 0 dirlo.
+- **Cosa si verifica**: parola senza voci simili e parola di una sola lettera.
+- **Input**: `gatto`, `c`, poi riga vuota.
+- **Valori intermedi attesi**: per `c` `suggerisci` non confronta nulla
+  (lunghezza < 2), anche se esistono voci che iniziano per `c`.
+- **Output atteso**:
+  ```
+    "gatto" non e' nel dizionario.
+    Nessun suggerimento.
+    "c" non e' nel dizionario.
+    Nessun suggerimento.
+  ```

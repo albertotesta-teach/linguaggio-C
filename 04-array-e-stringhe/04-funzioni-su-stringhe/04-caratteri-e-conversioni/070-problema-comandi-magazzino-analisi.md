@@ -8,83 +8,141 @@ Il magazzino di una ferramenta si gestisce con comandi scritti su una riga:
 maiuscolo o in minuscolo. Lo scarico è rifiutato se la merce non basta; i
 comandi incompleti o sconosciuti sono segnalati.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `articoli` | `char[][]` | 5 × 16 | Nomi degli articoli, in minuscolo |
-| `giacenze` | `int[]` | 5 | Pezzi disponibili (parallelo) |
-| `riga` | `char[]` | 60 | Comando completo |
-| `comando`, `articolo` | `char[]` | 16 | Parole lette da `sscanf` (`%15s`) |
-| `quantita` | `int` | — | Numero letto da `sscanf` |
-| `letti` | `int` | — | Elementi convertiti da `sscanf` |
-| `fine` | `int` | — | Flag di uscita |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[60]` | Comando completo letto da tastiera, uno per riga |
+| `articoli` | `char[5][16]` | Nomi degli articoli in minuscolo (nel sorgente): viti, dadi, chiodi, tasselli, rondelle |
+| `giacenze` | `int[5]` | Pezzi disponibili all'avvio: 200, 150, 500, 80, 300 |
+
+### Output
+
+- `CARICO`/`SCARICO`: `<articolo>: +N -> G pezzi` / `<articolo>: -N -> G pezzi`.
+- `STATO`: tutte le giacenze; `STATO articolo`: `<articolo>: G pezzi`.
+- Messaggi di errore: `Disponibili solo G <articolo>.`,
+  `Articolo "<nome>" sconosciuto.`, `Uso: <COMANDO> articolo quantita' (positiva)`,
+  `Comando "<COMANDO>" sconosciuto.`, `Scrivi un comando.`
+- Alla fine: `Sessione chiusa.`
+
+### Vincoli
+
+- La riga si scompone con `sscanf(riga, "%15s %15s %d", ...)`: il numero di
+  elementi convertiti distingue le forme del comando; `%15s` impedisce di
+  superare le 16 celle di `comando` e `articolo`.
+- Il comando si converte in maiuscolo, l'articolo in minuscolo.
+- La quantità di carico/scarico deve essere positiva.
+- La giacenza non può diventare negativa.
+- Con una riga vuota `sscanf` non converte nulla (restituisce -1).
+- A fine input (EOF) il programma si comporta come se fosse stato scritto `FINE`.
+
+### Assunzioni
+
+- I nomi degli articoli sono una sola parola.
+- Le parole oltre la terza vengono ignorate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `comando`, `articolo` | `char[16]` | Parole lette da `sscanf` |
+| `quantita` | `int` | Numero letto da `sscanf` |
+| `letti` | `int` | Elementi convertiti da `sscanf` |
+| `a` | `int` | Indice dell'articolo (-1 se sconosciuto) |
+| `fine` | `int` | Flag di uscita dal ciclo |
 
 | Funzione | Compito |
 |----------|---------|
+| `leggi_riga` | Legge una riga e toglie il `'\n'` |
 | `in_maiuscolo`, `in_minuscolo` | Conversione con `toupper` / `tolower` |
 | `cerca_articolo` | Indice dell'articolo con `strcmp`, oppure -1 |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Carico e scarico
+1. Finché `fine` è 0:
+   1. leggere la riga (a fine input usare `FINE`) e scomporla con `sscanf`;
+   2. convertire comando e articolo;
+   3. nessun elemento → `Scrivi un comando.`;
+   4. `FINE` → `fine` = 1;
+   5. `STATO` da solo → stampare tutte le giacenze;
+      `STATO articolo` → cercarlo e stamparne la giacenza o l'errore;
+   6. `CARICO`/`SCARICO`: se mancano elementi o la quantità non è positiva
+      stampare l'uso; se l'articolo è sconosciuto segnalarlo; con `CARICO`
+      sommare; con `SCARICO` rifiutare se la quantità supera la giacenza,
+      altrimenti sottrarre;
+   7. ogni altro comando è sconosciuto.
+2. Stampare `Sessione chiusa.`
 
-**a) Input** – `carico VITI 50`; `SCARICO dadi 20`
+## 3. Casi di test
 
-**b) Output** – `viti: +50 -> 250 pezzi`; `dadi: -20 -> 130 pezzi`
+I test 1–5 sono righe successive della stessa sessione, quindi le giacenze
+risentono dei comandi precedenti.
 
-**c) Variabili di supporto** – `letti` = 3, `a`
+### Test 1 – Carico e scarico con maiuscole e minuscole miste
 
-**d) Vincoli** – `%15s` impedisce di superare le 16 celle di `comando` e `articolo`
+- **Cosa si verifica**: conversione di comando e articolo, aggiornamento della giacenza.
+- **Input**: `carico VITI 50`, `SCARICO dadi 20`.
+- **Output atteso**:
+  ```
+  >   viti: +50 -> 250 pezzi
+  >   dadi: -20 -> 130 pezzi
+  ```
 
-**e) Assunzioni** – quantità intere
+### Test 2 – Scarico non possibile
 
-**f) Algoritmo in linguaggio naturale**
-1. Scomporre la riga con `sscanf`.
-2. Comando in maiuscolo, articolo in minuscolo.
-3. Cercare l'articolo e aggiornare la giacenza.
+- **Cosa si verifica**: la giacenza non può diventare negativa.
+- **Input**: `Scarico dadi 200`.
+- **Output atteso**:
+  ```
+  >   Disponibili solo 130 dadi.
+  ```
 
-### Caso d'uso 2 – Scarico non possibile
+### Test 3 – Le due forme di STATO
 
-**a) Input** – `Scarico dadi 200`
+- **Cosa si verifica**: `letti` = 1 e `letti` = 2 distinguono le due forme.
+- **Input**: `stato`, `stato viti`, `stato bulloni`.
+- **Output atteso**:
+  ```
+  >   viti       250
+    dadi       130
+    chiodi     500
+    tasselli    80
+    rondelle   300
+  >   viti: 250 pezzi
+  >   Articolo "bulloni" sconosciuto.
+  ```
 
-**b) Output** – "Disponibili solo 150 dadi."
+### Test 4 – Comandi incompleti o errati
 
-**c) Variabili di supporto** – `giacenze[a]`
+- **Cosa si verifica**: articolo sconosciuto, quantità mancante o non
+  positiva, comando sconosciuto, riga vuota.
+- **Input**: `carico bulloni 10`, `carico viti`, `carico viti 0`, `ordina`, riga vuota.
+- **Output atteso**:
+  ```
+  >   Articolo "bulloni" sconosciuto.
+  >   Uso: CARICO articolo quantita' (positiva)
+  >   Uso: CARICO articolo quantita' (positiva)
+  >   Comando "ORDINA" sconosciuto.
+  >   Scrivi un comando.
+  ```
 
-**d) Vincoli** – la giacenza non può diventare negativa
+### Test 5 – Chiusura con FINE
 
-**e) Assunzioni** – nessuna
+- **Cosa si verifica**: il comando `fine` (anche in minuscolo) termina la sessione.
+- **Input**: `fine`.
+- **Output atteso**:
+  ```
+  > Sessione chiusa.
+  ```
 
-**f) Algoritmo in linguaggio naturale** – se la quantità supera la giacenza
-il comando è rifiutato senza modifiche.
+### Test 6 – Fine dell'input senza FINE
 
-### Caso d'uso 3 – Stato
-
-**a) Input** – `stato`; `stato viti`
-
-**b) Output** – tutte le giacenze; `viti: 250 pezzi`
-
-**c) Variabili di supporto** – `letti` = 1 oppure 2
-
-**d) Vincoli** – il numero di elementi letti distingue le due forme del comando
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – con un solo elemento si stampa
-l'elenco completo, con due si cerca l'articolo indicato.
-
-### Caso d'uso 4 – Errori
-
-**a) Input** – `carico bulloni 10`; `carico viti`; `ordina`; riga vuota
-
-**b) Output** – articolo sconosciuto; istruzioni d'uso; comando sconosciuto; "Scrivi un comando."
-
-**c) Variabili di supporto** – `letti`, `a`
-
-**d) Vincoli** – con una riga vuota `sscanf` restituisce -1 (nessun elemento)
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – ogni caso è riconosciuto da una
-condizione della catena `if-else`; il ciclo termina solo con `FINE`.
+- **Cosa si verifica**: a fine input il programma termina senza ciclare.
+- **Input**: `stato dadi`, poi fine dell'input (Ctrl+D, o input da file/pipe).
+- **Output atteso**:
+  ```
+  >   dadi: 150 pezzi
+  > Sessione chiusa.
+  ```

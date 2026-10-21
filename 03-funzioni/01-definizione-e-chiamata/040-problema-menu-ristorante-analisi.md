@@ -7,11 +7,31 @@ primi, secondi, dolci) ciascuna con i propri piatti e prezzi. L'obiettivo
 è organizzare il codice in modo che modificare una sezione richieda di
 intervenire in un solo punto.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Non sono necessarie variabili di stato: tutti i dati (nomi dei piatti,
-prezzi) sono costanti testuali incorporate direttamente nelle funzioni
-di stampa. La struttura dati è implicita nell'organizzazione delle funzioni.
+### Input
+Nessuno: nomi dei piatti e prezzi sono testo fisso dentro le funzioni di
+stampa.
+
+### Output
+Il menu completo: intestazione con nome e recapiti del locale, le quattro
+sezioni (antipasti, primi, secondi, dolci) con i piatti e i prezzi in euro,
+e un piede con coperto e orari.
+
+### Vincoli
+- Ogni sezione è separata visivamente dalle altre (titolo e riga vuota)
+- I prezzi sono allineati in colonna
+- Ogni sezione è stampata da una sola funzione: per aggiornare i prezzi di
+  una sezione si modifica solo quella funzione
+- Ogni funzione di sezione funziona anche se chiamata da sola, senza
+  dipendere dalle altre
+
+### Assunzioni
+- I dati del menu non cambiano durante l'esecuzione
+- Il terminale è abbastanza largo per la formattazione (circa 45 caratteri)
+
+### Variabili di supporto
+Nessuna variabile: la struttura del problema è data dalle funzioni.
 
 | Funzione | Tipo | Descrizione |
 |---|---|---|
@@ -23,61 +43,31 @@ di stampa. La struttura dati è implicita nell'organizzazione delle funzioni.
 | `stampa_piede_menu` | void | Informazioni su coperto e orari |
 | `stampa_menu_completo` | void | Chiama le funzioni in sequenza |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione con nome e recapiti del locale.
+2. Stampare la sezione antipasti (titolo e voci con prezzi).
+3. Stampare la sezione primi piatti.
+4. Stampare la sezione secondi piatti.
+5. Stampare la sezione dolci.
+6. Stampare il piede con le informazioni aggiuntive.
 
-### Caso d'uso 1 – Stampa del menu completo
+Il `main` si limita a chiamare `stampa_menu_completo()`, che esegue i passi
+nell'ordine.
 
-**a) Input** – nessuno (i dati sono incorporati nelle funzioni)
+## 3. Casi di test
 
-**b) Output** – menu formattato con intestazione, quattro sezioni e piede
+Il programma non legge dati: si esegue una volta e si controlla quanto
+stampato.
 
-**c) Variabili di supporto** – nessuna
+### Test 1 – Stampa del menu completo
+- **Input:** nessuno
+- **Output atteso:** nell'ordine, l'intestazione "TRATTORIA DA LUIGI",
+  le sezioni ANTIPASTI (3 piatti), PRIMI PIATTI (4 piatti), SECONDI PIATTI
+  (3 piatti), DOLCI (3 piatti), e il piede con il coperto di 2.00 EUR.
+  Le sezioni sono separate da una riga vuota e i prezzi sono in colonna.
 
-**d) Vincoli**
-- Ogni sezione deve essere chiaramente separata visivamente
-- I prezzi devono essere allineati
-
-**e) Assunzioni**
-- I dati del menu non cambiano a runtime
-- La larghezza dello schermo è sufficiente per la formattazione
-
-**f) Algoritmo in linguaggio naturale**
-1. Stampa intestazione con nome e recapiti del locale
-2. Stampa sezione antipasti (titolo + voci con prezzi)
-3. Stampa sezione primi piatti
-4. Stampa sezione secondi piatti
-5. Stampa sezione dolci
-6. Stampa piede con informazioni aggiuntive
-
-### Caso d'uso 2 – Aggiornamento di una sezione
-
-**a) Input** – modifica nel codice sorgente di una funzione specifica
-
-**b) Output** – menu aggiornato alla successiva esecuzione
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – la modifica deve riguardare una sola funzione
-
-**e) Assunzioni** – chi modifica conosce la struttura del codice
-
-**f) Algoritmo in linguaggio naturale**
-1. Identificare la funzione corrispondente alla sezione da aggiornare
-2. Modificare i `printf` all'interno di quella sola funzione
-3. Ricompilare ed eseguire
-
-### Caso d'uso 3 – Stampa di una sola sezione
-
-**a) Input** – chiamata diretta a una funzione di sezione
-
-**b) Output** – solo la sezione richiesta
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – la funzione deve funzionare anche se chiamata isolatamente
-
-**e) Assunzioni** – il chiamante si occupa del contesto (intestazione, piede)
-
-**f) Algoritmo in linguaggio naturale**
-1. Chiamare direttamente `stampa_antipasti()` (o altra sezione)
-2. La funzione stampa solo la propria sezione senza dipendenze esterne
+### Test 2 – Indipendenza di una sezione
+- **Cosa si verifica:** una funzione di sezione funziona anche isolata
+- **Procedura:** sostituire temporaneamente nel `main` la chiamata
+  `stampa_menu_completo()` con `stampa_dolci()`, ricompilare ed eseguire
+- **Output atteso:** solo la sezione DOLCI, senza intestazione né piede

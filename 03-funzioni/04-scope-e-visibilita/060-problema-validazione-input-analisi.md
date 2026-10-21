@@ -8,26 +8,64 @@ valido. Al termine, il main legge il contatore per decidere se accettare o
 rifiutare il modulo. Il programma simula la validazione di tre moduli distinti,
 azzerando il contatore tra uno e l'altro.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+Nessun input da tastiera: i dati dei tre moduli sono assegnati nel `main`.
+
+| Variabile | Tipo | Descrizione |
+|---|---|---|
+| `eta` | int | Età del cliente |
+| `codice` | int | Codice cliente |
+
+### Output
+Per ogni modulo: i dati inseriti, un messaggio `ERRORE: ...` per ogni campo
+non valido e l'esito finale, "Modulo ACCETTATO. Nessun errore rilevato."
+oppure "Modulo RIFIUTATO. Errori rilevati: N".
+
+### Vincoli
+- Età valida: tra 18 e 120, estremi compresi
+- Codice valido: numero di 5 cifre, tra 10000 e 99999
+- Tutti i campi vengono sempre validati, anche dopo il primo errore, così
+  l'utente vede tutti gli errori in una volta
+- Il modulo è accettato solo se `errori_trovati` vale 0
+- `errori_trovati` va azzerato prima di ogni nuovo modulo
+
+### Assunzioni
+- I dati sono numeri interi
+- Gli errori di un modulo non devono influire sul successivo
+
+### Variabili di supporto
 
 | Variabile globale | Tipo | Descrizione |
 |---|---|---|
-| `errori_trovati` | int | Contatore di errori; azzerato prima di ogni nuovo modulo |
+| `errori_trovati` | int | Contatore degli errori del modulo corrente |
 
 | Funzione | Firma | Descrizione |
 |---|---|---|
-| `segnala_errore` | `void(const char*)` | Stampa il messaggio e incrementa `errori_trovati` |
+| `segnala_errore` | `void(int)` | Stampa il messaggio corrispondente al codice di errore (`ERRORE_ETA` o `ERRORE_CODICE`) e incrementa `errori_trovati` |
 | `valida_eta` | `int(int)` | Controlla 18 ≤ eta ≤ 120; restituisce 1 se valida |
 | `valida_codice` | `int(int)` | Controlla 10000 ≤ codice ≤ 99999; restituisce 1 se valido |
-| `stampa_esito` | `void(void)` | Legge `errori_trovati` e stampa ACCETTATO o RIFIUTATO |
+| `stampa_esito` | `void(void)` | Legge `errori_trovati` e stampa l'esito |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+Per ogni modulo:
+1. Azzerare `errori_trovati`.
+2. Stampare età e codice.
+3. Chiamare `valida_eta`: se l'età è fuori intervallo, `segnala_errore`
+   stampa il messaggio e incrementa il contatore.
+4. Chiamare `valida_codice`, con lo stesso comportamento.
+5. Chiamare `stampa_esito`: se il contatore vale 0 il modulo è accettato,
+   altrimenti è rifiutato con il numero di errori.
 
-### Caso d'uso 1 – Modulo corretto
+## 3. Casi di test
 
-**a) Input** – `eta = 35`, `codice = 47231`
+Il `main` valida tre moduli in sequenza: si esegue il programma una volta e
+si confronta ogni blocco con l'output atteso.
 
-**b) Output**
+### Test 1 – Modulo corretto
+- **Input:** età 35, codice 47231
+- **Output atteso:**
 ```
 --- Caso 1: dati corretti ---
   Eta':    35
@@ -36,23 +74,10 @@ azzerando il contatore tra uno e l'altro.
 Modulo ACCETTATO. Nessun errore rilevato.
 ```
 
-**c) Variabili di supporto** – `errori_trovati = 0` a inizio caso
-
-**d) Vincoli** – `errori_trovati` deve essere azzerato prima di ogni nuovo modulo
-
-**e) Assunzioni** – i valori inseriti rispettano entrambi i vincoli
-
-**f) Algoritmo in linguaggio naturale**
-1. Azzerare `errori_trovati`
-2. `valida_eta(35)` → 18 ≤ 35 ≤ 120 → valida, nessun errore segnalato
-3. `valida_codice(47231)` → 10000 ≤ 47231 ≤ 99999 → valido
-4. `stampa_esito()` → `errori_trovati == 0` → ACCETTATO
-
-### Caso d'uso 2 – Età non valida
-
-**a) Input** – `eta = 15`, `codice = 83400`
-
-**b) Output**
+### Test 2 – Età non valida
+- **Cosa si verifica:** un solo campo errato basta per il rifiuto
+- **Input:** età 15, codice 83400
+- **Output atteso:**
 ```
 --- Caso 2: eta' non valida ---
   Eta':    15
@@ -62,22 +87,11 @@ Modulo ACCETTATO. Nessun errore rilevato.
 Modulo RIFIUTATO. Errori rilevati: 1
 ```
 
-**c) Variabili di supporto** – `errori_trovati` portato a 1 da `segnala_errore`
-
-**d) Vincoli** – il codice è valido ma il modulo viene comunque rifiutato per l'età
-
-**e) Assunzioni** – tutti i campi vengono sempre validati, anche dopo il primo errore
-
-**f) Algoritmo in linguaggio naturale**
-1. `valida_eta(15)` → 15 < 18 → chiama `segnala_errore` → `errori_trovati = 1`
-2. `valida_codice(83400)` → valido → nessun errore
-3. `stampa_esito()` → `errori_trovati == 1` → RIFIUTATO
-
-### Caso d'uso 3 – Tutti i campi errati
-
-**a) Input** – `eta = 200`, `codice = 999`
-
-**b) Output**
+### Test 3 – Tutti i campi errati
+- **Cosa si verifica:** entrambi i campi vengono validati e gli errori si
+  sommano
+- **Input:** età 200, codice 999
+- **Output atteso:**
 ```
 --- Caso 3: tutti i campi errati ---
   Eta':    200
@@ -88,13 +102,14 @@ Modulo RIFIUTATO. Errori rilevati: 1
 Modulo RIFIUTATO. Errori rilevati: 2
 ```
 
-**c) Variabili di supporto** – `errori_trovati` portato a 2
+### Test 4 – Azzeramento del contatore
+- **Cosa si verifica:** gli errori di un modulo non passano al successivo
+- **Procedura:** nell'output complessivo, il Test 3 riporta 2 errori e non
+  3 (1 del modulo precedente + 2): il contatore è stato azzerato
+- **Output atteso:** "Errori rilevati: 2"
 
-**d) Vincoli** – entrambi i campi vengono validati indipendentemente
-
-**e) Assunzioni** – nessun campo è valido; tutti producono un errore
-
-**f) Algoritmo in linguaggio naturale**
-1. `valida_eta(200)` → 200 > 120 → `errori_trovati = 1`
-2. `valida_codice(999)` → 999 < 10000 → `errori_trovati = 2`
-3. `stampa_esito()` → RIFIUTATO con 2 errori
+### Test 5 – Valori ai limiti degli intervalli
+- **Cosa si verifica:** gli estremi sono compresi
+- **Procedura:** aggiungere nel `main` un modulo con età 18 e codice 10000,
+  e uno con età 120 e codice 99999
+- **Output atteso:** entrambi "Modulo ACCETTATO."

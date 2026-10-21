@@ -8,26 +8,36 @@ fiscale italiano, verificandone inoltre la correttezza formale della lunghezza.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il programma gestisce dati testuali di natura anagrafica. Poiché in C le stringhe
-sono array di `char` terminati da `'\0'`, ogni campo viene dichiarato con una
-dimensione massima stabilita in base ai limiti reali del dato che rappresenta.
+### Input
+Nessun input da tastiera: i dati dello studente sono stringhe inizializzate
+nel codice.
 
-| Variabile         | Tipo        | Dimensione | Motivazione                              |
-|-------------------|-------------|------------|------------------------------------------|
-| `nome`            | `char[]`    | 31         | Max 30 caratteri + `'\0'`                |
-| `cognome`         | `char[]`    | 31         | Max 30 caratteri + `'\0'`                |
-| `codice_fiscale`  | `char[]`    | 17         | Esattamente 16 caratteri + `'\0'`        |
-| `classe`          | `char[]`    | 5          | Formato "4B", max 4 caratteri + `'\0'`   |
-| `indirizzo`       | `char[]`    | 51         | Max 50 caratteri + `'\0'`                |
-| `lunghezza`       | `int`       | —          | Contatore per la verifica della lunghezza|
+| Variabile        | Tipo     | Dimensione | Descrizione                              |
+|------------------|----------|------------|------------------------------------------|
+| `nome`           | `char[]` | 31         | Max 30 caratteri + `'\0'`                |
+| `cognome`        | `char[]` | 31         | Max 30 caratteri + `'\0'`                |
+| `codice_fiscale` | `char[]` | 17         | Esattamente 16 caratteri + `'\0'`        |
+| `classe`         | `char[]` | 5          | Es. "4B", max 4 caratteri + `'\0'`       |
+| `indirizzo`      | `char[]` | 51         | Max 50 caratteri + `'\0'`                |
 
-La struttura del codice fiscale italiano utilizzata per l'estrazione:
+### Output
+- La scheda dello studente con tutti i campi;
+- le informazioni estratte dal codice fiscale: sigla del cognome, anno di
+  nascita, giorno di nascita, codice del comune;
+- la lunghezza del codice fiscale con l'esito "(corretta)" oppure
+  "(ERRORE: dovrebbe essere 16)".
+
+### Vincoli
+- Ogni stringa è dimensionata per il dato più lungo previsto **più una
+  cella** per il terminatore `'\0'`
+- Le informazioni si estraggono accedendo ai caratteri per posizione,
+  secondo la struttura del codice fiscale:
 
 ```
-Posizioni  0- 2  → sigla cognome (3 consonanti)
-Posizioni  3- 5  → sigla nome (3 consonanti)
+Posizioni  0- 2  → sigla cognome
+Posizioni  3- 5  → sigla nome
 Posizioni  6- 7  → anno di nascita (ultime 2 cifre)
 Posizione  8     → mese di nascita (lettera)
 Posizioni  9-10  → giorno di nascita (+ 40 per le donne)
@@ -35,117 +45,51 @@ Posizioni 11-14  → codice comune di nascita
 Posizione  15    → carattere di controllo
 ```
 
----
+- La lunghezza si conta scorrendo fino a `'\0'`, senza funzioni di libreria;
+  il codice è corretto solo se ha esattamente 16 caratteri
 
-## 3. Casi d'uso e funzionalità
+### Assunzioni
+- L'anno di nascita è nel 2000 o successivo: il programma antepone "20"
+  alle due cifre
+- Il giorno si stampa così com'è: per una studentessa comparirebbe il
+  giorno + 40
+- Si controlla solo la lunghezza, non il carattere di controllo
 
----
+### Variabili di supporto
 
-### Caso d'uso 1 – Visualizzazione scheda studente
+| Variabile   | Tipo  | Descrizione                               |
+|-------------|-------|-------------------------------------------|
+| `lunghezza` | `int` | Caratteri del codice fiscale fino a `'\0'`|
 
-**a) Input**
-Dati statici inizializzati nel codice (simulazione di dati provenienti da un
-archivio): nome, cognome, codice fiscale, classe, indirizzo.
-
-**b) Output**
-Scheda formattata a video con etichette allineate e bordi testuali:
-```
-========================================
-        SCHEDA STUDENTE
-========================================
-Nome             : Giovanni
-Cognome          : Ferrero
-...
-```
-
-**c) Variabili di supporto**
-Nessuna variabile aggiuntiva. La formattazione è gestita direttamente da `printf`
-con specificatori di larghezza.
-
-**d) Vincoli**
-- Ogni stringa deve essere correttamente terminata da `'\0'`.
-- Le dimensioni degli array devono essere sufficienti a contenere il dato più
-  il terminatore.
-
-**e) Assunzioni**
-- I dati sono precaricati e validi (nessun controllo di input richiesto).
-- La codifica dei caratteri è ASCII standard (nessun carattere accentato).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Dichiarare e inizializzare le stringhe con i dati dello studente.
-2. Stampare la riga di intestazione con bordi.
-3. Stampare ciascun campo preceduto dalla sua etichetta.
-4. Stampare la riga di chiusura.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare la scheda con tutti i campi.
+2. Stampare i caratteri 0–2 (sigla cognome), "20" seguito dai caratteri 6–7
+   (anno), i caratteri 9–10 (giorno) e 11–14 (comune).
+3. Contare i caratteri del codice fiscale fino al terminatore e stampare la
+   lunghezza con l'esito del controllo.
 
 ---
 
-### Caso d'uso 2 – Estrazione informazioni dal codice fiscale
+## 3. Casi di test
 
-**a) Input**
-La stringa `codice_fiscale` già dichiarata e inizializzata (16 caratteri).
+I dati sono fissi nel codice: il Test 2 richiede di modificare il codice
+fiscale e ricompilare.
 
-**b) Output**
-Righe a video con le informazioni estratte:
+### Test 1 – Codice fiscale corretto
+- **Input:** `FRRGNN05A15L219X`
+- **Output atteso:**
 ```
-Sigla cognome  : FRR
-Anno di nascita: 2005
-Giorno nascita : 15
-Codice comune  : L219
-```
+Informazioni estratte dal codice fiscale:
+  Sigla cognome  : FRR
+  Anno di nascita: 2005
+  Giorno nascita : 15
+  Codice comune  : L219
 
-**c) Variabili di supporto**
-Nessuna: l'accesso avviene direttamente tramite indice sull'array `codice_fiscale`.
-
-**d) Vincoli**
-- Il codice fiscale deve avere esattamente 16 caratteri.
-- Le posizioni di ciascun campo sono fisse e definite dalla normativa italiana.
-
-**e) Assunzioni**
-- Il codice fiscale è formalmente corretto e non contiene caratteri non validi.
-- Il programma non verifica il carattere di controllo (posizione 15).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Accedere alle posizioni 0-2 e stampare la sigla del cognome.
-2. Accedere alle posizioni 6-7 e stamparle precedute dal prefisso "20"
-   per ricostruire l'anno completo.
-3. Accedere alle posizioni 9-10 e stampare il giorno di nascita.
-4. Accedere alle posizioni 11-14 e stampare il codice comune.
-```
-
----
-
-### Caso d'uso 3 – Verifica della lunghezza del codice fiscale
-
-**a) Input**
-La stringa `codice_fiscale`.
-
-**b) Output**
-Messaggio a video che conferma o segnala un errore sulla lunghezza:
-```
 Lunghezza codice fiscale: 16 caratteri (corretta)
 ```
 
-**c) Variabili di supporto**
-- `lunghezza` (`int`): contatore incrementato a ogni iterazione del ciclo.
-
-**d) Vincoli**
-- Il ciclo deve fermarsi al carattere `'\0'` senza includerlo nel conteggio.
-- La lunghezza corretta attesa è esattamente 16.
-
-**e) Assunzioni**
-- La stringa è sempre terminata da `'\0'` (garanzia dell'inizializzazione statica).
-- Non si usa `strlen` per mostrare allo studente come implementare il conteggio
-  manualmente.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare il contatore lunghezza a 0.
-2. Finché il carattere in posizione lunghezza non è '\0':
-   a. Incrementare lunghezza di 1.
-3. Confrontare lunghezza con 16.
-4. Se uguale a 16: stampare "corretta".
-   Altrimenti: stampare messaggio di errore.
-```
+### Test 2 – Codice fiscale troppo corto
+- **Cosa si verifica:** il conteggio fino a `'\0'`
+- **Procedura:** togliere l'ultimo carattere (`FRRGNN05A15L219`)
+- **Output atteso:**
+  `Lunghezza codice fiscale: 15 caratteri (ERRORE: dovrebbe essere 16)`

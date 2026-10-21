@@ -5,30 +5,57 @@ L'utente inserisce i dati numerici di uno studente (matricola, anno di corso,
 tre voti di esame, voto di laurea). Il programma calcola la media dei tre voti
 e stampa una scheda formattata con colonne allineate.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile       | Tipo     | Significato                                  |
-|-----------------|----------|----------------------------------------------|
-| `matricola`     | `int`    | Numero di matricola (stampato con 7 cifre)   |
-| `anno_corso`    | `int`    | Anno di corso (1–5)                          |
-| `voto1`         | `int`    | Voto primo esame (18–30)                     |
-| `voto2`         | `int`    | Voto secondo esame (18–30)                   |
-| `voto3`         | `int`    | Voto terzo esame (18–30)                     |
-| `voto_laurea`   | `double` | Voto di laurea (66.0–110.0)                  |
-| `media_voti`    | `double` | Media calcolata dei tre voti interi           |
+### Input
 
-La divisione per `3.0` (reale) garantisce un risultato in virgola mobile.
+| Variabile     | Tipo     | Significato                    |
+|---------------|----------|--------------------------------|
+| `matricola`   | `int`    | Numero di matricola            |
+| `anno_corso`  | `int`    | Anno di corso (1–5)            |
+| `voto1`       | `int`    | Voto primo esame (18–30)       |
+| `voto2`       | `int`    | Voto secondo esame (18–30)     |
+| `voto3`       | `int`    | Voto terzo esame (18–30)       |
+| `voto_laurea` | `double` | Voto di laurea (66.0–110.0)    |
 
-## 3. Casi d'uso e funzionalità
+### Output
+Una scheda con la matricola su sette cifre (`%07d`), l'anno di corso,
+i tre voti, la media con due decimali e il voto di laurea con un decimale,
+in colonne allineate.
 
-### Caso d'uso 1 – Studente con buoni voti
+### Vincoli
+- I voti d'esame sono compresi tra 18 e 30
+- Il voto di laurea è compreso tra 66 e 110
+- La matricola ha al massimo 7 cifre
+- I vincoli non vengono verificati dal programma
 
-**a) Input**
-- matricola = 12345, anno_corso = 2
-- voto1 = 28, voto2 = 30, voto3 = 27
-- voto_laurea = 105.5
+### Assunzioni
+- I valori inseriti sono coerenti con la realtà universitaria italiana
 
-**b) Output**
+### Variabili di supporto
+
+| Variabile    | Tipo     | Significato                         |
+|--------------|----------|-------------------------------------|
+| `media_voti` | `double` | Media aritmetica dei tre voti       |
+
+La divisione per `3.0` (reale) garantisce un risultato in virgola mobile:
+con `3` intero la parte decimale andrebbe persa.
+
+### Algoritmo in linguaggio naturale
+1. Acquisire matricola, anno di corso, tre voti e voto di laurea.
+2. Calcolare `media_voti = (voto1 + voto2 + voto3) / 3.0`.
+3. Stampare la scheda con tutti i dati e la media.
+
+## 3. Casi di test
+
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
+
+### Test 1 – Studente con buoni voti (caso tipico)
+- **Input:** matricola = 12345, anno_corso = 2, voto1 = 28, voto2 = 30,
+  voto3 = 27, voto_laurea = 105.5
+- **Valori intermedi attesi:** media_voti = 85 / 3.0 = 28.33…
+- **Output atteso:**
 ```
 ============================================
   SCHEDA STUDENTE
@@ -45,31 +72,12 @@ La divisione per `3.0` (reale) garantisce un risultato in virgola mobile.
 ============================================
 ```
 
-**c) Variabili di supporto**
-- media_voti = (28 + 30 + 27) / 3.0 = 85 / 3.0 = 28.33...
-
-**d) Vincoli**
-- I voti devono essere compresi tra 18 e 30 (non validati)
-- Il voto di laurea tra 66 e 110 (non validato)
-
-**e) Assunzioni**
-- I valori inseriti sono coerenti con la realtà universitaria italiana
-
-**f) Algoritmo in linguaggio naturale**
-1. Acquisire matricola, anno di corso, tre voti, voto di laurea
-2. Calcolare media = (voto1 + voto2 + voto3) / 3.0
-3. Stampare la scheda con tutti i dati e la media
-
----
-
-### Caso d'uso 2 – Voti minimi
-
-**a) Input**
-- matricola = 1, anno_corso = 1
-- voto1 = 18, voto2 = 18, voto3 = 18
-- voto_laurea = 66.0
-
-**b) Output**
+### Test 2 – Voti minimi
+- **Cosa si verifica:** i valori al limite inferiore degli intervalli
+- **Input:** matricola = 1, anno_corso = 1, voto1 = 18, voto2 = 18,
+  voto3 = 18, voto_laurea = 66.0
+- **Valori intermedi attesi:** media_voti = 54 / 3.0 = 18.00
+- **Output atteso (righe che cambiano):**
 ```
   Voto esame 1:    18 / 30
   Voto esame 2:    18 / 30
@@ -78,41 +86,14 @@ La divisione per `3.0` (reale) garantisce un risultato in virgola mobile.
   Voto di laurea:   66.0 / 110
 ```
 
-**c) Variabili di supporto**
-- media_voti = 54 / 3.0 = 18.00
-
-**d) Vincoli**
-- Identici al caso d'uso 1
-
-**e) Assunzioni**
-- Identiche al caso d'uso 1
-
-**f) Algoritmo in linguaggio naturale**
-- Identico al caso d'uso 1
-
----
-
-### Caso d'uso 3 – Matricola con molte cifre
-
-**a) Input**
-- matricola = 9876543, anno_corso = 3
-- voto1 = 25, voto2 = 29, voto3 = 22
-- voto_laurea = 98.0
-
-**b) Output**
+### Test 3 – Matricola di sette cifre
+- **Cosa si verifica:** la matricola occupa esattamente la larghezza `%07d`,
+  senza zeri iniziali
+- **Input:** matricola = 9876543, anno_corso = 3, voto1 = 25, voto2 = 29,
+  voto3 = 22, voto_laurea = 98.0
+- **Valori intermedi attesi:** media_voti = 76 / 3.0 = 25.33…
+- **Output atteso (righe che cambiano):**
 ```
   Matricola:      9876543
   Media:           25.33 / 30
 ```
-
-**c) Variabili di supporto**
-- media_voti = (25 + 29 + 22) / 3.0 = 76 / 3.0 = 25.33...
-
-**d) Vincoli**
-- Con 7 cifre la matricola occupa esattamente la larghezza `%07d`
-
-**e) Assunzioni**
-- La matricola non supera 7 cifre
-
-**f) Algoritmo in linguaggio naturale**
-- Identico al caso d'uso 1

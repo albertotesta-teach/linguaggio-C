@@ -6,91 +6,85 @@ Verificare se un numero intero n ≥ 2 è primo, indicando il primo divisore
 trovato quando non lo è, e stampare l'elenco di tutti i numeri primi fino a
 un limite scelto dall'utente, dieci per riga.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `n` | `int` | Numero da verificare |
-| `d` | `int` | Possibile divisore |
-| `primo` | `int` (0/1) | Flag: vale 1 finché non si trova un divisore |
-| `divisore_trovato` | `int` | Primo divisore di `n`, se esiste |
-| `limite` | `int` | Limite superiore dell'elenco |
-| `numero` | `int` | Numero esaminato nell'elenco |
-| `conta_primi` | `int` | Contatore, usato anche per andare a capo |
+### Input
 
-Basta cercare divisori fino alla radice quadrata di n: se `n = a × b`
-almeno uno dei due fattori è ≤ √n. La condizione si scrive `d * d <= n`,
-senza bisogno di `<math.h>`.
+| Variabile | Tipo  | Significato                      |
+|-----------|-------|----------------------------------|
+| `n`       | `int` | Numero da verificare             |
+| `limite`  | `int` | Limite superiore dell'elenco     |
 
-La ricerca si ferma al primo divisore grazie al flag nella condizione del
-`for` (`d * d <= n && primo`), senza `break`.
+### Output
+- Per la verifica: "n e' primo." oppure "n non e' primo: e' divisibile per d
+  (n = d x q)."
+- Per l'elenco: i numeri primi da 2 al limite, dieci per riga, e il loro
+  numero totale.
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- `n >= 2` e `limite >= 2`: la richiesta si ripete finché non è rispettato
+  (0 e 1 non sono né primi né composti)
+- Basta cercare divisori fino alla radice quadrata di n: se `n = a × b`
+  almeno uno dei due fattori è ≤ √n
+- La ricerca si ferma al primo divisore trovato, tramite la condizione del
+  `for`, senza `break`
+- Nell'elenco si va a capo ogni 10 numeri e si aggiunge un a capo finale
+  solo se l'ultima riga è incompleta
 
-### Caso d'uso 1 – Numero composto
+### Assunzioni
+- L'utente inserisce numeri interi
 
-**a) Input** – 221
+### Variabili di supporto
 
-**b) Output** – "221 non e' primo: e' divisibile per 13 (221 = 13 x 17)."
+| Variabile          | Tipo        | Significato                                  |
+|--------------------|-------------|----------------------------------------------|
+| `d`                | `int`       | Possibile divisore                           |
+| `primo`            | `int` (0/1) | Flag: vale 1 finché non si trova un divisore |
+| `divisore_trovato` | `int`       | Primo divisore di `n`, se esiste             |
+| `numero`           | `int`       | Numero esaminato nell'elenco                 |
+| `conta_primi`      | `int`       | Contatore, usato anche per andare a capo     |
 
-**c) Variabili di supporto** – `primo`, `divisore_trovato`
+La condizione `d * d <= n` evita di usare `<math.h>`; la condizione completa
+del ciclo è `d * d <= n && primo`.
 
-**d) Vincoli** – il ciclo termina subito dopo aver trovato 13, perché
-`primo` diventa 0
-
-**e) Assunzioni** – l'utente inserisce numeri interi
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
+Verifica di un numero:
 1. Leggere n ripetendo la richiesta finché è minore di 2.
 2. Porre `primo = 1`.
 3. Per d da 2, finché `d * d <= n` e `primo` vale 1: se n è divisibile per
    d, porre `primo = 0` e memorizzare d.
 4. Stampare l'esito; se non è primo stampare anche la scomposizione.
 
-### Caso d'uso 2 – Numero primo
-
-**a) Input** – 97
-
-**b) Output** – "97 e' primo."
-
-**c) Variabili di supporto** – `primo`
-
-**d) Vincoli** – il ciclo prova i divisori da 2 a 9 (10 × 10 > 97)
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – Elenco dei primi fino a 100
-
-**a) Input** – limite 100
-
-**b) Output** – 25 numeri primi su tre righe e "Tra 2 e 100 ci sono 25
-numeri primi."
-
-**c) Variabili di supporto** – `numero`, `conta_primi`
-
-**d) Vincoli** – a capo ogni 10 numeri (`conta_primi % 10 == 0`) e un a capo
-finale solo se l'ultima riga è incompleta
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale**
+Elenco dei primi:
 1. Leggere il limite ripetendo finché è minore di 2.
-2. Per ogni `numero` da 2 al limite: ripetere la verifica del caso 1; se è
-   primo stamparlo, contarlo e andare a capo ogni 10 numeri.
+2. Per ogni `numero` da 2 al limite: ripetere la verifica precedente; se è
+   primo stamparlo, contarlo e andare a capo ogni 10 numeri
+   (`conta_primi % 10 == 0`).
 3. Stampare il numero totale di primi.
 
-### Caso d'uso 4 – Valore minore di 2
+## 3. Casi di test
 
-**a) Input** – 1
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – la richiesta viene ripetuta
+### Test 1 – Numero composto
+- **Cosa si verifica:** il ciclo termina subito dopo aver trovato 13, perché
+  `primo` diventa 0
+- **Input:** 221
+- **Output atteso:** "221 non e' primo: e' divisibile per 13 (221 = 13 x 17)."
 
-**c) Variabili di supporto** – nessuna
+### Test 2 – Numero primo
+- **Cosa si verifica:** il ciclo prova i divisori da 2 a 9 (10 × 10 > 97)
+- **Input:** 97
+- **Output atteso:** "97 e' primo."
 
-**d) Vincoli** – 0 e 1 non sono né primi né composti
+### Test 3 – Elenco dei primi fino a 100
+- **Cosa si verifica:** l'a capo ogni 10 numeri e quello finale sulla riga
+  incompleta
+- **Input:** limite 100
+- **Output atteso:** 25 numeri primi su tre righe (10, 10, 5) e
+  "Tra 2 e 100 ci sono 25 numeri primi."
 
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, passo 1.
+### Test 4 – Valore minore di 2
+- **Input:** 1
+- **Output atteso:** la richiesta viene ripetuta

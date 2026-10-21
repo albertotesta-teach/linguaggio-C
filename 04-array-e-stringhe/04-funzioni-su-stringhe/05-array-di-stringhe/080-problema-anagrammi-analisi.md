@@ -7,64 +7,122 @@ parola data: parole con le stesse lettere ripetute lo stesso numero di
 volte, in un altro ordine. Maiuscole e caratteri non alfabetici non contano;
 la parola stessa non è considerata un suo anagramma.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `elenco` | `char[][]` | 12 × 20 | Parole tra cui cercare |
-| `parola` | `char[]` | 30 | Parola inserita |
-| `conta_a`, `conta_b` | `int[]` | 26 | "Impronta": occorrenze di ogni lettera |
-| `trovati` | `int` | — | Anagrammi trovati |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `parola` | `char[30]` | Parola letta da tastiera; una riga vuota termina |
+| `elenco` | `char[12][20]` | Parole tra cui cercare (nel sorgente) |
+
+### Output
+
+- Gli anagrammi trovati nell'elenco, uno per riga, scritti come nell'elenco.
+- `-> N anagramma/anagrammi di "<parola>"`.
+
+### Vincoli
+
+- Due parole sono anagrammi se hanno la stessa "impronta": il numero di
+  occorrenze di ciascuna delle 26 lettere.
+- Si contano solo le lettere (`isalpha`), senza distinguere maiuscole e
+  minuscole: la lettera `c` corrisponde alla cella `tolower(c) - 'a'`.
+- La parola stessa (anche scritta con maiuscole diverse) non è un suo anagramma.
+- Il confronto delle impronte si ferma alla prima cella diversa (flag `uguali`).
+
+### Assunzioni
+
+- Le parole non contengono lettere accentate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `letta` | `int` | 1 se la lettura è riuscita |
+| `k` | `int` | Indice della parola dell'elenco in esame |
+| `trovati` | `int` | Anagrammi trovati |
+| `conta_a`, `conta_b` | `int[26]` | In `sono_anagrammi`: impronte delle due parole |
+| `uguali` | `int` | In `sono_anagrammi`: flag di impronte uguali |
 
 | Funzione | Compito |
 |----------|---------|
-| `conta_lettere` | Riempie l'impronta con `isalpha` e `tolower` |
+| `leggi_riga` | Legge una riga e toglie il `'\n'` |
+| `conta_lettere` | Azzera e riempie l'impronta con `isalpha` e `tolower` |
 | `sono_anagrammi` | Confronta le impronte ed esclude la stessa parola |
-| `uguali_senza_maiuscole` | Confronto con `tolower` |
+| `uguali_senza_maiuscole` | Confronto di due stringhe con `tolower` |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Più anagrammi, con maiuscole
+1. Leggere una parola.
+2. Finché la lettura riesce e la parola non è vuota:
+   1. azzerare `trovati`;
+   2. per ogni parola dell'elenco: calcolare le due impronte, confrontarle
+      cella per cella fermandosi alla prima diversa; se sono uguali e le due
+      parole non coincidono (ignorando le maiuscole) stamparla e
+      incrementare `trovati`;
+   3. stampare il numero di anagrammi;
+   4. leggere la parola successiva.
 
-**a) Input** – `Roma`
+## 3. Casi di test
 
-**b) Output** – amor, ramo, Mora, orma, armo (5 anagrammi)
+### Test 1 – Più anagrammi, anche con maiuscole
 
-**c) Variabili di supporto** – `conta_a`, `conta_b`
+- **Cosa si verifica**: impronte uguali con lettere in ordine diverso e con
+  maiuscole diverse (`Mora`).
+- **Input**: `Roma`, poi riga vuota.
+- **Valori intermedi attesi**: impronta con una sola occorrenza di a, m, o, r.
+- **Output atteso**:
+  ```
+    amor
+    ramo
+    Mora
+    orma
+    armo
+    -> 5 anagrammi di "Roma"
+  ```
 
-**d) Vincoli** – la lettera `c` corrisponde alla cella `tolower(c) - 'a'`
+### Test 2 – La parola stessa
 
-**e) Assunzioni** – lettere senza accenti
+- **Cosa si verifica**: `tale` ha la stessa impronta di `Tale` ma è esclusa.
+- **Input**: `Tale`, poi riga vuota.
+- **Output atteso**:
+  ```
+    tela
+    -> 1 anagramma di "Tale"
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Calcolare l'impronta della parola inserita e di ogni parola dell'elenco.
-2. Se le 26 celle coincidono e le parole non sono uguali, è un anagramma.
+### Test 3 – Lettere ripetute
 
-### Caso d'uso 2 – La parola stessa
+- **Cosa si verifica**: contano anche le ripetizioni (due `t`).
+- **Input**: `attore`, poi riga vuota.
+- **Output atteso**:
+  ```
+    teatro
+    rotate
+    -> 2 anagrammi di "attore"
+  ```
 
-**a) Input** – `Tale`
+### Test 4 – Nessun anagramma
 
-**b) Output** – solo `tela`: `tale` è esclusa perché è la stessa parola
+- **Cosa si verifica**: una parola presente nell'elenco ma senza altri anagrammi.
+- **Input**: `lieto`, poi riga vuota.
+- **Valori intermedi attesi**: con `lieto` dell'elenco le impronte sono
+  uguali ma la parola è la stessa; con `toilette` le impronte differiscono.
+- **Output atteso**:
+  ```
+    -> 0 anagrammi di "lieto"
+  ```
 
-**c) Variabili di supporto** – esito di `uguali_senza_maiuscole`
+### Test 5 – Caratteri non alfabetici
 
-**d) Vincoli** – il confronto che esclude la parola ignora le maiuscole
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, con la condizione aggiuntiva.
-
-### Caso d'uso 3 – Nessun anagramma
-
-**a) Input** – `lieto`
-
-**b) Output** – "0 anagrammi"
-
-**c) Variabili di supporto** – `trovati`
-
-**d) Vincoli** – il confronto delle impronte si ferma alla prima cella diversa (flag)
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1; nessuna parola
-supera il controllo.
+- **Cosa si verifica**: lo spazio non conta nell'impronta.
+- **Input**: `LA TTE`, poi `latte`, poi riga vuota.
+- **Output atteso**:
+  ```
+    latte
+    -> 1 anagramma di "LA TTE"
+    -> 0 anagrammi di "latte"
+  ```
+- **Osservazione**: `LA TTE` e `latte` hanno la stessa impronta e il
+  confronto che esclude la parola stessa li considera diversi per lo
+  spazio, quindi `latte` è riportato come anagramma.

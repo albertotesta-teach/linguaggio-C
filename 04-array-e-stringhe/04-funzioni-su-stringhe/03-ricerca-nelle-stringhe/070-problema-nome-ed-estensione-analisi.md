@@ -7,84 +7,130 @@ il percorso completo. Per ogni file vuole sapere la cartella, il nome e
 l'estensione, e ricondurre l'estensione a un tipo (documento, immagine,
 codice, altro); alla fine vuole il numero di file per tipo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `percorsi` | `char[][]` | 8 × 50 | Percorsi completi |
-| `estensioni` | `char[][]` | 7 × 6 | Estensioni conosciute |
-| `tipo_di` | `int[]` | 7 | Tipo di ogni estensione (parallelo) |
-| `tipi` | `char[][]` | 4 × 12 | Nomi dei tipi; l'ultimo è "altro" |
-| `quanti` | `int[]` | 4 | File per tipo (parallelo a `tipi`) |
-| `cartella`, `nome`, `estensione` | `char[]` | 50 | Parti del percorso corrente |
-| `barra`, `punto` | `int` | — | Posizioni dell'ultima `/` e dell'ultimo `.` |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `percorsi` | `char[8][50]` | Percorsi completi dei file (nel sorgente) |
+| `estensioni` | `char[7][6]` | Estensioni conosciute: `docx`, `pdf`, `png`, `jpg`, `c`, `html`, `txt` |
+| `tipo_di` | `int[7]` | Tipo di ogni estensione (parallelo): 0 documento, 1 immagine, 2 codice |
+| `tipi` | `char[4][12]` | Nomi dei tipi; l'ultimo è `altro` |
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da tastiera.
+
+### Output
+
+- Una riga per file: cartella (`(radice)` se il percorso non ha `/`),
+  nome senza estensione, estensione (`-` se manca), tipo.
+- Riepilogo con il numero di file per tipo.
+
+### Vincoli
+
+- La cartella è tutto ciò che precede l'**ultima** `/`; il nome è ciò che la segue.
+- L'estensione è ciò che segue l'**ultimo** `.` del nome, purché il punto
+  non sia il primo carattere (file nascosti come `.gitignore`).
+- Il confronto delle estensioni è esatto (`strcmp`): maiuscole e minuscole contano.
+- Un'estensione assente o sconosciuta conta come `altro`.
+
+### Assunzioni
+
+- I percorsi usano `/` come separatore e non terminano con `/`.
+- Ogni percorso è lungo al massimo 49 caratteri.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `quanti` | `int[4]` | File per tipo (parallelo a `tipi`) |
+| `cartella`, `nome`, `estensione` | `char[50]` | Parti del percorso corrente |
+| `lung` | `int` | Lunghezza del percorso |
+| `barra`, `punto` | `int` | Posizione dell'ultima `/` nel percorso e dell'ultimo `.` nel nome |
+| `e` | `int` | Indice dell'estensione nell'elenco (-1 se sconosciuta) |
+| `tipo` | `int` | Tipo del file corrente |
 
 | Funzione | Compito |
 |----------|---------|
-| `ultima_posizione` | Indice dell'ultima occorrenza di un carattere |
-| `copia_parte` | Copia `n` caratteri a partire da un indice |
-| `cerca` | Indice di una stringa in un elenco con `strcmp` |
+| `ultima_posizione` | Indice dell'ultima occorrenza di un carattere, o -1 |
+| `copia_parte` | Copia `n` caratteri a partire da un indice e chiude la stringa |
+| `cerca` | Indice di una stringa in un elenco con `strcmp`, o -1 |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Nome con più punti
+1. Per ogni percorso:
+   1. trovare `barra`, l'ultima `/`;
+   2. se `barra` è -1 la cartella è `(radice)`, altrimenti copiare i
+      caratteri da 0 a `barra - 1`;
+   3. copiare in `nome` i caratteri da `barra + 1` alla fine;
+   4. trovare `punto`, l'ultimo `.` del nome: se `punto > 0` copiare
+      l'estensione e troncare il nome in `punto`, altrimenti l'estensione è vuota;
+   5. cercare l'estensione nell'elenco: se non c'è il tipo è `altro`,
+      altrimenti `tipo_di[e]`;
+   6. incrementare `quanti[tipo]` e stampare la riga.
+2. Stampare il riepilogo per tipo.
 
-**a) Input** – `compiti/3B/rossi/relazione.finale.docx`
+## 3. Casi di test
 
-**b) Output** – `compiti/3B/rossi`, `relazione.finale`, `docx`, documento
+### Test 1 – Nome con più punti
 
-**c) Variabili di supporto** – `barra` = 16, `punto` nel nome
+- **Cosa si verifica**: l'estensione parte dall'ultimo punto, non dal primo.
+- **Input**: `compiti/3B/rossi/relazione.finale.docx` (dati del sorgente).
+- **Valori intermedi attesi**: `barra` = 16; nel nome `relazione.finale.docx` `punto` = 16.
+- **Output atteso**:
+  ```
+  compiti/3B/rossi     relazione.finale   docx  documento
+  ```
 
-**d) Vincoli** – conta l'ULTIMO punto del nome, non il primo
+### Test 2 – File senza cartella e senza estensione
 
-**e) Assunzioni** – percorsi con la barra `/`
+- **Cosa si verifica**: con `barra` = -1 il nome parte dall'indice 0; senza
+  punto non c'è estensione.
+- **Input**: `README`.
+- **Valori intermedi attesi**: `barra` = -1, `punto` = -1, `e` = -1.
+- **Output atteso**:
+  ```
+  (radice)             README             -     altro
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Cartella = caratteri prima dell'ultima `/`; nome completo = caratteri dopo.
-2. Nel nome cercare l'ultimo `.`: se è oltre la posizione 0, l'estensione
-   sono i caratteri successivi e il nome si tronca scrivendo `'\0'` al posto del punto.
-3. Cercare l'estensione tra quelle conosciute e ricavarne il tipo.
+### Test 3 – File nascosto
 
-### Caso d'uso 2 – File senza cartella o senza estensione
+- **Cosa si verifica**: un punto in posizione 0 non introduce un'estensione.
+- **Input**: `progetti/.gitignore`.
+- **Valori intermedi attesi**: `punto` = 0, quindi estensione vuota.
+- **Output atteso**:
+  ```
+  progetti             .gitignore         -     altro
+  ```
 
-**a) Input** – `README`
+### Test 4 – Esecuzione completa e riepilogo
 
-**b) Output** – `(radice)`, `README`, `-`, altro
+- **Cosa si verifica**: classificazione di tutti i file e conteggio per tipo.
+- **Input**: dati del sorgente.
+- **Output atteso**:
+  ```
+  Cartella             Nome               Est.  Tipo
+  compiti/3B/rossi     relazione.finale   docx  documento
+  compiti/3B/rossi     grafico            png   immagine
+  compiti/3B/bianchi   esercizio1         c     codice
+  progetti/sito        index              html  codice
+  progetti/sito        logo               jpg   immagine
+  (radice)             README             -     altro
+  progetti             .gitignore         -     altro
+  compiti/4A/verdi     tesina             pdf   documento
 
-**c) Variabili di supporto** – `barra` = -1, `punto` = -1
+  Riepilogo:  documento 2  immagine 2  codice 2  altro 2
+  ```
 
-**d) Vincoli** – con `barra` = -1 il nome parte dall'indice 0 (`barra + 1`)
+### Test 5 – Estensione in maiuscolo
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – senza `/` la cartella è "(radice)";
-senza `.` l'estensione è vuota e il tipo è "altro".
-
-### Caso d'uso 3 – File nascosto
-
-**a) Input** – `progetti/.gitignore`
-
-**b) Output** – nome `.gitignore`, nessuna estensione, altro
-
-**c) Variabili di supporto** – `punto` = 0
-
-**d) Vincoli** – un punto in posizione 0 non introduce un'estensione
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – l'estensione si estrae solo se `punto > 0`.
-
-### Caso d'uso 4 – Riepilogo per tipo
-
-**a) Input** – `quanti[]`
-
-**b) Output** – documento 2, immagine 2, codice 2, altro 2
-
-**c) Variabili di supporto** – `tipo`
-
-**d) Vincoli** – un'estensione sconosciuta conta come "altro"
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – a ogni file si incrementa
-`quanti[tipo]`; alla fine si stampa l'array.
+- **Cosa si verifica**: il confronto delle estensioni distingue maiuscole e minuscole.
+- **Procedura**: nel sorgente sostituire `logo.jpg` con `logo.JPG`,
+  ricompilare ed eseguire.
+- **Output atteso** (righe interessate):
+  ```
+  progetti/sito        logo               JPG   altro
+  Riepilogo:  documento 2  immagine 1  codice 2  altro 3
+  ```
+- **Osservazione**: per riconoscere anche `JPG` bisognerebbe convertire
+  l'estensione in minuscolo prima della ricerca.

@@ -10,123 +10,79 @@ dettagliato per ogni requisito.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile       | Tipo     | Dimensione | Motivazione                                         |
-|-----------------|----------|------------|-----------------------------------------------------|
-| `password`      | `char[]` | 51         | Max 50 caratteri senza spazi + `'\0'`               |
-| `lunghezza`     | `int`    | —          | Contatore incrementato a ogni iterazione            |
-| `ha_maiuscola`  | `int`    | —          | Flag: 1 se trovata almeno una maiuscola             |
-| `ha_minuscola`  | `int`    | —          | Flag: 1 se trovata almeno una minuscola             |
-| `ha_cifra`      | `int`    | —          | Flag: 1 se trovata almeno una cifra                 |
-| `ha_speciale`   | `int`    | —          | Flag: 1 se trovato almeno un carattere speciale     |
-| `c`             | `char`   | —          | Carattere corrente durante la scansione             |
-| `i`             | `int`    | —          | Indice per scorrere la password                     |
-| `requisiti_ok`  | `int`    | —          | Contatore dei requisiti soddisfatti (0-5)           |
+### Input
 
----
+| Variabile  | Tipo     | Dimensione | Descrizione                        |
+|------------|----------|------------|------------------------------------|
+| `password` | `char[]` | 51         | Password senza spazi, max 50 caratteri |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Per ogni requisito l'esito: "OK", "MANCANTE" oppure, per la lunghezza,
+  "INSUFFICIENTE (minimo 8)";
+- il numero di requisiti soddisfatti su 5;
+- l'esito finale: "PASSWORD ACCETTATA" solo se sono soddisfatti tutti,
+  altrimenti "PASSWORD RIFIUTATA".
 
----
+### Vincoli
+- Lunghezza di almeno 8 caratteri (8 è accettato)
+- Maiuscola: `'A'`–`'Z'`; minuscola: `'a'`–`'z'`; cifra: `'0'`–`'9'`
+- Caratteri speciali ammessi: `! @ # $ % & *`; qualsiasi altro simbolo non
+  soddisfa il requisito
+- Un solo ciclo conta la lunghezza e verifica tutti i requisiti con dei flag
+- La password si legge con `scanf("%50s")`: non può contenere spazi e non
+  supera il buffer
 
-### Caso d'uso 1 – Lettura della password
+### Assunzioni
+- La codifica è ASCII
 
-**a) Input**
-Stringa senza spazi, max 50 caratteri.
+### Variabili di supporto
 
-**b) Output**
-Nessun output diretto: valore memorizzato in `password`.
+| Variabile      | Tipo   | Descrizione                                   |
+|----------------|--------|-----------------------------------------------|
+| `lunghezza`    | `int`  | Caratteri contati                             |
+| `ha_maiuscola`, `ha_minuscola`, `ha_cifra`, `ha_speciale` | `int` | Flag dei requisiti |
+| `requisiti_ok` | `int`  | Requisiti soddisfatti (0–5)                   |
+| `c`, `i`       | `char`, `int` | Carattere corrente e indice            |
 
-**c) Variabili di supporto**
-Nessuna.
-
-**d) Vincoli**
-- `scanf` con `"%50s"` garantisce che non si superi il buffer.
-- Le password non contengono spazi per convenzione.
-
-**e) Assunzioni**
-- L'utente non inserisce spazi nella password.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Leggere la password con scanf("%50s", password).
-```
-
----
-
-### Caso d'uso 2 – Scansione e verifica requisiti
-
-**a) Input**
-La stringa `password`.
-
-**b) Output**
-Nessun output diretto: aggiorna `lunghezza` e i quattro flag booleani.
-
-**c) Variabili di supporto**
-- `c` (`char`): carattere corrente.
-- `i` (`int`): indice di scansione.
-
-**d) Vincoli**
-- Un unico ciclo `while` copre tutti i requisiti simultaneamente.
-- I flag vengono impostati a 1 appena il requisito è soddisfatto
-  e non vengono più modificati nelle iterazioni successive.
-
-**e) Assunzioni**
-- I caratteri speciali ammessi sono: `!`, `@`, `#`, `$`, `%`, `&`, `*`.
-- Non sono gestiti caratteri accentati o Unicode.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare lunghezza=0, tutti i flag a 0, i a 0.
-2. Finché password[i] non è '\0':
-   a. c = password[i]; incrementare lunghezza.
-   b. Se c tra 'A' e 'Z': ha_maiuscola = 1.
-   c. Se c tra 'a' e 'z': ha_minuscola = 1.
-   d. Se c tra '0' e '9': ha_cifra = 1.
-   e. Se c è uno dei simboli speciali: ha_speciale = 1.
-   f. Incrementare i.
-```
+### Algoritmo in linguaggio naturale
+1. Leggere la password.
+2. Per ogni carattere fino a `'\0'`: incrementare la lunghezza e alzare il
+   flag della classe a cui appartiene (maiuscola, minuscola, cifra,
+   speciale).
+3. Contare i requisiti soddisfatti.
+4. Stampare l'esito di ogni requisito, il conteggio e l'esito finale.
 
 ---
 
-### Caso d'uso 3 – Valutazione e output
+## 3. Casi di test
 
-**a) Input**
-`lunghezza`, `ha_maiuscola`, `ha_minuscola`, `ha_cifra`, `ha_speciale`.
+Per ogni caso si inserisce la password indicata.
 
-**b) Output**
-```
-════════════════════════════════════════════
-  ANALISI PASSWORD: "Sicuro42!"
-════════════════════════════════════════════
-  Lunghezza (9 car.): OK
-  Maiuscola         : OK
-  Minuscola         : OK
-  Cifra             : OK
-  Carattere spec.   : OK
-────────────────────────────────────────────
-  Requisiti: 5/5 soddisfatti
-────────────────────────────────────────────
-  ESITO: PASSWORD ACCETTATA
-════════════════════════════════════════════
-```
+### Test 1 – Password valida
+- **Input:** `Sicura#2024`
+- **Output atteso:** tutti i requisiti `OK`,
+  `Requisiti: 5/5 soddisfatti`, `ESITO: PASSWORD ACCETTATA`
 
-**c) Variabili di supporto**
-- `requisiti_ok` (`int`): somma dei requisiti soddisfatti.
+### Test 2 – Esattamente 8 caratteri
+- **Cosa si verifica:** il caso limite della lunghezza
+- **Input:** `Abcdef1!` (accettata) e `Abcde1!` (7 caratteri)
+- **Output atteso:** `Lunghezza (8 car.): OK` e `PASSWORD ACCETTATA`;
+  `Lunghezza (7 car.): INSUFFICIENTE (minimo 8)` e `PASSWORD RIFIUTATA`
 
-**d) Vincoli**
-- `requisiti_ok` viene calcolato sommando i singoli flag e il controllo
-  sulla lunghezza, non all'interno del ciclo di scansione.
+### Test 3 – Un solo requisito mancante
+- **Cosa si verifica:** basta un requisito per il rifiuto
+- **Input:** `Password1`
+- **Output atteso:** `Carattere spec. : MANCANTE`, `Requisiti: 4/5
+  soddisfatti`, `ESITO: PASSWORD RIFIUTATA`
 
-**e) Assunzioni**
-- L'esito è ACCETTATA solo se tutti e 5 i requisiti sono soddisfatti.
+### Test 4 – Più requisiti mancanti
+- **Input:** `PASSWORD123`
+- **Output atteso:** `Minuscola       : MANCANTE`,
+  `Carattere spec. : MANCANTE`, `Requisiti: 3/5 soddisfatti`
 
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare requisiti_ok a 0.
-2. Per ogni requisito: se soddisfatto, incrementare requisiti_ok.
-3. Stampare l'esito di ogni requisito (OK o MANCANTE/INSUFFICIENTE).
-4. Se requisiti_ok == 5: stampare "ACCETTATA".
-5. Altrimenti: stampare "RIFIUTATA" con invito a correggere.
-```
+### Test 5 – Password corta
+- **Input:** `abc`
+- **Output atteso:** `Lunghezza (3 car.): INSUFFICIENTE (minimo 8)`,
+  `Requisiti: 1/5 soddisfatti`

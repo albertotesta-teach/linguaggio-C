@@ -9,89 +9,105 @@ può uscire dalla mappa né attraversare gli scaffali. Entrando in una cella con
 un pacco lo raccoglie. La sessione termina con Q oppure quando tutti i pacchi
 sono stati raccolti; alla fine si stampano mosse e pacchi raccolti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `mappa` | `char[][]` | 6 × (10 + 1) | Pianta inizializzata con stringhe; `+1` per il `'\0'` |
-| `r_robot`, `c_robot` | `int` | — | Posizione attuale del robot |
-| `r_nuova`, `c_nuova` | `int` | — | Cella di arrivo da verificare |
-| `dr`, `dc` | `int` | — | Spostamento scelto dal comando (-1, 0, +1) |
-| `comando` | `char` | — | Comando letto |
-| `raccolti`, `pacchi_rimasti`, `mosse` | `int` | — | Contatori |
+### Input
 
-| Funzione | Compito |
-|----------|---------|
-| `stampa_mappa` | Stampa le `COLONNE` celle di ogni riga |
-| `conta_pacchi` | Conta le celle `'P'` iniziali |
+| Variabile | Tipo   | Descrizione                                            |
+|-----------|--------|--------------------------------------------------------|
+| `comando` | `char` | N (su), S (giù), E (destra), O (sinistra), Q (fine); anche in minuscolo |
 
-## 3. Casi d'uso e funzionalità
+La pianta iniziale è inizializzata nel codice: il robot parte dall'angolo in
+alto a sinistra e ci sono 3 pacchi.
 
-### Caso d'uso 1 – Spostamento valido con raccolta
+### Output
+- Il numero di pacchi da raccogliere e la mappa iniziale;
+- per i comandi che non spostano il robot il motivo: "Bordo del magazzino",
+  "Scaffale" oppure "Comando sconosciuto."; per ogni pacco raccolto
+  "Pacco raccolto! (n)";
+- alla fine la mappa, le mosse eseguite, i pacchi raccolti e rimasti, e
+  "Missione completata!" se non resta nessun pacco.
 
-**a) Input** – comando che porta il robot su una cella `'P'`
+### Vincoli
+- Lo spostamento si esprime con due variabili `dr`, `dc` (−1, 0, +1) scelte
+  da uno `switch`: la verifica della cella di arrivo è la stessa per tutte
+  le direzioni
+- Il robot si sposta solo se la cella di arrivo è dentro la mappa e non è
+  uno scaffale; il controllo dei limiti viene **prima** dell'accesso alla
+  cella
+- Si contano solo le mosse effettivamente eseguite
+- Spostandosi il robot lascia un corridoio nella cella di partenza
+- La sessione termina con Q oppure appena l'ultimo pacco è raccolto; in
+  quel caso non viene chiesto un altro comando
+- Ogni riga della mappa ha `COLONNE + 1` caratteri, perché è inizializzata
+  con una stringa che contiene anche `'\0'`
+- A fine input (EOF) il programma si comporta come il comando Q
 
-**b) Output** – "Pacco raccolto! (n)"
+### Assunzioni
+- La mappa contiene un solo robot
 
-**c) Variabili di supporto** – `dr`, `dc`, `r_nuova`, `c_nuova`
+### Variabili di supporto
 
-**d) Vincoli** – la vecchia cella diventa `'.'`, la nuova `'R'`
+| Variabile            | Tipo       | Dimensione   | Descrizione                         |
+|----------------------|------------|--------------|-------------------------------------|
+| `mappa`              | `char[][]` | 6 × (10 + 1) | Pianta del magazzino                |
+| `r_robot`, `c_robot` | `int`      | —            | Posizione attuale del robot         |
+| `r_nuova`, `c_nuova` | `int`      | —            | Cella di arrivo da verificare       |
+| `dr`, `dc`           | `int`      | —            | Spostamento scelto dal comando      |
+| `raccolti`, `pacchi_rimasti`, `mosse` | `int` | — | Contatori                     |
 
-**e) Assunzioni** – la mappa contiene una sola `'R'`, in posizione (0, 0)
+| Funzione | Descrizione |
+|---|---|
+| `void stampa_mappa(const char m[][COLONNE + 1])` | Stampa le celle di ogni riga |
+| `int conta_pacchi(const char m[][COLONNE + 1])` | Conta le celle `'P'` |
 
-**f) Algoritmo in linguaggio naturale**
-1. Con uno `switch` sul comando impostare `dr` e `dc`.
-2. Calcolare la cella di arrivo `r_robot + dr`, `c_robot + dc`.
-3. Se è dentro la mappa e non è uno scaffale: se contiene un pacco
-   incrementare `raccolti` e decrementare `pacchi_rimasti`.
-4. Liberare la cella vecchia, scrivere `'R'` nella nuova, aggiornare la
-   posizione e il numero di mosse.
+### Algoritmo in linguaggio naturale
+1. Contare i pacchi e stampare la mappa; leggere il primo comando.
+2. Finché il comando non è Q e restano pacchi:
+   a. porre `dr = dc = 0` e impostarli secondo il comando, oppure stampare
+      "Comando sconosciuto.";
+   b. se c'è uno spostamento calcolare la cella di arrivo: se è fuori dalla
+      mappa o è uno scaffale annullare il movimento; altrimenti, se contiene
+      un pacco raccoglierlo, spostare il robot e contare la mossa;
+   c. se restano pacchi leggere il comando successivo.
+3. Stampare la mappa e il riepilogo.
 
-### Caso d'uso 2 – Movimento bloccato
+## 3. Casi di test
 
-**a) Input** – comando verso uno scaffale o oltre il bordo
+Si esegue il programma con la sequenza di comandi indicata.
 
-**b) Output** – "Scaffale: movimento annullato." oppure "Bordo del magazzino…"
+### Test 1 – Movimenti bloccati e due pacchi raccolti
+- **Input:** `N`, `E`, `E`, `E`, `E`, `S`, `S`, `O`, `X`, `S`, `S`, `E`, `Q`
+- **Output atteso:**
+  - `N` alla partenza → `Bordo del magazzino: movimento annullato.`
+  - il quarto `E` → `Scaffale: movimento annullato.`
+  - dopo `S S O` → `Pacco raccolto! (1)`
+  - `X` → `Comando sconosciuto.`
+  - dopo `S S E` → `Pacco raccolto! (2)`
+  - alla fine `Mosse eseguite: 9, pacchi raccolti: 2, rimasti: 1`
 
-**c) Variabili di supporto** – `r_nuova`, `c_nuova`
+### Test 2 – Missione completata
+- **Cosa si verifica:** la sessione termina da sola all'ultimo pacco
+- **Input:** `E E E S S O S S E E E N N N N E E E E`
+- **Output atteso:**
+```
+  ....#....R
+  .##.#.##..
+  .#....#...
+  .#.##.#.##
+  ......#...
+  ####......
 
-**d) Vincoli** – il controllo dei limiti va fatto **prima** di leggere
-`mappa[r_nuova][c_nuova]`, per non accedere fuori dalla matrice
+Mosse eseguite: 19, pacchi raccolti: 3, rimasti: 0
+Missione completata!
+```
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la posizione non cambia e la mossa
-non viene contata.
-
-### Caso d'uso 3 – Comando sconosciuto
-
-**a) Input** – un carattere diverso da N S E O Q
-
-**b) Output** – "Comando sconosciuto."
-
-**c) Variabili di supporto** – `dr`, `dc` restano 0
-
-**d) Vincoli** – il ramo `default` dello `switch`
-
-**e) Assunzioni** – i comandi sono accettati anche in minuscolo
-
-**f) Algoritmo in linguaggio naturale** – con `dr == 0` e `dc == 0` il blocco
-di spostamento non viene eseguito.
-
-### Caso d'uso 4 – Fine sessione
-
-**a) Input** – `Q` oppure raccolta dell'ultimo pacco
-
-**b) Output** – mappa finale, mosse, pacchi raccolti e rimasti;
-"Missione completata!" se non resta nessun pacco
-
-**c) Variabili di supporto** – `pacchi_rimasti`
-
-**d) Vincoli** – dopo l'ultimo pacco non si chiede un altro comando
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Il ciclo continua finché il comando non è Q e restano pacchi.
-2. Il nuovo comando si legge solo se restano pacchi.
-3. Al termine stampare la mappa e il riepilogo.
+### Test 3 – Fine dell'input senza Q
+- **Cosa si verifica:** la chiusura senza ciclo infinito
+- **Input:** `E`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
+```
+Comando (N S E O, Q = fine): Comando (N S E O, Q = fine): 
+...
+Mosse eseguite: 1, pacchi raccolti: 0, rimasti: 3
+```

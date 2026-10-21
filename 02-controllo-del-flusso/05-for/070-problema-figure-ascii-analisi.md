@@ -7,13 +7,38 @@ Disegnare con il carattere `*` quattro figure di altezza scelta dall'utente
 È lo stesso problema di un'insegna a matrice di LED, che accende punti su una
 griglia di righe e colonne.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `altezza` | `int` | Numero di righe delle figure |
-| `riga`, `colonna` | `int` | Variabili dei cicli esterno e interno |
-| `bordo` | `int` (0/1) | Il punto appartiene al bordo del quadrato |
+### Input
+
+| Variabile | Tipo  | Significato                       |
+|-----------|-------|-----------------------------------|
+| `altezza` | `int` | Numero di righe delle figure      |
+
+### Output
+Le quattro figure disegnate una dopo l'altra:
+- triangolo rettangolo di `altezza` righe;
+- piramide centrata con base di `2 × altezza − 1` asterischi;
+- quadrato vuoto `altezza × altezza`;
+- rombo di `2 × altezza − 1` righe.
+
+### Vincoli
+- `altezza` è compresa tra 2 e 20: la richiesta si ripete finché non lo è
+  (con altezza 1 le figure degenerano in un punto; oltre 20 il rombo supera
+  la larghezza abituale del terminale)
+- L'a capo si stampa alla fine di ogni riga, fuori dai cicli interni
+- Il rombo non ripete la riga centrale
+
+### Assunzioni
+- Il terminale usa un carattere a larghezza fissa
+- L'utente inserisce un numero intero
+
+### Variabili di supporto
+
+| Variabile          | Tipo        | Significato                               |
+|--------------------|-------------|-------------------------------------------|
+| `riga`, `colonna`  | `int`       | Variabili dei cicli esterno e interno     |
+| `bordo`            | `int` (0/1) | Il punto appartiene al bordo del quadrato |
 
 Per ogni figura si ricava, riga per riga, quanti spazi e quanti asterischi
 stampare:
@@ -25,22 +50,7 @@ stampare:
 | Quadrato vuoto | — | `*` solo se r o la colonna è la prima o l'ultima |
 | Rombo | come la piramide, poi le righe da altezza − 1 a 1 | |
 
-## 3. Casi d'uso e funzionalità
-
-### Caso d'uso 1 – Figure di altezza 4
-
-**a) Input** – altezza 4
-
-**b) Output** – triangolo di 4 righe, piramide con base di 7 asterischi,
-quadrato 4 × 4 vuoto, rombo di 7 righe
-
-**c) Variabili di supporto** – `bordo`
-
-**d) Vincoli** – l'a capo si stampa alla fine di ogni riga, fuori dai cicli interni
-
-**e) Assunzioni** – il terminale usa un carattere a larghezza fissa
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Leggere l'altezza ripetendo finché non è tra 2 e 20.
 2. Triangolo: per ogni riga r stampare r asterischi e andare a capo.
 3. Piramide: per ogni riga r stampare `altezza − r` spazi e `2r − 1` asterischi.
@@ -49,17 +59,22 @@ quadrato 4 × 4 vuoto, rombo di 7 righe
 5. Rombo: stampare la piramide, poi le righe da `altezza − 1` a 1 con le
    stesse formule (piramide capovolta senza ripetere la riga centrale).
 
-### Caso d'uso 2 – Altezza fuori intervallo
+## 3. Casi di test
 
-**a) Input** – 1 oppure 50
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – la richiesta viene ripetuta
+### Test 1 – Altezza 4
+- **Input:** 4
+- **Output atteso:** triangolo di 4 righe, piramide con base di 7 asterischi,
+  quadrato 4 × 4 vuoto, rombo di 7 righe
 
-**c) Variabili di supporto** – nessuna
+### Test 2 – Altezza minima
+- **Cosa si verifica:** il caso limite inferiore dell'intervallo
+- **Input:** 2
+- **Output atteso:** triangolo di 2 righe, piramide con base di 3 asterischi,
+  quadrato 2 × 2 tutto pieno (ogni punto è sul bordo), rombo di 3 righe
 
-**d) Vincoli** – con altezza 1 le figure degenerano in un punto; oltre 20 il
-rombo supera la larghezza abituale del terminale
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, passo 1.
+### Test 3 – Altezza fuori intervallo
+- **Input:** 1 oppure 50
+- **Output atteso:** la richiesta viene ripetuta

@@ -7,71 +7,82 @@ mattina, pomeriggio, sera) per sette giorni. Il programma deve stampare la
 tabella con la media giornaliera, individuare la rilevazione più alta e più
 bassa con giorno e fascia, e calcolare la media settimanale di ogni fascia.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `temp` | `double[][]` | 7 × 4 | Riga = giorno, colonna = fascia oraria |
-| `giorni` | `char[][]` | 7 × 12 | Nome del giorno: parallelo alle **righe** |
-| `fasce` | `char[][]` | 4 × 12 | Nome della fascia: parallelo alle **colonne** |
-| `somma` | `double` | — | Accumulatore riutilizzato per righe e colonne |
-| `g_max`, `f_max`, `g_min`, `f_min` | `int` | — | Indici degli estremi |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-Novità rispetto agli array monodimensionali: gli array paralleli possono
-descrivere sia le righe sia le colonne della matrice.
+| Variabile | Tipo         | Dimensione | Descrizione                                   |
+|-----------|--------------|------------|-----------------------------------------------|
+| `temp`    | `double[][]` | 7 × 4      | Riga = giorno, colonna = fascia oraria (°C)   |
+| `giorni`  | `char[][]`   | 7 × 12     | Nome del giorno: parallelo alle **righe**     |
+| `fasce`   | `char[][]`   | 4 × 12     | Nome della fascia: parallelo alle **colonne** |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La tabella delle rilevazioni con, per ogni giorno, la media delle quattro
+  fasce;
+- la temperatura massima e la minima della settimana con giorno e fascia;
+- la media settimanale di ogni fascia oraria.
 
-### Caso d'uso 1 – Tabella con media giornaliera
+### Vincoli
+- La media di un giorno si calcola sommando una **riga**; la media di una
+  fascia sommando una **colonna** (ciclo esterno sulle colonne)
+- Per massimo e minimo si memorizzano gli **indici** di riga e colonna, da
+  cui si ricavano valore, giorno e fascia
+- Massimo e minimo partono dalla cella [0][0]; a parità resta la prima
+  cella trovata scorrendo per righe
+- Le medie si stampano con un decimale
 
-**a) Input** – matrici `temp`, `giorni`, `fasce`
+### Assunzioni
+- Le temperature sono in gradi Celsius e i dati sono corretti
 
-**b) Output** – intestazione con i nomi delle fasce, una riga per giorno con
-le quattro temperature e la media
+### Variabili di supporto
 
-**c) Variabili di supporto** – `somma`
+| Variabile | Tipo     | Descrizione                                   |
+|-----------|----------|-----------------------------------------------|
+| `somma`   | `double` | Accumulatore riusato per righe e colonne      |
+| `g_max`, `f_max`, `g_min`, `f_min` | `int` | Indici degli estremi  |
+| `GIORNI`, `FASCE`, `LUNG` | `#define` | 7, 4, 12                  |
 
-**d) Vincoli** – la media di un giorno è la somma della sua riga divisa per `FASCE`
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione con i nomi delle fasce.
+2. Per ogni giorno stampare il nome e le quattro temperature, sommarle e
+   stampare la media.
+3. Scorrere tutta la matrice aggiornando gli indici del massimo e del
+   minimo; stampare i due valori con giorno e fascia.
+4. Per ogni fascia sommare la colonna su tutti i giorni e stampare la media.
 
-**e) Assunzioni** – una rilevazione per ogni fascia
+## 3. Casi di test
 
-**f) Algoritmo in linguaggio naturale**
-1. Stampare l'intestazione scorrendo `fasce`.
-2. Per ogni giorno: azzerare `somma`, stampare il nome, poi ogni temperatura
-   della riga sommandola; stampare `somma / FASCE`.
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 2 – Massimo e minimo con posizione
+### Test 1 – Tabella con medie giornaliere
+- **Output atteso:**
+```
+  Giorno           Notte    Mattina Pomeriggio       Sera    Media
+  Lunedi'            8.5       13.0       17.5       12.0     12.8
+  Martedi'           9.0       14.5       18.0       13.5     13.8
+  Mercoledi'        10.5       15.0       19.5       14.0     14.8
+  Giovedi'           7.0       11.5       15.0       10.5     11.0
+  Venerdi'           6.5       10.0       13.5        9.0      9.8
+  Sabato             8.0       14.0       20.5       15.5     14.5
+  Domenica          11.0       16.5       21.0       16.0     16.1
+```
 
-**a) Input** – matrice `temp`
+### Test 2 – Estremi della settimana
+- **Output atteso:**
+```
+Temperatura massima: 21.0 (Domenica, Pomeriggio)
+Temperatura minima : 6.5 (Venerdi', Notte)
+```
 
-**b) Output** – "Temperatura massima: 21.0 (Domenica, Pomeriggio)" e
-"Temperatura minima : 6.5 (Venerdi', Notte)"
-
-**c) Variabili di supporto** – `g_max`, `f_max`, `g_min`, `f_min`
-
-**d) Vincoli** – si memorizzano due indici per ogni estremo; partono da
-(0, 0), cioè dall'ipotesi che il primo elemento sia l'estremo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Porre tutti gli indici a 0.
-2. Per ogni cella: se è maggiore di `temp[g_max][f_max]` aggiornare `g_max`,
-   `f_max`; se è minore di `temp[g_min][f_min]` aggiornare `g_min`, `f_min`.
-3. Stampare valori e nomi ricavati dagli indici.
-
-### Caso d'uso 3 – Media per fascia
-
-**a) Input** – matrice `temp`
-
-**b) Output** – media settimanale delle quattro fasce (es. Pomeriggio 17.9)
-
-**c) Variabili di supporto** – `somma`
-
-**d) Vincoli** – il ciclo esterno scorre le colonne, quello interno le righe
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni fascia: azzerare `somma`, sommare la colonna su tutti i giorni.
-2. Stampare il nome della fascia e `somma / GIORNI`.
+### Test 3 – Medie per fascia
+- **Cosa si verifica:** la somma per colonne
+- **Output atteso:**
+```
+  Notte      :   8.6
+  Mattina    :  13.5
+  Pomeriggio :  17.9
+  Sera       :  12.9
+```

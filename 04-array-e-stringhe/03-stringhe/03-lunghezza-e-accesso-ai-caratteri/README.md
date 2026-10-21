@@ -127,7 +127,7 @@ Stringa   : "Via Roma 12"
 Lunghezza : 11 caratteri (spazi inclusi)
 
 Mappa carattere per carattere di "Buongiorno":
-Indice Carattere ASCII
+Indice Carattere  ASCII
 -------------------------
 0      B          66
 1      u          117
@@ -139,7 +139,35 @@ Indice Carattere ASCII
 7      r          114
 8      n          110
 9      o          111
-10     \0         0   ← terminatore
+10     \0         0       ← terminatore
+```
+
+### 020-accesso-per-indice
+```
+=== ACCESSO E MODIFICA PER INDICE ===
+
+Stringa originale: "Programmazione in C"
+
+Lettura caratteri specifici:
+  testo[0]  = 'P'  (primo carattere)
+  testo[1]  = 'r'  (secondo carattere)
+  testo[13] = 'e'  (quattordicesimo)
+
+Modifica: testo[0] = 'p' (maiuscola → minuscola)
+Stringa modificata: "programmazione in C"
+
+Scambio primo e ultimo carattere:
+  Primo   : testo[0] = 'P'
+  Ultimo  : testo[18] = 'C'
+  Dopo lo scambio: "Crogrammazione in P"
+
+Troncamento: inserisco '\0' in posizione 13
+  Prima : "Programmazione in C"
+  Dopo  : "Programmazion"
+
+Nota: i caratteri dopo la posizione 13 sono ancora
+in memoria ma non vengono stampati da printf.
+Carattere in posizione 14 (ancora in memoria): ' '
 ```
 
 ### 030-scansione-con-ciclo
@@ -147,22 +175,47 @@ Indice Carattere ASCII
 ```
 Categoria       Numero Percent.
 -------------------------------
-Vocali               14      28%
-Consonanti           22      44%
-Cifre                 2       4%
-Spazi                 7      14%
-Altri                 5      10%
+Vocali              18      36%
+Consonanti          18      36%
+Cifre                2       4%
+Spazi                8      16%
+Altri                3       6%
 -------------------------------
-Totale               50
+Totale              49
+```
+
+### 040-confronto-carattere-per-carattere
+```
+=== CONFRONTO MANUALE TRA STRINGHE ===
+
+Confronto 1: "Mela" vs "Mela"
+  Risultato: UGUALI
+
+Confronto 2: "Mela" vs "Pera"
+  Primo carattere diverso: 'M'(77) vs 'P'(80)
+  Risultato: "Mela" viene PRIMA di "Pera"
+
+Confronto 3: "Mela" vs "mela" (case-sensitive)
+  Primo carattere diverso: 'M'(77) vs 'm'(109)
+  Risultato: "Mela" viene PRIMA di "mela"
+
+NOTA: strcmp() in <string.h> implementa questo stesso
+algoritmo in modo ottimizzato. Ora sai come funziona!
 ```
 
 ### 050-problema-conta-occorrenze
-*(testo: "Il mare è calmo e limpido", lettera: 'a')*
+*(output dipendente dall'input – esempio)*
 ```
+=== CONTATORE DI OCCORRENZE ===
+
+Inserisci il testo da analizzare:
+> Il mare è calmo e limpido
+Inserisci la lettera da cercare: a
+
 ════════════════════════════════════
   RISULTATI ANALISI
 ════════════════════════════════════
-  Testo     : "Il mare e calmo e limpido"
+  Testo     : "Il mare è calmo e limpido"
   Lettera   : 'a'
 ────────────────────────────────────
   Occorrenze esatte ('a')   : 2
@@ -173,21 +226,50 @@ Totale               50
 ```
 
 ### 060-problema-conta-vocali
-*(testo: "Programmazione in C")*
+*(output dipendente dall'input – esempio)*
 ```
-  A/a :   3  [###]
-  E/e :   2  [##]
-  I/i :   3  [###]
+=== ANALISI FONETICA - DISTRIBUZIONE VOCALI ===
+
+Inserisci il testo da analizzare:
+> Programmazione in C
+
+Testo analizzato: "Programmazione in C"
+
+════════════════════════════════════════════
+  DISTRIBUZIONE VOCALI
+════════════════════════════════════════════
+Vocale Num.  Distribuzione
+--------------------------------------------
+  A/a :   2  [##]
+  E/e :   1  [#]
+  I/i :   2  [##]
   O/o :   2  [##]
   U/u :   0  []
 --------------------------------------------
-  Totale vocali    : 10 su 19 caratteri
-  Densità vocalica : 52%
+  Totale vocali    : 7 su 19 caratteri
+  Densità vocalica : 36%
+════════════════════════════════════════════
 ```
 
 ### 070-problema-validazione-password
-*(password: "Sicuro42!")*
+*(output dipendente dall'input – esempio)*
 ```
+╔══════════════════════════════════════════╗
+║     SISTEMA DI VERIFICA PASSWORD         ║
+╚══════════════════════════════════════════╝
+
+Requisiti minimi:
+  ✓ Almeno 8 caratteri
+  ✓ Almeno una maiuscola (A-Z)
+  ✓ Almeno una minuscola (a-z)
+  ✓ Almeno una cifra (0-9)
+  ✓ Almeno un carattere speciale (!@#$%&*)
+
+Inserisci la password: Sicuro42!
+
+════════════════════════════════════════════
+  ANALISI PASSWORD: "Sicuro42!"
+════════════════════════════════════════════
   Lunghezza (9 car.): OK
   Maiuscola         : OK
   Minuscola         : OK
@@ -197,6 +279,7 @@ Totale               50
   Requisiti: 5/5 soddisfatti
 ────────────────────────────────────────────
   ESITO: PASSWORD ACCETTATA
+════════════════════════════════════════════
 ```
 
 *(password: "ciao")*
@@ -210,6 +293,64 @@ Totale               50
   Requisiti: 1/5 soddisfatti
 ────────────────────────────────────────────
   ESITO: PASSWORD RIFIUTATA
+```
+
+### 080-problema-analisi-testo
+*(output dipendente dall'input – esempio)*
+```
+╔══════════════════════════════════════════╗
+║      EDITOR - ANALISI TESTO              ║
+║      Limite: 280 caratteri               ║
+╚══════════════════════════════════════════╝
+
+Inserisci il testo:
+> Domani   si parte per il mare
+
+════════════════════════════════════════════
+  STATISTICHE TESTO
+════════════════════════════════════════════
+  Caratteri totali  : 29 / 280
+  Parole            : 6
+  Spazi             : 7
+  Caratteri rimasti : 251
+
+  Utilizzo: [##..................] 10%
+════════════════════════════════════════════
+
+  Testo nel limite consentito.
+```
+
+### 090-problema-verifica-iban
+*(output dipendente dall'input – esempio con un IBAN valido)*
+```
+╔══════════════════════════════════════════╗
+║     VERIFICA FORMALE IBAN ITALIANO       ║
+╚══════════════════════════════════════════╝
+
+Formato IBAN italiano: IT00A0000000000000000000000
+  IT  = country code (2 lettere)
+  00  = check digits (2 cifre)
+  A   = CIN (1 lettera)
+  00000 = ABI banca (5 cifre)
+  00000 = CAB agenzia (5 cifre)
+  000000000000 = conto (12 alfanumerici)
+
+Inserisci il codice IBAN (senza spazi): IT60X0542811101000000123456
+
+════════════════════════════════════════════
+  RISULTATO VERIFICA: IT60X0542811101000000123456
+════════════════════════════════════════════
+  [OK] Lunghezza    : 27 caratteri
+  [OK] Country code : IT
+  [OK] Check digits : 60
+  [OK] CIN          : X
+  [OK] ABI          : 05428
+  [OK] CAB          : 11101
+  [OK] Conto (BBAN) : 000000123456
+────────────────────────────────────────────
+  ESITO: FORMATO VALIDO
+  (verifica formale superata, non matematica)
+════════════════════════════════════════════
 ```
 
 ### 100-problema-censura-testo

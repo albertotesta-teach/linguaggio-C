@@ -9,126 +9,113 @@ vuoti e stampa la scheda prodotto pronta per l'archiviazione.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile         | Tipo     | Dimensione | Motivazione                                           |
-|-------------------|----------|------------|-------------------------------------------------------|
-| `nome_prodotto`   | `char[]` | 81         | Nome con spazi, max 80 caratteri + `'\0'`             |
-| `categoria`       | `char[]` | 21         | Categoria con spazi, max 20 caratteri + `'\0'`        |
-| `codice`          | `char[]` | 10         | Formato XXX-NNN, senza spazi, max 9 caratteri + `'\0'`|
-| `prezzo`          | `char[]` | 10         | Prezzo come stringa (es. "12.50"), max 9 + `'\0'`     |
-| `quantita`        | `int`    | —          | Numero intero di unità disponibili                    |
-| `i`               | `int`    | —          | Indice per rimozione `'\n'` da fgets                  |
-| `nome_valido`     | `int`    | —          | Flag: 1 = nome non vuoto, 0 = vuoto                   |
-| `categoria_valida`| `int`    | —          | Flag: 1 = categoria non vuota, 0 = vuota              |
+### Input
 
----
+| Variabile       | Tipo     | Dimensione | Descrizione                                       |
+|-----------------|----------|------------|---------------------------------------------------|
+| `codice`        | `char[]` | 10         | Codice senza spazi (es. ELE-042), max 9 caratteri |
+| `nome_prodotto` | `char[]` | 81         | Nome con spazi, max 80 caratteri                  |
+| `categoria`     | `char[]` | 21         | Categoria con spazi, max 20 caratteri             |
+| `prezzo`        | `char[]` | 10         | Prezzo come testo (es. 12.50), max 9 caratteri    |
+| `quantita`      | `int`    | —          | Pezzi disponibili                                 |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Se nome e categoria non sono vuoti e la quantità è valida, la scheda
+  prodotto con tutti i campi e "Prodotto inserito correttamente nell'archivio.";
+- altrimenti "ERRORE: campi obbligatori mancanti o non validi.", l'elenco
+  dei campi errati e "Inserimento annullato.".
 
----
+### Vincoli
+- Codice e prezzo non contengono spazi: si leggono con `scanf("%9s")`, che
+  limita i caratteri alla dimensione del buffer
+- Nome e categoria possono contenere spazi: si leggono con `fgets`, poi si
+  sostituisce il `'\n'` finale con `'\0'`
+- Se `fgets` riempie il buffer senza leggere il `'\n'`, il campo era troppo
+  lungo: si tiene la parte che sta nel buffer (80 o 20 caratteri) e si
+  scarta il resto della riga, che altrimenti finirebbe nel campo successivo
+- Dopo una `scanf` resta un `'\n'` nel buffer: prima della `fgets` va
+  consumato, altrimenti la `fgets` leggerebbe una riga vuota
+- Nome e categoria sono obbligatori: un campo è vuoto se il primo carattere
+  è `'\0'`; si segnalano tutti i campi vuoti, non solo il primo
+- La quantità deve essere un intero non negativo: si controlla il valore
+  restituito da `scanf` (`quantita` parte da 0)
+- Il prezzo è conservato come testo, quindi non è validato come numero
 
-### Caso d'uso 1 – Lettura dei campi del prodotto
+### Assunzioni
+- Codice e prezzo non superano i 9 caratteri
 
-**a) Input**
-Dati inseriti dall'operatore da tastiera: codice (senza spazi),
-nome (con spazi), categoria (con spazi), prezzo (senza spazi), quantità.
+### Variabili di supporto
 
-**b) Output**
-Nessun output diretto: i valori sono memorizzati nelle variabili.
+| Variabile          | Tipo  | Descrizione                       |
+|--------------------|-------|-----------------------------------|
+| `i`                | `int` | Indice per trovare il `'\n'`      |
+| `c`                | `int` | Carattere scartato dal buffer     |
+| `nome_valido`, `categoria_valida`, `quantita_valida` | `int` | Flag di validità dei campi |
 
-**c) Variabili di supporto**
-- `i` (`int`): indice per rimozione `'\n'` dopo ogni `fgets`.
-- Blocco locale `c` (`int`): usato per svuotare il buffer dopo `scanf`.
-
-**d) Vincoli**
-- Dopo ogni `scanf` che precede una `fgets`, il buffer deve essere svuotato
-  consumando il `'\n'` residuo con un ciclo `while` su `getchar()`.
-- Ogni `fgets` deve essere seguita dalla rimozione del `'\n'`.
-
-**e) Assunzioni**
-- Il prezzo viene letto come stringa per evitare problemi con il separatore
-  decimale (punto vs virgola a seconda del locale di sistema).
-- La quantità è sempre un intero non negativo.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Leggere codice con scanf("%9s", codice).
-2. Svuotare il buffer: leggere con getchar() fino a '\n' o EOF.
-3. Leggere nome_prodotto con fgets; rimuovere '\n'.
-4. Leggere categoria con fgets; rimuovere '\n'.
-5. Leggere prezzo con scanf("%9s", prezzo).
-6. Leggere quantita con scanf("%d", &quantita).
-```
-
----
-
-### Caso d'uso 2 – Validazione dei campi obbligatori
-
-**a) Input**
-`nome_prodotto[0]` e `categoria[0]` dopo la rimozione del `'\n'`.
-
-**b) Output**
-Nessun output diretto: imposta `nome_valido` e `categoria_valida`.
-
-**c) Variabili di supporto**
-- `nome_valido` e `categoria_valida` (`int`): flags di risultato.
-
-**d) Vincoli**
-- Una stringa vuota ha il primo carattere uguale a `'\0'` dopo
-  la rimozione del `'\n'`.
-
-**e) Assunzioni**
-- Codice, prezzo e quantità non sono validati (semplificazione didattica).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Se nome_prodotto[0] è '\0': nome_valido = 0. Altrimenti: nome_valido = 1.
-2. Se categoria[0] è '\0': categoria_valida = 0. Altrimenti: categoria_valida = 1.
-```
+### Algoritmo in linguaggio naturale
+1. Leggere il codice con `scanf` e scartare il resto della riga.
+2. Leggere nome e categoria con `fgets`; per ciascuno cercare il `'\n'`:
+   se non c'è e il buffer è pieno scartare il resto della riga; scrivere
+   `'\0'` nella posizione trovata.
+3. Leggere il prezzo con `scanf`; leggere la quantità e controllare che la
+   lettura sia riuscita e il valore non sia negativo.
+4. Verificare che nome e categoria non siano vuoti.
+5. Se tutti i campi sono validi stampare la scheda, altrimenti l'errore con
+   i campi errati.
 
 ---
 
-### Caso d'uso 3 – Output scheda prodotto o messaggio di errore
+## 3. Casi di test
 
-**a) Input**
-`nome_valido`, `categoria_valida` e tutti i campi del prodotto.
+Per ogni caso si inseriscono i cinque campi nell'ordine: codice, nome,
+categoria, prezzo, quantità.
 
-**b) Output**
-Se valido:
+### Test 1 – Inserimento corretto
+- **Input:** `ELE-042`, `Cavo HDMI 2m`, `Elettronica`, `12.50`, `35`
+- **Output atteso:**
 ```
-════════════════════════════════════════════════
-  SCHEDA PRODOTTO - PRONTA PER L'ARCHIVIAZIONE
-════════════════════════════════════════════════
   Codice      : ELE-042
   Nome        : Cavo HDMI 2m
-  Categoria   : Elettronica Consumer
+  Categoria   : Elettronica
   Prezzo      : 12.50 EUR
-  Disponibile : 25 pz
+  Disponibile : 35 pz
 ════════════════════════════════════════════════
 
 Prodotto inserito correttamente nell'archivio.
 ```
-Se non valido, messaggio con indicazione dei campi mancanti.
 
-**c) Variabili di supporto**
-Nessuna variabile aggiuntiva.
-
-**d) Vincoli**
-- La scheda viene stampata solo se entrambi i flag sono 1.
-- I messaggi di errore indicano specificatamente quale campo è mancante.
-
-**e) Assunzioni**
-- Il salvataggio nell'archivio è simulato (non viene scritto alcun file).
-
-**f) Algoritmo in linguaggio naturale**
+### Test 2 – Campi obbligatori vuoti
+- **Cosa si verifica:** sono segnalati entrambi i campi
+- **Input:** `ELE-042`, Invio, Invio, `12.50`, `35`
+- **Output atteso:**
 ```
-1. Se nome_valido è 1 E categoria_valida è 1:
-   a. Stampare la scheda prodotto con tutti i campi.
-   b. Stampare conferma di inserimento.
-2. Altrimenti:
-   a. Stampare messaggio di errore generale.
-   b. Se nome_valido è 0: segnalare il campo nome.
-   c. Se categoria_valida è 0: segnalare il campo categoria.
-   d. Stampare "Inserimento annullato".
+ERRORE: campi obbligatori mancanti o non validi.
+  - Il nome del prodotto non può essere vuoto.
+  - La categoria non può essere vuota.
+Inserimento annullato.
+```
+
+### Test 3 – Categoria più lunga del buffer
+- **Cosa si verifica:** il campo troppo lungo viene troncato e il resto
+  della riga non finisce nei campi successivi
+- **Input:** `ELE-042`, `Cavo`, `Elettronica di consumo varia` (28
+  caratteri), `12.50`, `35`
+- **Output atteso:**
+```
+  Categoria   : Elettronica di consu
+  Prezzo      : 12.50 EUR
+  Disponibile : 35 pz
+```
+
+### Test 4 – Quantità non valida
+- **Cosa si verifica:** una quantità non numerica o negativa annulla l'inserimento
+- **Input:** `ELE-042`, `Mouse`, `Accessori`, `9.90`, `abc` (e, in una
+  seconda esecuzione, `-2`)
+- **Output atteso:**
+```
+ERRORE: campi obbligatori mancanti o non validi.
+  - La quantità deve essere un numero intero non negativo.
+Inserimento annullato.
 ```

@@ -8,84 +8,77 @@ differenza tra maiuscole e minuscole non contano. Il programma esamina una
 frase alla volta finché l'utente non scrive "fine" e alla fine riporta
 quante frasi erano palindrome.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `frase` | `char[]` | 80 | Riga letta con `fgets` (può contenere spazi) |
-| `pulita` | `char[]` | 80 | Solo le lettere, in minuscolo |
-| `rovesciata` | `char[]` | 80 | `pulita` al contrario |
-| `esaminate`, `palindrome` | `int` | — | Contatori per il riepilogo |
+### Input
 
-| Funzione | Compito |
-|----------|---------|
-| `leggi_riga` | `fgets`, rimozione del `'\n'`, scarto dei caratteri in eccesso |
-| `pulisci` | Copia solo le lettere, convertite in minuscolo |
-| `inverti` | Scrive la stringa in ordine inverso |
-| `confronta` | Confronto alfabetico scritto a mano (0 = uguali) |
-| `minuscola`, `e_lettera` | Operazioni sul singolo carattere |
+| Variabile | Tipo     | Dimensione | Descrizione                                  |
+|-----------|----------|------------|----------------------------------------------|
+| `frase`   | `char[]` | 80         | Una frase per riga; "fine" termina           |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Per ogni frase: le sole lettere in minuscolo, la stessa stringa al
+  contrario e l'esito ("PALINDROMA", "non palindroma" oppure "nessuna
+  lettera da esaminare");
+- alla fine il numero di frasi esaminate e di palindrome.
 
-### Caso d'uso 1 – Frase palindroma
+### Vincoli
+- Si confrontano solo le lettere, convertite in minuscolo: spazi,
+  punteggiatura e cifre vengono scartati
+- Una frase è palindroma se la stringa pulita coincide con la sua inversione
+- Una frase senza lettere non è classificata
+- Il ciclo termina con la parola esatta "fine" (in minuscolo) oppure con la
+  fine dell'input
+- Tutte le funzioni sulle stringhe sono scritte a mano, senza
+  `<string.h>`: `confronta` restituisce 0 se le stringhe sono uguali
+- Una riga più lunga di 79 caratteri viene troncata e il resto viene
+  scartato, così non diventa la frase successiva
 
-**a) Input** – `I topi non avevano nipoti`
+### Assunzioni
+- Le frasi non contengono lettere accentate
 
-**b) Output** – `itopinonavevanonipoti`, la stessa stringa al contrario, "PALINDROMA"
+### Variabili di supporto
 
-**c) Variabili di supporto** – `pulita`, `rovesciata`
+| Variabile    | Tipo     | Dimensione | Descrizione                         |
+|--------------|----------|------------|-------------------------------------|
+| `pulita`     | `char[]` | 80         | Solo le lettere, in minuscolo       |
+| `rovesciata` | `char[]` | 80         | `pulita` al contrario               |
+| `letta`      | `int`    | —          | 0 se l'input è terminato            |
+| `esaminate`, `palindrome` | `int` | — | Contatori                       |
 
-**d) Vincoli** – `pulita` e `rovesciata` devono terminare con `'\0'`
+| Funzione | Descrizione |
+|---|---|
+| `int leggi_riga(char s[], int dim)` | `fgets`, rimozione del `'\n'`, scarto dei caratteri in eccesso |
+| `void pulisci(char dest[], const char sorg[])` | Copia solo le lettere, in minuscolo |
+| `void inverti(char dest[], const char sorg[])` | Scrive la stringa al contrario |
+| `int confronta(const char a[], const char b[])` | 0 se uguali |
+| `int lunghezza(const char s[])` | Caratteri fino a `'\0'` |
+| `char minuscola(char c)`, `int e_lettera(char c)` | Operazioni sul carattere |
 
-**e) Assunzioni** – frase di al massimo 79 caratteri; lettere senza accenti
+### Algoritmo in linguaggio naturale
+1. Leggere una frase.
+2. Finché l'input non è terminato e la frase è diversa da "fine":
+   a. ricavare la versione pulita e la sua inversione e stamparle;
+   b. se la versione pulita è vuota segnalarlo; altrimenti confrontarla con
+      l'inversione, stampare l'esito e contare le palindrome;
+   c. contare la frase e leggere la successiva.
+3. Stampare il riepilogo.
 
-**f) Algoritmo in linguaggio naturale**
-1. Copiare in `pulita` solo le lettere della frase, in minuscolo.
-2. Scrivere in `rovesciata` i caratteri di `pulita` dall'ultimo al primo.
-3. Se le due stringhe sono uguali la frase è palindroma.
+## 3. Casi di test
 
-### Caso d'uso 2 – Frase non palindroma
+Si inserisce una sequenza di frasi, una per riga.
 
-**a) Input** – `Programmare in C`
+### Test 1 – Sessione completa
+- **Input:** `I topi non avevano nipoti`, `Ciao a tutti`, `Anna`,
+  `!!! ...`, `FINE`, `fine`
+- **Output atteso:**
+  - `itopinonavevanonipoti` → `PALINDROMA` (maiuscola e spazi non contano)
+  - `ciaoatutti` / `ittutaoaic` → `non palindroma`
+  - `anna` → `PALINDROMA`
+  - `!!! ...` → `nessuna lettera da esaminare`
+  - `FINE` non termina il programma: `fine` / `enif` → `non palindroma`
+  - `Frasi esaminate: 5, palindrome: 2`
 
-**b) Output** – "non palindroma"
-
-**c) Variabili di supporto** – esito di `confronta`
-
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1; il confronto
-restituisce un valore diverso da 0.
-
-### Caso d'uso 3 – Frase senza lettere
-
-**a) Input** – `?!`
-
-**b) Output** – "nessuna lettera da esaminare"
-
-**c) Variabili di supporto** – `lunghezza(pulita)`
-
-**d) Vincoli** – una stringa vuota sarebbe "palindroma" per definizione: il
-caso va escluso prima del confronto
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se `pulita` è vuota si segnala e non
-si conta come palindroma.
-
-### Caso d'uso 4 – Fine del programma
-
-**a) Input** – `fine` (oppure fine dell'input)
-
-**b) Output** – frasi esaminate e palindrome
-
-**c) Variabili di supporto** – `letta`, contatori
-
-**d) Vincoli** – il ciclo termina per la condizione, senza `break`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il ciclo continua finché la lettura
-riesce e la frase è diversa da "fine"; poi si stampa il riepilogo.
+### Test 2 – Fine immediata
+- **Input:** `fine`
+- **Output atteso:** `Frasi esaminate: 0, palindrome: 0`

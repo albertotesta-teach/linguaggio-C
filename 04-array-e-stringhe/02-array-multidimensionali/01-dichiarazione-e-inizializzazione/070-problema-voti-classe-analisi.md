@@ -7,56 +7,79 @@ in 4 materie. Il programma deve stampare il tabellone con media e numero di
 insufficienze di ogni studente, segnalare chi ha almeno un debito e contare
 gli insufficienti di ogni materia.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `voti` | `int[][]` | 6 × 4 | Riga = studente, colonna = materia |
-| `studenti` | `char[][]` | 6 × 16 | Nome dello studente, parallelo alle righe |
-| `materie` | `char[][]` | 4 × 12 | Nome della materia, parallelo alle colonne |
-| `somma`, `insufficienze` | `int` | — | Accumulatore e contatore della riga corrente |
-| `studenti_con_debito` | `int` | — | Contatore globale |
-| `insufficienti_materia` | `int` | — | Contatore della colonna corrente |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-Costante `SUFFICIENZA` = 6.
+| Variabile  | Tipo       | Dimensione | Descrizione                                 |
+|------------|------------|------------|---------------------------------------------|
+| `voti`     | `int[][]`  | 6 × 4      | Riga = studente, colonna = materia          |
+| `studenti` | `char[][]` | 6 × 16     | Nome dello studente, parallelo alle righe   |
+| `materie`  | `char[][]` | 4 × 12     | Nome della materia, parallelo alle colonne  |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Il tabellone: per ogni studente i quattro voti, la media (due decimali),
+  il numero di insufficienze e la nota "<- debito" se ne ha almeno una;
+- il numero di studenti con almeno un'insufficienza;
+- per ogni materia il numero di studenti insufficienti.
 
-### Caso d'uso 1 – Tabellone con media e insufficienze
+### Vincoli
+- Un voto è insufficiente se è **minore** di `SUFFICIENZA` (6): il 6 è
+  sufficiente
+- Media e insufficienze di uno studente si calcolano scorrendo una
+  **riga**; gli insufficienti di una materia scorrendo una **colonna**
+- `studenti` descrive le righe e si usa all'inizio di ogni riga; `materie`
+  descrive le colonne e si usa nell'intestazione
+- La media si calcola con una divisione reale
 
-**a) Input** – matrici `voti`, `studenti`, `materie`
+### Assunzioni
+- I voti sono interi tra 1 e 10
 
-**b) Output** – una riga per studente con i 4 voti, la media con due
-decimali, il numero di insufficienze e la segnalazione "<- debito"
+### Variabili di supporto
 
-**c) Variabili di supporto** – `somma`, `insufficienze`
+| Variabile               | Tipo  | Descrizione                                  |
+|-------------------------|-------|----------------------------------------------|
+| `somma`, `insufficienze`| `int` | Accumulatore e contatore della riga corrente |
+| `studenti_con_debito`   | `int` | Studenti con almeno un'insufficienza         |
+| `insufficienti_materia` | `int` | Contatore della colonna corrente             |
+| `SUFFICIENZA`           | `#define` | 6                                        |
 
-**d) Vincoli** – la media si calcola con il cast `(double) somma / MATERIE`
-
-**e) Assunzioni** – voti interi da 1 a 10
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Stampare l'intestazione con i nomi delle materie.
-2. Per ogni studente: azzerare somma e insufficienze, stampare il nome.
-3. Per ogni materia: stampare il voto, sommarlo, contarlo se minore di 6.
-4. Stampare media e insufficienze; se ce ne sono, segnalare il debito e
-   incrementare `studenti_con_debito`.
-5. Stampare quanti studenti hanno almeno un debito.
+2. Per ogni studente: stampare il nome e i voti, sommandoli e contando
+   quelli minori di 6; stampare media e insufficienze; se ce n'è almeno
+   una aggiungere "<- debito" e contare lo studente.
+3. Stampare il numero di studenti con debito.
+4. Per ogni materia contare, scorrendo la colonna, i voti minori di 6 e
+   stampare il risultato.
 
-### Caso d'uso 2 – Insufficienze per materia
+## 3. Casi di test
 
-**a) Input** – matrice `voti`
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**b) Output** – per ogni materia il numero di studenti insufficienti
-(es. Matematica: 2)
+### Test 1 – Tabellone
+- **Cosa si verifica:** il 6 non è un'insufficienza (Bianchi Sara ha un 6 e
+  nessun debito)
+- **Output atteso:**
+```
+  Bianchi Sara               7           6           8           9    7.50      0
+  Colombo Luca               5           4           6           7    5.50      2   <- debito
+  Esposito Ilaria            8           9           7           8    8.00      0
+  Ferri Matteo               6           5           5           6    5.50      2   <- debito
+  Galli Chiara               9           8           9          10    9.00      0
+  Marini Davide              6           6           4           7    5.75      1   <- debito
 
-**c) Variabili di supporto** – `insufficienti_materia`
+Studenti con almeno un'insufficienza: 3 su 6
+```
 
-**d) Vincoli** – scorrimento per colonne: esterno sulle materie, interno sugli studenti
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni materia: azzerare il contatore.
-2. Per ogni studente: se il voto in quella materia è minore di 6, contarlo.
-3. Stampare nome della materia e conteggio.
+### Test 2 – Insufficienze per materia
+- **Cosa si verifica:** lo scorrimento per colonne
+- **Output atteso:**
+```
+  Italiano    : 1
+  Matematica  : 2
+  Inglese     : 2
+  Informatica : 0
+```

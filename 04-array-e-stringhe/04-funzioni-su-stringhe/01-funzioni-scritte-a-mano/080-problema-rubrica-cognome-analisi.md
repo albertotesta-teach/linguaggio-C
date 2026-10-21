@@ -8,84 +8,83 @@ maiuscole: il programma mostra tutti i contatti il cui cognome comincia con
 quel testo e segnala le corrispondenze esatte. Le ricerche si ripetono
 finché l'utente non scrive "fine".
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `cognomi` | `char[][]` | 8 × 20 | Cognomi dei contatti |
-| `nomi` | `char[][]` | 8 × 20 | Nomi (parallelo) |
-| `telefoni` | `char[][]` | 8 × 20 | Numeri come stringhe: contengono uno spazio e lo zero iniziale |
-| `ricerca` | `char[]` | 30 | Testo cercato |
-| `trovati` | `int` | — | Contatti trovati nella ricerca corrente |
+### Input
 
-| Funzione | Compito |
-|----------|---------|
-| `leggi_riga` | Lettura con `fgets` e rimozione del `'\n'` |
-| `inizia_con` | 1 se una stringa comincia con un prefisso |
-| `uguali_ignorando_maiuscole` | Uguaglianza senza distinguere le maiuscole |
-| `minuscola` | Conversione del singolo carattere |
+| Variabile | Tipo     | Dimensione | Descrizione                                     |
+|-----------|----------|------------|-------------------------------------------------|
+| `ricerca` | `char[]` | 30         | Cognome o sua parte iniziale; "fine" termina    |
 
-## 3. Casi d'uso e funzionalità
+La rubrica (cognomi, nomi, telefoni) è inizializzata nel codice in tre array
+paralleli.
 
-### Caso d'uso 1 – Ricerca per prefisso
+### Output
+- Per ogni ricerca i contatti trovati (cognome, nome, telefono), con
+  "(esatto)" se il testo coincide con l'intero cognome, e il numero di
+  contatti ("contatto" al singolare);
+- "Nessun contatto trovato." oppure, per una riga vuota, "Scrivi almeno
+  una lettera.";
+- "Arrivederci." alla fine.
 
-**a) Input** – `ross`
+### Vincoli
+- Un contatto corrisponde se il cognome **inizia** con il testo cercato;
+  maiuscole e minuscole sono indifferenti
+- Si mostrano **tutti** i contatti che corrispondono, nell'ordine della
+  rubrica
+- La corrispondenza esatta richiede che il testo coincida con il cognome
+  intero
+- `inizia_con` si ferma alla fine del prefisso o al primo carattere
+  diverso: il prefisso è trovato se è stato percorso tutto
+- "fine" termina in qualsiasi combinazione di maiuscole e minuscole
+- I telefoni sono stringhe: contengono uno spazio e lo zero iniziale, che
+  un numero perderebbe
 
-**b) Output** – Rossi Mario, Rossetti Paolo, Rossi Anna; "3 contatti"
+### Assunzioni
+- I cognomi non contengono lettere accentate
 
-**c) Variabili di supporto** – `trovati`
+### Variabili di supporto
 
-**d) Vincoli** – si scorre tutta la rubrica: i contatti trovati possono essere più di uno
+| Variabile  | Tipo       | Dimensione | Descrizione                          |
+|------------|------------|------------|--------------------------------------|
+| `cognomi`, `nomi`, `telefoni` | `char[][]` | 8 × 20 | Rubrica       |
+| `letta`    | `int`      | —          | 0 se l'input è terminato             |
+| `trovati`  | `int`      | —          | Contatti della ricerca corrente      |
 
-**e) Assunzioni** – nessuna
+| Funzione | Descrizione |
+|---|---|
+| `int leggi_riga(char s[], int dim)` | `fgets` e rimozione del `'\n'` |
+| `int inizia_con(const char s[], const char prefisso[])` | 1 se s comincia con prefisso |
+| `int uguali_ignorando_maiuscole(const char a[], const char b[])` | Uguaglianza senza maiuscole |
+| `char minuscola(char c)` | Conversione del carattere |
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni contatto verificare se il cognome inizia con il testo cercato.
-2. In caso affermativo stampare il contatto e incrementare `trovati`.
-3. Stampare il numero di contatti trovati.
+### Algoritmo in linguaggio naturale
+1. Leggere il testo da cercare.
+2. Finché l'input non è terminato e il testo non è "fine":
+   a. se il testo è vuoto chiedere almeno una lettera;
+   b. altrimenti per ogni contatto il cui cognome inizia con il testo,
+      stamparlo (con "(esatto)" se coincide) e contarlo; stampare il
+      numero di contatti o il messaggio di nessun risultato;
+   c. leggere il testo successivo.
+3. Stampare il saluto.
 
-### Caso d'uso 2 – Corrispondenza esatta
+## 3. Casi di test
 
-**a) Input** – `Rossi`
+Si inserisce una sequenza di ricerche, una per riga.
 
-**b) Output** – i due Rossi con l'indicazione "(esatto)"
-
-**c) Variabili di supporto** – esito di `uguali_ignorando_maiuscole`
-
-**d) Vincoli** – "Rossetti" non compare perché non inizia con "Rossi"
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, aggiungendo
-"(esatto)" quando il testo coincide con l'intero cognome.
-
-### Caso d'uso 3 – Nessun risultato o testo vuoto
-
-**a) Input** – `Gialli`; riga vuota
-
-**b) Output** – "Nessun contatto trovato."; "Scrivi almeno una lettera."
-
-**c) Variabili di supporto** – `trovati`, `ricerca[0]`
-
-**d) Vincoli** – un prefisso vuoto sarebbe contenuto in ogni cognome: va escluso
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se il testo è vuoto si chiede di
-riprovare; se dopo lo scorrimento `trovati` vale 0 lo si segnala.
-
-### Caso d'uso 4 – Verifica del prefisso
-
-**a) Input** – una stringa `s` e un `prefisso`
-
-**b) Output** – 1 oppure 0
-
-**c) Variabili di supporto** – indice `i`
-
-**d) Vincoli** – una sola `return`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Avanzare finché il prefisso non è finito e i caratteri (in minuscolo) coincidono.
-2. Il prefisso è contenuto all'inizio di `s` se si è arrivati al suo `'\0'`.
+### Test 1 – Ricerche di vario tipo
+- **Input:** `ross`, `Rossi`, `BIANC`, `z`, riga vuota, `FINE`
+- **Output atteso:**
+  - `ross` → Rossi Mario, Rossetti Paolo, Rossi Anna; `3 contatti`
+  - `Rossi` → i due Rossi con `(esatto)`, Rossetti escluso; `2 contatti`
+  - `BIANC` (maiuscolo) → Bianchi Lucia, Bianco Stefano, Bianchini Davide;
+    `3 contatti`
+  - `z` → `Nessun contatto trovato.`
+  - riga vuota → `Scrivi almeno una lettera.`
+  - `FINE` → `Arrivederci.`
+- **Esempio di output:**
+```
+  Rossi      Mario    0131 220145  (esatto)
+  Rossi      Anna     0131 220133  (esatto)
+  2 contatti
+```

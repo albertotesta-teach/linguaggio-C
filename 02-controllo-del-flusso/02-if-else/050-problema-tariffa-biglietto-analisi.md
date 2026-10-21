@@ -15,35 +15,43 @@ il prezzo di un biglietto e indicare la tariffa applicata.
 | Over 65 | età ≥ 65 | 8,00 € |
 | Intero | tutti gli altri | 12,00 € |
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `eta` | `int` | Età in anni |
-| `studente` | `int` (0/1) | Possesso della tessera universitaria |
-| `giorno` | `int` | Giorno della settimana, 1 = lunedì ... 7 = domenica |
-| `prezzo` | `int` | Prezzo in centesimi |
-| `dati_validi` | `int` (0/1) | Tutti i dati nei valori ammessi |
+### Input
+
+| Variabile  | Tipo        | Significato                                       |
+|------------|-------------|---------------------------------------------------|
+| `eta`      | `int`       | Età in anni                                       |
+| `studente` | `int` (0/1) | Possesso della tessera universitaria              |
+| `giorno`   | `int`       | Giorno della settimana, 1 = lunedì ... 7 = domenica |
+
+### Output
+La tariffa applicata, l'eventuale sconto del martedì e il prezzo da pagare
+in euro con due decimali; oppure il messaggio "Dati non validi: impossibile
+calcolare il prezzo."
+
+### Vincoli
+- Dati validi: età tra 0 e 120, tessera 0 o 1, giorno tra 1 e 7
+- La tariffa studenti richiede sia l'età sia la tessera
+- Lo sconto del martedì si applica solo ai biglietti a pagamento, per non
+  ottenere un prezzo negativo
+- Il prezzo si calcola solo se i dati sono validi
+
+### Assunzioni
+- L'utente inserisce numeri interi
+- L'età massima plausibile è 120 anni
+
+### Variabili di supporto
+
+| Variabile     | Tipo        | Significato                      |
+|---------------|-------------|----------------------------------|
+| `prezzo`      | `int`       | Prezzo in centesimi              |
+| `dati_validi` | `int` (0/1) | Tutti i dati nei valori ammessi  |
 
 I prezzi sono costanti `#define` espresse in centesimi: con gli interi i
 calcoli sono esatti e la stampa in euro si ottiene con `/ 100` e `% 100`.
 
-## 3. Casi d'uso e funzionalità
-
-### Caso d'uso 1 – Studente universitario di martedì
-
-**a) Input** – età 22, tessera 1, giorno 2
-
-**b) Output** – "Tariffa: studenti universitari", sconto di 2,00 euro,
-prezzo 5,00 euro
-
-**c) Variabili di supporto** – `prezzo`
-
-**d) Vincoli** – la tariffa studenti richiede sia l'età sia la tessera
-
-**e) Assunzioni** – l'utente inserisce numeri interi
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Leggere età, tessera e giorno.
 2. Calcolare `dati_validi`; se falso stampare un messaggio di errore e terminare.
 3. Scegliere la tariffa con una catena di controlli nell'ordine:
@@ -51,47 +59,28 @@ prezzo 5,00 euro
 4. Se il giorno è martedì e il prezzo è maggiore di zero, sottrarre lo sconto.
 5. Stampare il prezzo in euro.
 
-### Caso d'uso 2 – Ventiduenne senza tessera
+## 3. Casi di test
 
-**a) Input** – età 22, tessera 0, giorno 2
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – "Tariffa: intero", sconto del martedì, prezzo 10,00 euro
+### Test 1 – Studente universitario di martedì
+- **Input:** età 22, tessera 1, giorno 2
+- **Output atteso:** "Tariffa: studenti universitari", sconto di 2,00 euro,
+  prezzo 5,00 euro
 
-**c) Variabili di supporto** – `prezzo`
+### Test 2 – Ventiduenne senza tessera
+- **Cosa si verifica:** senza tessera la condizione degli studenti è falsa
+  e la catena prosegue fino all'intero
+- **Input:** età 22, tessera 0, giorno 2
+- **Output atteso:** "Tariffa: intero", sconto del martedì, prezzo 10,00 euro
 
-**d) Vincoli** – se la tessera manca, la condizione degli studenti è falsa e
-la catena prosegue fino all'intero
+### Test 3 – Bambino di martedì
+- **Cosa si verifica:** al passo 4 la condizione `prezzo > 0` è falsa e lo
+  sconto non viene applicato
+- **Input:** età 4, tessera 0, giorno 2
+- **Output atteso:** "Tariffa: bambini (gratis)" e prezzo 0,00 euro, senza sconto
 
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – Bambino di martedì
-
-**a) Input** – età 4, tessera 0, giorno 2
-
-**b) Output** – "Tariffa: bambini (gratis)" e prezzo 0,00 euro, senza sconto
-
-**c) Variabili di supporto** – `prezzo`
-
-**d) Vincoli** – lo sconto si applica solo ai biglietti a pagamento, per non
-ottenere un prezzo negativo
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1; al passo 4 la
-condizione `prezzo > 0` è falsa.
-
-### Caso d'uso 4 – Dati non validi
-
-**a) Input** – per esempio età -3, oppure tessera 5, oppure giorno 9
-
-**b) Output** – "Dati non validi: impossibile calcolare il prezzo."
-
-**c) Variabili di supporto** – `dati_validi`
-
-**d) Vincoli** – il calcolo del prezzo avviene solo nel ramo else
-
-**e) Assunzioni** – età massima plausibile 120 anni
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, passo 2.
+### Test 4 – Dati non validi
+- **Input:** per esempio età -3, oppure tessera 5, oppure giorno 9
+- **Output atteso:** "Dati non validi: impossibile calcolare il prezzo."

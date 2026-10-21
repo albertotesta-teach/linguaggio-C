@@ -8,89 +8,87 @@ il tempo medio e indicare quanti atleti hanno corso sotto la media.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile          | Tipo       | Dimensione | Motivazione                                        |
-|--------------------|------------|------------|----------------------------------------------------|
-| `nomi`             | `char[][]` | 8 × 20     | Nome e cognome di ogni atleta                      |
-| `tempi`            | `int[]`    | 8          | Tempo in secondi; indice parallelo a `nomi`        |
-| `ordine`           | `int[]`    | 8          | `ordine[p]` = indice dell'atleta in posizione p+1  |
-| `classificato`     | `int[]`    | 8          | Flag: 1 se l'atleta è già stato inserito in `ordine` |
-| `indice_vincitore` | `int`      | —          | Indice dell'atleta con tempo minimo (`ordine[0]`)  |
-| `somma`            | `int`      | —          | Accumulatore per il calcolo della media            |
-| `media`            | `double`   | —          | Tempo medio del gruppo                             |
-| `sotto_media`      | `int`      | —          | Contatore atleti più veloci della media            |
-| `ATLETI`           | `#define`  | 8          | Dimensione degli array e limite dei cicli          |
+### Input
+Nessun input da tastiera: nomi e tempi sono inizializzati nel codice.
+
+| Variabile | Tipo       | Dimensione | Descrizione                                   |
+|-----------|------------|------------|-----------------------------------------------|
+| `nomi`    | `char[][]` | 8 × 20     | Cognome e nome di ogni atleta                 |
+| `tempi`   | `int[]`    | 8          | Tempo in secondi, parallelo a `nomi`          |
+
+### Output
+- La classifica in ordine di arrivo: posizione, nome, tempo nel formato
+  `m'ss"` e distacco dal vincitore in secondi ("--" per il primo);
+- il tempo medio e il vincitore;
+- l'elenco, in ordine di arrivo, degli atleti più veloci della media, con lo
+  scarto, e il loro numero.
+
+### Vincoli
+- L'ordine di arrivo si costruisce senza algoritmi di ordinamento: a ogni
+  posizione si cerca il tempo minimo tra gli atleti non ancora classificati
+- Ogni atleta compare in classifica una sola volta (flag `classificato`)
+- A parità di tempo precede l'atleta che compare prima negli array
+- Il distacco è `tempo dell'atleta − tempo del vincitore`
+- Un atleta è sotto la media se il suo tempo è **strettamente** minore
+- La media si calcola con una divisione reale
+
+### Assunzioni
+- I tempi sono positivi e inferiori a un'ora
+
+### Variabili di supporto
+
+| Variabile          | Tipo      | Dimensione | Descrizione                                     |
+|--------------------|-----------|------------|-------------------------------------------------|
+| `ordine`           | `int[]`   | 8          | `ordine[p]` = indice dell'atleta in posizione p+1 |
+| `classificato`     | `int[]`   | 8          | 1 se l'atleta è già in `ordine`                 |
+| `migliore`         | `int`     | —          | Candidato della ricerca corrente (-1 se nessuno)|
+| `indice_vincitore` | `int`     | —          | `ordine[0]`                                     |
+| `minuti`, `secondi`, `distacco` | `int` | — | Dati della riga stampata                     |
+| `somma`, `media`   | `int`, `double` | —    | Tempo totale e medio                            |
+| `sotto_media`      | `int`     | —          | Atleti più veloci della media                   |
+| `ATLETI`           | `#define` | 8          | Numero di atleti                                |
+
+### Algoritmo in linguaggio naturale
+1. Per ogni posizione da 1 a 8:
+   a. cercare, tra gli atleti non ancora classificati, quello con il tempo
+      minimo;
+   b. inserirlo in `ordine` e segnarlo come classificato.
+2. Il vincitore è `ordine[0]`.
+3. Per ogni posizione stampare nome, tempo (`tempo / 60` minuti e
+   `tempo % 60` secondi) e distacco dal vincitore.
+4. Calcolare e stampare la media; stampare il vincitore.
+5. Scorrendo `ordine`, stampare gli atleti con tempo minore della media e
+   contarli.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare i tempi e ricompilare.
 
-### Caso d'uso 1 – Stampa della classifica con distacco
-
-**a) Input**
-Array `nomi`, `tempi`, variabile `indice_vincitore`.
-
-**b) Output**
+### Test 1 – Classifica
+- **Input:** tempi 183, 197, 175, 202, 191, 178, 209, 186
+- **Output atteso:**
 ```
-=== CLASSIFICA GARA ===
-  Pos. | Nome                | Tempo       | Distacco
-  -----|---------------------|-------------|----------
    1°  | Verdi Paolo         | 2'55"       | --
    2°  | Conti Matteo        | 2'58"       | +3"
    3°  | Rossi Marco         | 3'03"       | +8"
-  ...
+   4°  | Greco Simone        | 3'06"       | +11"
+   5°  | Russo Andrea        | 3'11"       | +16"
+   6°  | Bianchi Luca        | 3'17"       | +22"
+   7°  | Ferrari Giorgio     | 3'22"       | +27"
+   8°  | Marino Fabio        | 3'29"       | +34"
 ```
 
-**c) Variabili di supporto**
-- `migliore` (`int`): indice del candidato con tempo minimo tra i non classificati
-  (-1 finché non se ne trova uno).
-- `atleta` (`int`): `ordine[pos]`, indice dell'atleta da stampare.
-- `minuti` (`int`): `tempi[i] / 60`.
-- `secondi` (`int`): `tempi[i] % 60`.
-- `distacco` (`int`): `tempi[i] - tempi[indice_vincitore]`.
-
-**d) Vincoli**
-- L'ordine di arrivo viene costruito prima del ciclo di stampa.
-- Ogni atleta compare in `ordine` una sola volta: dopo essere stato scelto
-  il suo flag in `classificato` vale 1 e non è più candidabile.
-- Il distacco è sempre positivo o zero (il vincitore ha distacco zero).
-- Il formato `%02d` garantisce due cifre per i secondi (es. `3'05"` non `3'5"`).
-
-**e) Assunzioni**
-- I tempi sono espressi in secondi interi.
-- Non ci sono pareggi: a parità di tempo precede l'atleta inserito per primo
-  negli array, perché il confronto usa `<` e non `<=`.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 2 – Media e atleti sotto la media
+- **Valori intermedi attesi:** somma 1521, media 190.125
+- **Output atteso:**
 ```
-1. Porre classificato[i] = 0 per ogni atleta.
-2. Per pos da 0 a ATLETI - 1:
-   a. migliore = -1.
-   b. Per i da 0 a ATLETI - 1: se classificato[i] == 0 e
-      (migliore == -1 oppure tempi[i] < tempi[migliore]): migliore = i.
-   c. ordine[pos] = migliore, classificato[migliore] = 1.
-3. indice_vincitore = ordine[0].
-4. Per pos da 0 a ATLETI - 1:
-   a. atleta = ordine[pos].
-   b. Calcolare minuti e secondi da tempi[atleta].
-   c. distacco = tempi[atleta] - tempi[indice_vincitore].
-   d. Stampare la posizione pos + 1; se pos == 0 stampare "--",
-      altrimenti "+distacco".
-```
-
----
-
-### Caso d'uso 2 – Media e atleti sotto media
-
-**a) Input**
-Array `tempi`.
-
-**b) Output**
-```
-Tempo medio : 190.1 secondi
+Tempo medio         : 190.1 secondi
+Vincitore           : Verdi Paolo (175")
 
 Atleti sotto la media (piu' veloci di 190.1"):
   Verdi Paolo: 175"  (-15.1" dalla media)
@@ -100,22 +98,13 @@ Atleti sotto la media (piu' veloci di 190.1"):
 Totale: 4 atleti su 8
 ```
 
-**c) Variabili di supporto**
-- `somma` (`int`): somma dei tempi.
-- `media` (`double`): `somma / ATLETI`.
-- `sotto_media` (`int`): contatore.
-
-**d) Vincoli**
-- Il cast `(double)tempi[i]` nel confronto garantisce la comparazione corretta
-  con `media` (che è double).
-- "Sotto la media" per i tempi significa più veloci, quindi minore è meglio.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 3 – Due atleti a pari tempo
+- **Cosa si verifica:** a parità precede chi compare prima negli array
+- **Procedura:** dare a Russo Andrea (quinto) il tempo 175, uguale a quello
+  di Verdi Paolo (terzo)
+- **Output atteso:**
 ```
-1. somma = 0. Per i da 0 a ATLETI-1: somma += tempi[i].
-2. media = (double)somma / ATLETI.
-3. Per pos da 0 a ATLETI-1 (in ordine di arrivo):
-   a. atleta = ordine[pos].
-   b. Se (double)tempi[atleta] < media: stampare e incrementare sotto_media.
-4. Stampare totale.
+   1°  | Verdi Paolo         | 2'55"       | --
+   2°  | Russo Andrea        | 2'55"       | +0"
+   3°  | Conti Matteo        | 2'58"       | +3"
 ```

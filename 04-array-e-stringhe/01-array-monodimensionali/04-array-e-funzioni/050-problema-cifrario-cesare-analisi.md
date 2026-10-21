@@ -9,116 +9,106 @@ lasciando invariati spazi e punteggiatura.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è l'**aritmetica modulare per l'avvolgimento circolare**:
-la formula `(c - 'a' + N) % 26` trasforma ogni lettera in un indice [0,25],
-applica lo spostamento e riporta al codice ASCII. Per la decifratura si aggiunge
-26 prima del modulo per evitare valori negativi.
+### Input
+Nessun input da tastiera: i due messaggi sono fissi nel codice.
 
-| Variabile     | Tipo      | Dimensione | Motivazione                                              |
-|---------------|-----------|------------|----------------------------------------------------------|
-| `messaggio`   | `char[]`  | variabile  | Array modificabile; dichiarato con `char[]`, non `char*` |
-| `SPOSTAMENTO` | `#define` | 3          | Chiave del cifrario; modifica unica per cambiare chiave  |
+| Variabile   | Tipo     | Descrizione                                          |
+|-------------|----------|------------------------------------------------------|
+| `messaggio` | `char[]` | Primo messaggio, cifrato e poi decifrato             |
+| `secondo`   | `char[]` | Secondo messaggio, cifrato con chiavi da 1 a 5       |
+
+### Output
+- Il primo messaggio originale, la sua lunghezza e il numero di lettere;
+  poi il messaggio cifrato con chiave 3 e quello decifrato;
+- il secondo messaggio cifrato con ciascuna chiave da 1 a 5.
+
+### Vincoli
+- Solo le lettere vengono spostate; spazi, cifre e punteggiatura restano
+  invariati
+- Maiuscole e minuscole restano tali: ognuna si sposta nel proprio alfabeto
+- L'avvolgimento è circolare: dopo la z si torna alla a,
+  `(c − 'a' + N) % 26`
+- Nella decifratura si aggiunge 26 prima del modulo, perché in C il resto
+  di un numero negativo è negativo: `(c − 'a' − N + 26) % 26`
+- Decifrare un messaggio cifrato con la stessa chiave restituisce
+  l'originale
+- Il messaggio è dichiarato `char messaggio[]`, quindi è una copia
+  modificabile; con `char *` punterebbe a una stringa letterale non
+  modificabile
+- Per il secondo messaggio si cifra una copia, così l'originale resta
+  disponibile per la chiave successiva
+
+### Assunzioni
+- La codifica è ASCII, con lettere consecutive
+- 0 ≤ spostamento ≤ 26
+
+### Variabili di supporto
+
+| Variabile     | Tipo      | Descrizione                                   |
+|---------------|-----------|-----------------------------------------------|
+| `copia`       | `char[50]`| Copia del secondo messaggio per ogni chiave   |
+| `chiave`      | `int`     | Spostamento del secondo esempio (1–5)         |
+| `SPOSTAMENTO` | `#define` | 3, la chiave usata da Cesare                  |
+
+| Funzione | Descrizione |
+|---|---|
+| `void cifra(char msg[], int spostamento)` | Sposta in avanti le lettere, in-place |
+| `void decifra(char msg[], int spostamento)` | Sposta indietro le lettere, in-place |
+| `int lunghezza(const char msg[])` | Caratteri fino a `'\0'` |
+| `int conta_lettere(const char msg[])` | Numero di lettere |
+
+### Algoritmo in linguaggio naturale
+Cifratura (per ogni carattere fino a `'\0'`):
+1. Se è una minuscola: `c = 'a' + (c − 'a' + N) % 26`.
+2. Altrimenti, se è una maiuscola: lo stesso con `'A'`.
+3. Altrimenti lasciarlo invariato.
+
+La decifratura è identica con `(c − 'a' − N + 26) % 26`.
+
+Programma principale:
+1. Stampare il primo messaggio con lunghezza e numero di lettere.
+2. Cifrarlo e stamparlo, poi decifrarlo e stamparlo.
+3. Per ogni chiave da 1 a 5: copiare il secondo messaggio carattere per
+   carattere, cifrare la copia e stamparla.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+I messaggi sono fissi nel codice: il Test 3 richiede di sostituire il primo
+messaggio e ricompilare.
 
-### Caso d'uso 1 – Cifratura
-
-**a) Input**
-Array `msg[]`, intero `spostamento`.
-
-**b) Output**
-Il messaggio viene modificato in-place:
+### Test 1 – Cifratura e decifratura con chiave 3
+- **Output atteso:**
 ```
 Messaggio originale  : Veni Vidi Vici
+Lunghezza            : 14 caratteri (12 lettere)
+
 Messaggio cifrato    : Yhql Ylgl Ylfl
-```
-
-**c) Funzione coinvolta**
-`cifra(msg, spostamento)`: scorre fino a `'\0'`, applica la formula separatamente
-per minuscole e maiuscole, ignora tutto il resto.
-
-**d) Vincoli**
-- Formula minuscole: `'a' + (c - 'a' + spostamento) % 26`.
-- Formula maiuscole: `'A' + (c - 'A' + spostamento) % 26`.
-- Il modulo 26 garantisce che dopo 'z' si torni ad 'a' (avvolgimento).
-- Spazi, numeri e punteggiatura non vengono modificati.
-
-**e) Assunzioni**
-- Il messaggio contiene solo caratteri ASCII standard.
-- `spostamento` è compreso tra 1 e 25.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Per i da 0 finché msg[i] != '\0':
-  Se msg[i] è minuscola: msg[i] = 'a' + (msg[i] - 'a' + spostamento) % 26.
-  Se msg[i] è maiuscola: msg[i] = 'A' + (msg[i] - 'A' + spostamento) % 26.
-  Altrimenti: invariato.
-```
-
----
-
-### Caso d'uso 2 – Decifratura
-
-**a) Input**
-Array `msg[]` già cifrato, intero `spostamento`.
-
-**b) Output**
-Il messaggio viene riportato all'originale:
-```
 Messaggio decifrato  : Veni Vidi Vici
 ```
 
-**c) Funzione coinvolta**
-`decifra(msg, spostamento)`: applica lo spostamento inverso con `- spostamento + 26`
-prima del modulo per evitare risultati negativi.
-
-**d) Vincoli**
-- Formula: `(c - 'a' - spostamento + 26) % 26`. Il `+ 26` è essenziale:
-  senza di esso, con `spostamento = 3` e `c = 'a'`, si otterrebbe `(0 - 3) % 26 = -3`
-  che è un indice non valido.
-- `decifra(cifra(msg, N), N)` deve riprodurre esattamente il messaggio originale.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 2 – Chiavi diverse
+- **Output atteso:**
 ```
-Per i da 0 finché msg[i] != '\0':
-  Se minuscola: msg[i] = 'a' + (msg[i] - 'a' - spostamento + 26) % 26.
-  Se maiuscola: msg[i] = 'A' + (msg[i] - 'A' - spostamento + 26) % 26.
+  Chiave 1: Buubddp bmm bmcb
+  Chiave 2: Cvvceeq cnn cndc
+  Chiave 3: Dwwdffr doo doed
+  Chiave 4: Exxeggs epp epfe
+  Chiave 5: Fyyfhht fqq fqgf
 ```
 
----
-
-### Caso d'uso 3 – Dimostrazione con chiavi diverse
-
-**a) Input**
-Stringa `secondo`, chiavi da 1 a 5.
-
-**b) Output**
+### Test 3 – Avvolgimento e caratteri non alfabetici
+- **Cosa si verifica:** la z diventa c, le maiuscole restano maiuscole,
+  virgola, spazi e punto esclamativo restano invariati
+- **Procedura:** sostituire il primo messaggio con `"Zebra xyz, ABC!"`
+- **Output atteso:**
 ```
-  Chiave 1: Buubddb bmm bmcb
-  Chiave 2: Cvvceec cnn cncb
-  ...
-```
+Messaggio originale  : Zebra xyz, ABC!
+Lunghezza            : 15 caratteri (11 lettere)
 
-**c) Variabili di supporto**
-- `copia` (`char[]`): copia manuale del messaggio originale prima di cifrare,
-  per non modificare `secondo` a ogni iterazione del ciclo.
-
-**d) Vincoli**
-- La copia viene fatta elemento per elemento con un ciclo fino a `'\0'`.
-- Il terminatore `'\0'` deve essere copiato esplicitamente dopo il ciclo.
-- Ogni iterazione del ciclo esterno parte dal messaggio originale,
-  non dal risultato della cifratura precedente.
-
-**f) Algoritmo in linguaggio naturale**
-```
-Per chiave da 1 a 5:
-  Copiare secondo[] in copia[] (incluso '\0').
-  cifra(copia, chiave).
-  Stampare chiave e copia.
+Messaggio cifrato    : Cheud abc, DEF!
+Messaggio decifrato  : Zebra xyz, ABC!
 ```

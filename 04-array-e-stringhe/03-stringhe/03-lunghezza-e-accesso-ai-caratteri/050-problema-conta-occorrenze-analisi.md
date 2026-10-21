@@ -9,156 +9,86 @@ case-insensitive.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile               | Tipo     | Dimensione | Motivazione                                              |
-|-------------------------|----------|------------|----------------------------------------------------------|
-| `testo`                 | `char[]` | 201        | Testo con spazi, max 200 caratteri + `'\0'`              |
-| `lettera`               | `char`   | —          | Lettera da cercare, letta con `scanf`                    |
-| `lettera_maiuscola`     | `char`   | —          | Versione maiuscola della lettera cercata                 |
-| `lettera_minuscola`     | `char`   | —          | Versione minuscola della lettera cercata                 |
-| `occorrenze_esatte`     | `int`    | —          | Contatore occorrenze con stesso case dell'input          |
-| `occorrenze_maiuscola`  | `int`    | —          | Contatore occorrenze della versione maiuscola            |
-| `occorrenze_minuscola`  | `int`    | —          | Contatore occorrenze della versione minuscola            |
-| `c`                     | `char`   | —          | Carattere corrente durante la scansione                  |
-| `i`                     | `int`    | —          | Indice per scorrere il testo                             |
+### Input
 
----
+| Variabile | Tipo     | Dimensione | Descrizione                                 |
+|-----------|----------|------------|---------------------------------------------|
+| `testo`   | `char[]` | 201        | Testo con spazi, max 200 caratteri          |
+| `lettera` | `char`   | —          | Lettera da cercare                          |
 
-## 3. Casi d'uso e funzionalità
+### Output
+Il testo, la lettera cercata e quattro conteggi: occorrenze esatte (stesso
+carattere inserito), occorrenze della maiuscola, occorrenze della minuscola
+e totale senza distinzione tra maiuscole e minuscole.
 
----
+### Vincoli
+- Il testo si legge con `fgets` e si toglie il `'\n'` finale; la lettera con
+  `scanf(" %c")`, dove lo spazio scarta i caratteri bianchi rimasti nel
+  buffer
+- Maiuscola e minuscola di una lettera differiscono di 32 nel codice ASCII:
+  la versione mancante si calcola sommando o sottraendo 32
+- Per un carattere non alfabetico maiuscola e minuscola coincidono con il
+  carattere stesso
+- Il totale conta una sola volta ogni carattere che coincide con la
+  maiuscola **oppure** con la minuscola: non è la somma dei due contatori,
+  che per un carattere non alfabetico conterebbe due volte gli stessi
+  caratteri (vedi Test 3)
 
-### Caso d'uso 1 – Lettura del testo e della lettera
+### Assunzioni
+- La codifica è ASCII; le lettere accentate non sono gestite
 
-**a) Input**
-Testo con spazi (max 200 caratteri) e una singola lettera da tastiera.
+### Variabili di supporto
 
-**b) Output**
-Nessun output diretto: i valori sono memorizzati in `testo` e `lettera`.
+| Variabile | Tipo   | Descrizione                                     |
+|-----------|--------|-------------------------------------------------|
+| `lettera_maiuscola`, `lettera_minuscola` | `char` | Le due versioni della lettera |
+| `occorrenze_esatte`, `occorrenze_maiuscola`, `occorrenze_minuscola` | `int` | Contatori |
+| `occorrenze_totali` | `int` | Caratteri uguali alla maiuscola o alla minuscola |
+| `c`       | `char` | Carattere corrente                              |
+| `i`       | `int`  | Indice di scorrimento                           |
 
-**c) Variabili di supporto**
-- `i` (`int`): indice per la rimozione del `'\n'` da `fgets`.
-
-**d) Vincoli**
-- Il testo viene letto con `fgets` per permettere spazi.
-- La lettera viene letta con `scanf(" %c", &lettera)`: lo spazio
-  prima di `%c` scarta il `'\n'` residuo nel buffer.
-- Il `'\n'` lasciato da `fgets` nel testo va rimosso prima della scansione.
-
-**e) Assunzioni**
-- La lettera è un singolo carattere ASCII stampabile.
-- Non sono gestite lettere accentate.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Leggere il testo con fgets; rimuovere '\n'.
-2. Leggere la lettera con scanf(" %c", &lettera).
-```
-
----
-
-### Caso d'uso 2 – Calcolo delle varianti maiuscola/minuscola
-
-**a) Input**
-La variabile `lettera`.
-
-**b) Output**
-Nessun output diretto: popola `lettera_maiuscola` e `lettera_minuscola`.
-
-**c) Variabili di supporto**
-- `lettera_maiuscola`, `lettera_minuscola` (`char`): derivate da `lettera`.
-
-**d) Vincoli**
-- La conversione usa la differenza ASCII di 32 tra maiuscole e minuscole,
-  valida solo per le lettere dell'alfabeto latino non accentato.
-
-**e) Assunzioni**
-- Se la lettera non è alfabetica, maiuscola e minuscola coincidono con la lettera stessa.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Se lettera è tra 'a' e 'z':
-   - lettera_minuscola = lettera
-   - lettera_maiuscola = lettera - 32
-2. Altrimenti se lettera è tra 'A' e 'Z':
-   - lettera_maiuscola = lettera
-   - lettera_minuscola = lettera + 32
-3. Altrimenti:
-   - lettera_maiuscola = lettera_minuscola = lettera
-```
+### Algoritmo in linguaggio naturale
+1. Leggere il testo e rimuovere il `'\n'`; leggere la lettera.
+2. Se la lettera è minuscola calcolare la maiuscola (−32); se è maiuscola
+   calcolare la minuscola (+32); altrimenti usare il carattere per entrambe.
+3. Scorrere il testo fino a `'\0'`: per ogni carattere incrementare il
+   contatore esatto se coincide con la lettera, e i contatori di maiuscola e
+   minuscola se coincide con l'una o con l'altra; incrementare una sola
+   volta il totale se coincide con almeno una delle due.
+4. Stampare i risultati e il totale.
 
 ---
 
-### Caso d'uso 3 – Scansione e conteggio occorrenze
+## 3. Casi di test
 
-**a) Input**
-`testo`, `lettera`, `lettera_maiuscola`, `lettera_minuscola`.
+Per ogni caso si inseriscono il testo e la lettera indicati.
 
-**b) Output**
-Nessun output diretto: aggiorna i tre contatori.
-
-**c) Variabili di supporto**
-- `c` (`char`): carattere corrente.
-- `i` (`int`): indice di scansione.
-- `occorrenze_esatte`, `occorrenze_maiuscola`, `occorrenze_minuscola` (`int`).
-
-**d) Vincoli**
-- Il ciclo si ferma al `'\0'` terminatore.
-- Un singolo carattere può incrementare al massimo due contatori
-  (es. se `lettera` è `'a'`, un `'a'` nel testo incrementa sia
-  `occorrenze_esatte` che `occorrenze_minuscola`).
-
-**e) Assunzioni**
-- I contatori sono inizializzati a 0 prima del ciclo.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 1 – Lettera minuscola
+- **Input:** `Anna ama la pasta al pomodoro`, `a`
+- **Output atteso:**
 ```
-1. Inizializzare i a 0.
-2. Finché testo[i] non è '\0':
-   a. c = testo[i].
-   b. Se c == lettera: incrementare occorrenze_esatte.
-   c. Se c == lettera_maiuscola: incrementare occorrenze_maiuscola.
-   d. Se c == lettera_minuscola: incrementare occorrenze_minuscola.
-   e. Incrementare i.
+  Occorrenze esatte ('a')   : 7
+  Occorrenze maiuscola ('A'): 1
+  Occorrenze minuscola ('a'): 7
+  Totale (case-insensitive)  : 8
 ```
 
----
+### Test 2 – Lettera maiuscola
+- **Cosa si verifica:** cambia solo il conteggio esatto
+- **Input:** lo stesso testo, `A`
+- **Output atteso:** `Occorrenze esatte ('A')   : 1`, gli altri valori come
+  nel Test 1
 
-### Caso d'uso 4 – Stampa risultati
-
-**a) Input**
-Tutti i contatori e le variabili di input.
-
-**b) Output**
+### Test 3 – Carattere non alfabetico
+- **Cosa si verifica:** per un carattere senza maiuscola e minuscola il
+  totale non conta due volte le stesse occorrenze
+- **Input:** `Via Roma 11, int. 1`, `1`
+- **Output atteso:**
 ```
-════════════════════════════════════
-  RISULTATI ANALISI
-════════════════════════════════════
-  Testo     : "Il mare è calmo e limpido"
-  Lettera   : 'a'
-────────────────────────────────────
-  Occorrenze esatte ('a')   : 3
-  Occorrenze maiuscola ('A'): 0
-  Occorrenze minuscola ('a'): 3
+  Occorrenze esatte ('1')   : 3
+  Occorrenze maiuscola ('1'): 3
+  Occorrenze minuscola ('1'): 3
   Totale (case-insensitive)  : 3
-════════════════════════════════════
-```
-
-**c) Variabili di supporto**
-Nessuna variabile aggiuntiva.
-
-**d) Vincoli**
-- Il totale case-insensitive è la somma di maiuscole e minuscole,
-  non di `occorrenze_esatte` (che potrebbe già essere inclusa in una delle due).
-
-**e) Assunzioni**
-- Il testo non è vuoto (nessuna verifica esplicita in questa versione).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare testo e lettera cercata.
-2. Stampare occorrenze esatte.
-3. Stampare occorrenze maiuscola e minuscola separatamente.
-4. Stampare il totale come somma di maiuscole e minuscole.
 ```

@@ -9,133 +9,76 @@ testuale e la densità vocalica percentuale.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile          | Tipo     | Dimensione | Motivazione                                          |
-|--------------------|----------|------------|------------------------------------------------------|
-| `testo`            | `char[]` | 201        | Testo con spazi, max 200 caratteri + `'\0'`          |
-| `conta_a`..`conta_u`| `int`  | —          | Un contatore per ciascuna delle 5 vocali             |
-| `totale_vocali`    | `int`    | —          | Somma di tutti i contatori vocali                    |
-| `totale_caratteri` | `int`    | —          | Numero totale di caratteri nel testo                 |
-| `c`                | `char`   | —          | Carattere corrente durante la scansione              |
-| `i`                | `int`    | —          | Indice per scorrere il testo                         |
-| `barra`            | `int`    | —          | Contatore per il ciclo della barra di distribuzione  |
+### Input
 
----
+| Variabile | Tipo     | Dimensione | Descrizione                          |
+|-----------|----------|------------|--------------------------------------|
+| `testo`   | `char[]` | 201        | Testo con spazi, max 200 caratteri   |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Il testo analizzato;
+- per ogni vocale il numero di occorrenze e una barra con un `#` per
+  occorrenza;
+- il totale delle vocali sul totale dei caratteri e la densità vocalica in
+  percentuale (intera), solo se il testo non è vuoto.
 
----
+### Vincoli
+- Maiuscole e minuscole della stessa vocale si contano insieme
+- Il totale dei caratteri comprende anche spazi e punteggiatura
+- La densità è `vocali × 100 / caratteri` con divisione intera, e si calcola
+  solo se i caratteri sono più di 0, per evitare la divisione per zero
+- Le cinque condizioni si escludono a vicenda (`else if`): un carattere
+  incrementa al massimo un contatore
 
-### Caso d'uso 1 – Lettura del testo
+### Assunzioni
+- Le vocali accentate (à, è, …) non sono contate
 
-**a) Input**
-Testo con spazi, punteggiatura e lettere (max 200 caratteri).
+### Variabili di supporto
 
-**b) Output**
-Nessun output diretto: testo memorizzato in `testo` senza `'\n'`.
+| Variabile            | Tipo   | Descrizione                         |
+|----------------------|--------|-------------------------------------|
+| `conta_a` … `conta_u`| `int`  | Un contatore per vocale             |
+| `totale_vocali`, `totale_caratteri` | `int` | Totali              |
+| `c`                  | `char` | Carattere corrente                  |
+| `i`, `barra`         | `int`  | Indici di scorrimento e della barra |
 
-**c) Variabili di supporto**
-- `i` (`int`): indice per rimozione `'\n'`.
-
-**d) Vincoli**
-- `fgets` è usato per permettere spazi nel testo.
-- Il `'\n'` finale va rimosso prima della scansione.
-
-**e) Assunzioni**
-- Non sono gestite lettere accentate (à, è, ecc.).
-- Il testo può contenere cifre, punteggiatura e spazi.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Leggere il testo con fgets(testo, 201, stdin).
-2. Scorrere con while finché non si trova '\n' o '\0'.
-3. Sostituire il carattere corrente con '\0'.
-```
+### Algoritmo in linguaggio naturale
+1. Leggere il testo e rimuovere il `'\n'`.
+2. Per ogni carattere: contarlo nel totale; se è una vocale (maiuscola o
+   minuscola) incrementarne il contatore e il totale delle vocali.
+3. Per ogni vocale stampare il conteggio e tanti `#` quanto vale.
+4. Stampare i totali e, se il testo non è vuoto, la densità.
 
 ---
 
-### Caso d'uso 2 – Scansione e conteggio vocali
+## 3. Casi di test
 
-**a) Input**
-La stringa `testo` dopo la pulizia.
+Per ogni caso si inserisce il testo indicato.
 
-**b) Output**
-Nessun output diretto: aggiorna i contatori delle vocali e il totale.
-
-**c) Variabili di supporto**
-- `c` (`char`): carattere corrente.
-- `i` (`int`): indice di scansione.
-- `conta_a`, `conta_e`, `conta_i`, `conta_o`, `conta_u` (`int`).
-- `totale_vocali`, `totale_caratteri` (`int`).
-
-**d) Vincoli**
-- Il ciclo si ferma al `'\0'` terminatore.
-- Ogni carattere incrementa sempre `totale_caratteri`.
-- Solo le vocali (maiuscole o minuscole) incrementano il contatore
-  specifico e `totale_vocali`.
-
-**e) Assunzioni**
-- Le vocali considerate sono solo a, e, i, o, u senza accenti.
-- Maiuscole e minuscole sono conteggiate nello stesso contatore.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 1 – Frase tipica
+- **Input:** `Il gatto mangia la pizza`
+- **Output atteso:**
 ```
-1. Inizializzare tutti i contatori a 0 e i a 0.
-2. Finché testo[i] non è '\0':
-   a. c = testo[i]; incrementare totale_caratteri.
-   b. Se c è 'a' o 'A': incrementare conta_a e totale_vocali.
-   c. Altrimenti se c è 'e' o 'E': incrementare conta_e e totale_vocali.
-   d. Altrimenti se c è 'i' o 'I': incrementare conta_i e totale_vocali.
-   e. Altrimenti se c è 'o' o 'O': incrementare conta_o e totale_vocali.
-   f. Altrimenti se c è 'u' o 'U': incrementare conta_u e totale_vocali.
-   g. Incrementare i.
-```
-
----
-
-### Caso d'uso 3 – Output con barra di distribuzione
-
-**a) Input**
-I cinque contatori, `totale_vocali`, `totale_caratteri`.
-
-**b) Output**
-```
-════════════════════════════════════════════
-  DISTRIBUZIONE VOCALI
-════════════════════════════════════════════
-Vocale Num.  Distribuzione
+  A/a :   5  [#####]
+  E/e :   0  []
+  I/i :   3  [###]
+  O/o :   1  [#]
+  U/u :   0  []
 --------------------------------------------
-  A/a :   3  [###]
-  E/e :   5  [#####]
-  I/i :   2  [##]
-  O/o :   4  [####]
-  U/u :   1  [#]
---------------------------------------------
-  Totale vocali    : 15 su 42 caratteri
-  Densità vocalica : 35%
-════════════════════════════════════════════
+  Totale vocali    : 9 su 24 caratteri
+  Densità vocalica : 37%
 ```
+- **Osservazione:** la "I" maiuscola iniziale è contata con le minuscole
 
-**c) Variabili di supporto**
-- `barra` (`int`): contatore per il ciclo `while` che stampa i `'#'`.
+### Test 2 – Testo senza vocali
+- **Input:** `Psst, brr!`
+- **Output atteso:** `Totale vocali    : 0 su 10 caratteri` e
+  `Densità vocalica : 0%`
 
-**d) Vincoli**
-- La barra viene generata con un ciclo `while` su `putchar('#')`.
-- La percentuale è calcolata solo se `totale_caratteri > 0`
-  per evitare divisione per zero.
-
-**e) Assunzioni**
-- Non c'è un limite massimo alla lunghezza della barra
-  (rispecchia il conteggio reale senza normalizzazione).
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Per ogni vocale (A, E, I, O, U):
-   a. Stampare il nome della vocale e il contatore.
-   b. Inizializzare barra a 0.
-   c. Finché barra < contatore: stampare '#'; incrementare barra.
-   d. Chiudere la barra con ']'.
-2. Stampare totale vocali e totale caratteri.
-3. Se totale_caratteri > 0: stampare la densità percentuale.
-```
+### Test 3 – Testo vuoto
+- **Cosa si verifica:** la densità non viene calcolata
+- **Input:** solo Invio
+- **Output atteso:** `Totale vocali    : 0 su 0 caratteri`, senza la riga
+  della densità

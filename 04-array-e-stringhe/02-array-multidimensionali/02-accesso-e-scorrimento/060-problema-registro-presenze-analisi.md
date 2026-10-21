@@ -8,69 +8,100 @@ Il docente vuole il riepilogo per studente (presenze, assenze, ritardi),
 il numero di presenti per giorno, l'elenco di chi supera 1 assenza e il
 dettaglio di uno studente scelto da tastiera.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `registro` | `char[][]` | 6 × 5 | Una lettera per studente e giorno |
-| `studenti` | `char[][]` | 6 × 16 | Nomi, paralleli alle righe |
-| `giorni` | `char[][]` | 5 × 4 | Sigle, parallele alle colonne |
-| `presenze`, `assenze`, `ritardi` | `int` | — | Contatori della riga corrente |
-| `presenti_giorno` | `int` | — | Contatore della colonna corrente |
-| `scelto` | `int` | — | Studente richiesto (da 1 a 6) |
+### Input
 
-Una matrice può contenere qualsiasi tipo: qui `char`, interpretati con uno
-`switch`.
+| Variabile | Tipo  | Descrizione                                  |
+|-----------|-------|----------------------------------------------|
+| `scelto`  | `int` | Numero dello studente da dettagliare (1–6)   |
 
-## 3. Casi d'uso e funzionalità
+Il registro, i nomi degli studenti e le sigle dei giorni sono inizializzati
+nel codice.
 
-### Caso d'uso 1 – Riepilogo per studente
+### Output
+- Il registro: per ogni studente le lettere dei cinque giorni, il numero di
+  presenze, assenze e ritardi e la nota "<- oltre il limite" se le assenze
+  superano il limite;
+- il numero di presenti di ogni giorno;
+- l'elenco numerato degli studenti e, per lo studente scelto, la situazione
+  di ogni giorno (presente, presente con ritardo, assente).
 
-**a) Input** – matrice `registro`
+### Vincoli
+- Un ritardo conta sia come presenza sia come ritardo
+- Il limite è `LIMITE_ASSENZE` (1): è segnalato chi ha **più** di 1 assenza
+- Il riepilogo per studente scorre una **riga**, i presenti per giorno una
+  **colonna** (presente = qualsiasi lettera diversa da `A`)
+- Il numero dello studente si richiede finché non è tra 1 e 6; l'indice di
+  riga è `scelto − 1`
+- Ogni carattere diverso da `P` e `R` è contato come assenza (ramo
+  `default` dello `switch`)
+- Un numero di studente non numerico si scarta e si richiede; se l'input
+  termina (EOF) prima di una scelta valida il dettaglio non viene stampato
 
-**b) Output** – tabella con le lettere, le tre colonne di conteggio e
-"<- oltre il limite" per Costa Marta e Greco Omar
+### Assunzioni
+- Il registro contiene solo le lettere P, A, R
 
-**c) Variabili di supporto** – `presenze`, `assenze`, `ritardi`
+### Variabili di supporto
 
-**d) Vincoli** – il ritardo incrementa sia `presenze` sia `ritardi`
+| Variabile   | Tipo       | Dimensione | Descrizione                                 |
+|-------------|------------|------------|---------------------------------------------|
+| `registro`  | `char[][]` | 6 × 5      | Una lettera per studente e giorno           |
+| `studenti`  | `char[][]` | 6 × 16     | Nomi, paralleli alle righe                  |
+| `giorni`    | `char[][]` | 5 × 4      | Sigle, parallele alle colonne               |
+| `presenze`, `assenze`, `ritardi` | `int` | — | Contatori della riga corrente     |
+| `presenti_giorno` | `int` | —         | Contatore della colonna corrente            |
+| `STUDENTI`, `GIORNI`, `LIMITE_ASSENZE` | `#define` | — | 6, 5, 1            |
 
-**e) Assunzioni** – qualsiasi carattere diverso da `P` e `R` è un'assenza
+### Algoritmo in linguaggio naturale
+1. Per ogni studente stampare il nome e le lettere; con uno `switch` contare
+   P come presenza, R come presenza e ritardo, altro come assenza; stampare
+   i contatori e la nota se le assenze superano il limite.
+2. Per ogni giorno contare le lettere diverse da `A` nella colonna e
+   stampare il risultato.
+3. Stampare l'elenco degli studenti; leggere il numero finché non è valido.
+4. Per ogni giorno stampare la situazione dello studente scelto.
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni studente: azzerare i contatori e stampare il nome.
-2. Per ogni giorno: stampare la lettera e aggiornare i contatori con uno `switch`.
-3. Stampare i contatori; se le assenze superano 1, segnalarlo.
+## 3. Casi di test
 
-### Caso d'uso 2 – Presenti per giorno
+Il registro è fisso nel codice; l'unico dato letto è lo studente da
+dettagliare.
 
-**a) Input** – matrice `registro`
+### Test 1 – Riepilogo e presenti per giorno
+- **Input:** qualsiasi studente valido (es. 1)
+- **Output atteso:**
+```
+  Amato Elena         P    P    P    P    P       5    0    0
+  Bruno Paolo         P    A    P    R    P       4    1    1
+  Costa Marta         A    A    P    P    R       3    2    1  <- oltre il limite
+  De Luca Ivan        P    P    R    R    P       5    0    2
+  Fontana Rita        P    P    P    A    P       4    1    0
+  Greco Omar          A    P    A    P    A       2    3    0  <- oltre il limite
 
-**b) Output** – riga "Presenti" con 4, 4, 5, 5, 5
+  Presenti            4    4    5    5    5
+```
+- **Osservazione:** Bruno Paolo e Fontana Rita hanno 1 assenza, pari al
+  limite, e non sono segnalati
 
-**c) Variabili di supporto** – `presenti_giorno`
+### Test 2 – Dettaglio con numero non valido
+- **Cosa si verifica:** la validazione del numero e il ritardo nel dettaglio
+- **Input:** `0`, `9` (rifiutati), poi `3`
+- **Output atteso:** la richiesta ripetuta due volte, poi
+```
+Presenze di Costa Marta:
+  Lun: assente
+  Mar: assente
+  Mer: presente
+  Gio: presente
+  Ven: presente (ritardo)
+```
 
-**d) Vincoli** – scorrimento per colonne; presente significa "diverso da `A`"
+### Test 3 – Scelta non numerica e fine dell'input
+- **Cosa si verifica:** la chiusura senza ciclo infinito
+- **Input:** `due`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
+```
+Numero dello studente (1-6): Numero dello studente (1-6): 
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni giorno contare le celle della
-colonna diverse da `A` e stampare il conteggio.
-
-### Caso d'uso 3 – Dettaglio di uno studente
-
-**a) Input** – numero dello studente, es. 3
-
-**b) Output** – presenze di Costa Marta giorno per giorno
-
-**c) Variabili di supporto** – `scelto`
-
-**d) Vincoli** – il numero viene richiesto finché non è tra 1 e 6; poi si
-scorre una sola riga
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Stampare l'elenco numerato degli studenti.
-2. Leggere il numero con validazione; calcolare l'indice `scelto - 1`.
-3. Per ogni giorno stampare la sigla e il significato della lettera.
+Input terminato: nessuno studente scelto.
+```

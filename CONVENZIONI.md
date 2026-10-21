@@ -145,7 +145,7 @@ allo studente, ma guida la struttura dei file prodotti):
 **Criteri per classificare un esercizio come "problema specifico":**
 - Ha un contesto applicativo riconoscibile (anagrafica, magazzino, rete, ecc.)
 - Richiede la scelta di strutture dati e algoritmi
-- Ha casi d'uso distinti e verificabili
+- Ha casi distinti da collaudare con casi di test verificabili
 - Produce un output significativo oltre la semplice dimostrazione sintattica
 
 ---
@@ -167,20 +167,45 @@ senza `.c`, seguito da `-analisi.md`) e sta nella stessa cartella del `.c`:
 ## 1. Problema
 Descrizione del problema reale da risolvere.
 
-## 2. Analisi generale e struttura dati
-Variabili principali con tipo, dimensione e motivazione della scelta.
+## 2. Analisi
+Scritta una sola volta per l'intero problema, valida per qualsiasi input.
 
-## 3. Casi d'uso e funzionalità
-Per ciascun caso d'uso:
+### Input
+Dati in ingresso: variabili con tipo e significato (tabella).
 
-### Caso d'uso N – <titolo>
-**a) Input** – dati in ingresso
-**b) Output** – risultato atteso
-**c) Variabili di supporto** – variabili ausiliarie necessarie
-**d) Vincoli** – condizioni che devono essere sempre vere
-**e) Assunzioni** – ipotesi fatte sui dati o sul contesto
-**f) Algoritmo in linguaggio naturale** – passi della soluzione
+### Output
+Cosa produce il programma, in generale (non per un input specifico).
+
+### Vincoli
+Condizioni che devono essere sempre vere sui dati e sulla soluzione;
+indicare se il programma le verifica o no.
+
+### Assunzioni
+Ipotesi fatte sui dati o sul contesto.
+
+### Variabili di supporto
+Variabili ausiliarie con tipo e significato (tabella), costanti `#define`
+e motivazione delle scelte.
+
+### Algoritmo in linguaggio naturale
+Passi numerati della soluzione, che coprono tutti i rami del programma.
+
+## 3. Casi di test
+Casi da collaudare: si esegue il programma con l'input indicato e si
+confronta quanto stampato con l'output atteso. Almeno un test per ogni
+ramo dell'algoritmo e per i casi limite.
+
+### Test N – <titolo>
+- **Cosa si verifica:** il ramo o il caso limite collaudato (si omette per
+  il caso tipico)
+- **Input:** valori concreti
+- **Valori intermedi attesi:** facoltativi, utili per il debug
+- **Output atteso:** testo esatto o blocco di codice
 ```
+
+I casi di test **non** sono casi d'uso: l'analisi (sezione 2) descrive il
+problema in generale, i test (sezione 3) sono esempi concreti per
+verificare che il programma rispetti l'analisi.
 
 ---
 

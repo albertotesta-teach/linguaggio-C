@@ -8,53 +8,94 @@ ogni appartamento e la sua quota, il totale di ogni mese con il mese di
 picco, gli appartamenti oltre il 120% della media e il mese di massimo
 consumo di ciascuno.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `consumi` | `int[][]` | 6 × 6 | Riga = appartamento, colonna = mese |
-| `interni` | `int[]` | 6 | Numero di interno, parallelo alle righe |
-| `mesi` | `char[][]` | 6 × 4 | Sigla del mese, parallela alle colonne |
-| `stagione` | `int[]` | 6 | Totali di riga, riusati per quote e soglia |
-| `totale_condominio` | `int` | — | Totale generale |
-| `max_mese`, `m_picco` | `int` | — | Colonna con il totale più alto |
-| `m_max_app` | `int` | — | Mese di massimo della riga corrente |
-| `media` | `double` | — | Consumo medio stagionale |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-## 3. Casi d'uso e funzionalità
+| Variabile | Tipo       | Dimensione | Descrizione                                 |
+|-----------|------------|------------|---------------------------------------------|
+| `consumi` | `int[][]`  | 6 × 6      | Riga = appartamento, colonna = mese (kWh)   |
+| `interni` | `int[]`    | 6          | Numero di interno, parallelo alle righe     |
+| `mesi`    | `char[][]` | 6 × 4      | Sigla del mese, parallela alle colonne      |
 
-### Caso d'uso 1 – Totali e mese di picco
+### Output
+- La tabella dei consumi con il totale stagionale di ogni appartamento;
+- la riga dei totali mensili con il totale del condominio, e il mese di
+  picco;
+- il consumo medio per appartamento e la soglia di attenzione (120% della
+  media);
+- per ogni appartamento la quota sul totale, il mese di massimo consumo e
+  l'avviso "<- consumo elevato" se supera la soglia.
 
-**a) Input** – `consumi`, `interni`, `mesi`
+### Vincoli
+- I totali stagionali (righe) si calcolano una volta e si salvano in
+  `stagione`, perché servono per il totale, per le quote e per la soglia
+- I totali mensili si calcolano per **colonna**
+- Quota = consumo stagionale / totale del condominio × 100
+- Un appartamento è segnalato se il consumo è **strettamente** maggiore del
+  120% della media; il confronto `stagione × 100 > media × 120` evita di
+  dividere
+- A parità vince il primo mese trovato, sia per il picco sia per il massimo
+  di ogni appartamento
 
-**b) Output** – tabella con stagione per appartamento e totali per mese;
-totale 18800 kWh; "Mese di picco: Gen (4470 kWh)"
+### Assunzioni
+- I consumi sono non negativi e il totale del condominio è positivo
 
-**c) Variabili di supporto** – `stagione`, `totale_mese`, `max_mese`, `m_picco`
+### Variabili di supporto
 
-**d) Vincoli** – il totale generale deve coincidere con la somma dei totali di colonna
+| Variabile           | Tipo     | Dimensione | Descrizione                            |
+|---------------------|----------|------------|----------------------------------------|
+| `stagione`          | `int[]`  | 6          | Totale di ogni riga                    |
+| `totale_condominio` | `int`    | —          | Totale generale                        |
+| `totale_mese`       | `int`    | —          | Totale della colonna corrente          |
+| `max_mese`, `m_picco` | `int`  | —          | Mese con il totale più alto            |
+| `m_max_app`         | `int`    | —          | Mese di massimo della riga corrente    |
+| `media`             | `double` | —          | Consumo medio stagionale               |
+| `SOGLIA_PERCENTO`   | `#define`| 120        | Soglia di attenzione in percentuale    |
 
-**e) Assunzioni** – letture intere
+### Algoritmo in linguaggio naturale
+1. Per ogni appartamento stampare i consumi, calcolare e stampare il totale
+   stagionale e sommarlo al totale del condominio.
+2. Per ogni mese sommare la colonna, stamparla e aggiornare il picco;
+   stampare il totale del condominio e il mese di picco.
+3. Calcolare la media e la soglia e stamparle.
+4. Per ogni appartamento cercare il mese di massimo nella riga, stampare
+   quota e mese, e aggiungere l'avviso se il consumo supera la soglia.
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni appartamento sommare la riga in `stagione[a]` e nel totale generale.
-2. Per ogni mese sommare la colonna e aggiornare il massimo.
+## 3. Casi di test
 
-### Caso d'uso 2 – Quote, mese massimo e consumi elevati
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**a) Input** – `consumi`, `stagione`, totale generale
+### Test 1 – Totali e mese di picco
+- **Output atteso:**
+```
+        1   310   520   780   820   650   400      3480
+        2   280   450   700   760   590   350      3130
+        3   450   690   980  1050   860   560      4590
+        4   150   260   450   430   330   200      1820
+        5   300   500   750   800   620   390      3360
+        6   200   360   540   560   610   270      2540
+  Totale   1690  2780  4200  4420  3660  2170     18920
 
-**b) Output** – per ogni interno quota percentuale e mese di massimo; il 3 è
-segnalato come consumo elevato
+Mese di picco: Gen (4420 kWh)
+```
 
-**c) Variabili di supporto** – `media`, `m_max_app`
+### Test 2 – Quote, soglia e mese di massimo
+- **Cosa si verifica:** l'interno 4 ha il massimo a dicembre e l'interno 6 a
+  febbraio, diversamente dal picco del condominio; solo l'interno 3 supera
+  la soglia
+- **Output atteso:**
+```
+Consumo medio per appartamento: 3153 kWh
+Soglia di attenzione (120% della media): 3784 kWh
 
-**d) Vincoli** – il confronto con il 120% si fa in reale:
-`stagione[a] * 100.0 > media * 120`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Calcolare la media stagionale per appartamento.
-2. Per ogni appartamento: cercare l'indice del mese massimo nella riga,
-   stampare quota e mese, segnalare se supera la soglia.
+  Interno   Quota   Mese max
+        1   18.4%   Gen
+        2   16.5%   Gen
+        3   24.3%   Gen   <- consumo elevato
+        4    9.6%   Dic
+        5   17.8%   Gen
+        6   13.4%   Feb
+```

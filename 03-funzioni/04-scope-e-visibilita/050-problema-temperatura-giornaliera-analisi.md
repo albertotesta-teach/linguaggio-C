@@ -7,81 +7,100 @@ valore minimo, massimo, medio e l'escursione termica. Le variabili globali
 conservano lo stato accumulato tra una rilevazione e la successiva, senza
 dover passare strutture dati complesse tra le funzioni.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Costante | Valore | Descrizione |
+### Input
+Nessun input da tastiera: le dodici rilevazioni (ora e temperatura) sono
+passate a `stampa_rilevazione` nel `main`.
+
+| Parametro | Tipo | Descrizione |
 |---|---|---|
-| `NESSUNA_RILEVAZIONE` | -999.0 | Sentinella per indicare assenza di rilevazioni |
+| `ora` | int | Ora della rilevazione (0–22, ogni due ore) |
+| `temp` | double | Temperatura rilevata (°C) |
+
+### Output
+Una tabella con ora e temperatura di ogni rilevazione (temperatura con segno
+e un decimale), poi il report giornaliero: numero di rilevazioni, minima,
+massima, media ed escursione termica. Senza rilevazioni il report stampa
+"Nessuna rilevazione disponibile."
+
+### Vincoli
+- Alla prima rilevazione minimo e massimo valgono la sentinella
+  `NESSUNA_RILEVAZIONE`: il confronto con la sentinella viene prima del
+  confronto con il valore, così la prima temperatura diventa sia minimo
+  sia massimo
+- Gli aggiornamenti usano `<` e `>`: in caso di parità si mantiene il valore
+  già registrato
+- La media si calcola solo se `num_rilevazioni > 0`, per evitare la
+  divisione per zero
+
+### Assunzioni
+- La sentinella -999.0 è un valore fisicamente impossibile per una
+  temperatura terrestre
+- Le rilevazioni avvengono ogni due ore nell'arco della giornata
+
+### Variabili di supporto
 
 | Variabile globale | Tipo | Descrizione |
 |---|---|---|
-| `temp_minima` | double | Minima rilevata finora (-999.0 se nessuna) |
-| `temp_massima` | double | Massima rilevata finora (-999.0 se nessuna) |
-| `temp_somma` | double | Somma di tutte le temperature (per calcolare la media) |
+| `temp_minima` | double | Minima rilevata finora (sentinella se nessuna) |
+| `temp_massima` | double | Massima rilevata finora (sentinella se nessuna) |
+| `temp_somma` | double | Somma delle temperature, per la media |
 | `num_rilevazioni` | int | Numero di rilevazioni effettuate |
+
+| Variabile locale | Tipo | Descrizione |
+|---|---|---|
+| `media` | double | Locale a `stampa_report` |
+
+Costante: `NESSUNA_RILEVAZIONE` = -999.0
 
 | Funzione | Firma | Descrizione |
 |---|---|---|
 | `registra_temperatura` | `void(double)` | Aggiorna min, max, somma e contatore |
 | `stampa_rilevazione` | `void(int, double)` | Stampa ora e temperatura, poi chiama `registra_temperatura` |
-| `stampa_report` | `void(void)` | Calcola media e stampa il report finale |
+| `stampa_report` | `void(void)` | Calcola la media e stampa il report finale |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
+Per ogni rilevazione (`stampa_rilevazione`):
+1. Stampare ora e temperatura.
+2. Chiamare `registra_temperatura`, che:
+   a. incrementa `num_rilevazioni` e aggiunge la temperatura a `temp_somma`;
+   b. se il minimo vale la sentinella oppure la temperatura è minore del
+      minimo, aggiorna il minimo;
+   c. lo stesso per il massimo.
 
-### Caso d'uso 1 – Prima rilevazione della giornata
+Report (`stampa_report`):
+1. Se non ci sono rilevazioni stampare il messaggio di assenza dati.
+2. Altrimenti calcolare `media = temp_somma / num_rilevazioni` e stampare
+   rilevazioni, minima, massima, media ed escursione (`massima − minima`).
 
-**a) Input** – `ora = 0`, `temp = 4.2`
+## 3. Casi di test
 
-**b) Output** – `00:00  +4.2 C`; min e max vengono impostati a 4.2
+Il programma registra le dodici rilevazioni del `main` e stampa il report:
+si esegue una volta e si confronta con l'output atteso.
 
-**c) Variabili di supporto** – nessuna aggiuntiva
+### Test 1 – Prima rilevazione
+- **Cosa si verifica:** il confronto con la sentinella
+- **Input:** ora 0, temperatura 4.2
+- **Valori intermedi attesi:** dopo la chiamata `temp_minima` e
+  `temp_massima` valgono entrambe 4.2
 
-**d) Vincoli** – il confronto con `NESSUNA_RILEVAZIONE` deve avvenire prima del confronto con min/max
-
-**e) Assunzioni** – la prima temperatura è sempre un valore fisicamente valido
-
-**f) Algoritmo in linguaggio naturale**
-1. `temp_minima == NESSUNA_RILEVAZIONE` → assegnare `temp_minima = 4.2`
-2. `temp_massima == NESSUNA_RILEVAZIONE` → assegnare `temp_massima = 4.2`
-3. Incrementare `num_rilevazioni`, aggiungere a `temp_somma`
-
-### Caso d'uso 2 – Rilevazione che aggiorna il massimo
-
-**a) Input** – `ora = 14`, `temp = 15.6` (massimo della giornata)
-
-**b) Output** – `14:00  +15.6 C`; `temp_massima` viene aggiornata a 15.6
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – il controllo `temp > temp_massima` deve usare `>` e non `>=` (indifferente sul risultato, ma semanticamente corretto)
-
-**e) Assunzioni** – in caso di parità si mantiene il valore già registrato
-
-**f) Algoritmo in linguaggio naturale**
-1. `15.6 > temp_massima` (es. 14.2) → `temp_massima = 15.6`
-2. `15.6 < temp_minima` (es. 3.1) → condizione falsa, min invariato
-
-### Caso d'uso 3 – Report finale
-
-**a) Input** – nessuno (legge le variabili globali)
-
-**b) Output**
+### Test 2 – Report della giornata
+- **Input:** 4.2, 3.8, 3.1, 4.5, 7.3, 11.8, 14.2, 15.6, 13.9, 10.4, 7.8, 5.9
+- **Valori intermedi attesi:** somma 102.5; minima 3.1 (ore 4); massima 15.6
+  (ore 14)
+- **Output atteso:**
 ```
 --- Report giornaliero ---
 Rilevazioni:   12
-Temperatura minima:   +3.1 C
+Temperatura minima:  +3.1 C
 Temperatura massima: +15.6 C
-Temperatura media:    +7.7 C
-Escursione termica:   12.5 C
+Temperatura media:   +8.5 C
+Escursione termica:  12.5 C
 ```
 
-**c) Variabili di supporto** – `media` (double, locale a `stampa_report`)
-
-**d) Vincoli** – la media è calcolata solo se `num_rilevazioni > 0`
-
-**e) Assunzioni** – almeno una rilevazione è disponibile prima di chiamare `stampa_report`
-
-**f) Algoritmo in linguaggio naturale**
-1. Se `num_rilevazioni == 0`: stampare messaggio di assenza dati
-2. Altrimenti: `media = temp_somma / num_rilevazioni`
-3. Stampare min, max, media, escursione termica
+### Test 3 – Nessuna rilevazione
+- **Cosa si verifica:** il ramo che evita la divisione per zero
+- **Procedura:** commentare nel `main` tutte le chiamate a
+  `stampa_rilevazione`, ricompilare ed eseguire
+- **Output atteso:** "Nessuna rilevazione disponibile."

@@ -7,37 +7,43 @@ al massimo 3 tentativi: al terzo errore la carta viene bloccata. Un valore
 che non ha 5 cifre è un errore di digitazione: viene segnalato e non consuma
 un tentativo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `pin_inserito` | `int` | Valore digitato |
-| `tentativi` | `int` | Tentativi validi usati |
-| `pin_corretto` | `int` (0/1) | Flag di successo |
+### Input
 
-Costanti: `PIN_CARTA`, `MAX_TENTATIVI`, `PIN_MIN` e `PIN_MAX`
-(un PIN di 5 cifre sta tra 10000 e 99999).
+| Variabile      | Tipo  | Significato                                    |
+|----------------|-------|------------------------------------------------|
+| `pin_inserito` | `int` | Valore digitato, letto a ogni tentativo        |
 
-Il ciclo termina per due motivi, entrambi nella condizione:
-`!pin_corretto && tentativi < MAX_TENTATIVI`. Dopo il ciclo il flag dice
-quale dei due motivi si è verificato.
+### Output
+Dopo ogni inserimento: l'avviso di formato non valido, oppure "PIN errato"
+con i tentativi rimasti. Al termine: "PIN corretto. Pagamento autorizzato."
+oppure "Carta BLOCCATA: troppi tentativi errati."
 
-## 3. Casi d'uso e funzionalità
+### Vincoli
+- Un PIN valido nel formato ha 5 cifre: è compreso tra 10000 e 99999
+- I tentativi validi sono al massimo 3; un formato errato non incrementa
+  `tentativi`
+- Il ciclo termina per due motivi, entrambi nella condizione:
+  `!pin_corretto && tentativi < MAX_TENTATIVI`
+- L'esito si decide guardando il flag e non il numero di tentativi: con il
+  PIN corretto al terzo tentativo `tentativi` vale 3 come quando la carta
+  viene bloccata
 
-### Caso d'uso 1 – PIN corretto dopo un errore
+### Assunzioni
+- L'utente inserisce numeri interi
+- Il PIN della carta è fissato nel programma
 
-**a) Input** – 1234 (formato errato), 11111 (errato), 27183 (corretto)
+### Variabili di supporto
 
-**b) Output** – "Formato non valido", "PIN errato. Tentativi rimasti: 2",
-"PIN corretto. Pagamento autorizzato."
+| Variabile      | Tipo        | Significato                 |
+|----------------|-------------|-----------------------------|
+| `tentativi`    | `int`       | Tentativi validi usati      |
+| `pin_corretto` | `int` (0/1) | Flag di successo            |
 
-**c) Variabili di supporto** – `tentativi`, `pin_corretto`
+Costanti: `PIN_CARTA`, `MAX_TENTATIVI`, `PIN_MIN` e `PIN_MAX`.
 
-**d) Vincoli** – il formato errato non incrementa `tentativi`
-
-**e) Assunzioni** – l'utente inserisce numeri interi
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Porre `tentativi = 0` e `pin_corretto = 0`.
 2. Finché il PIN non è corretto e i tentativi sono meno di 3:
    a. leggere il PIN;
@@ -47,32 +53,24 @@ quale dei due motivi si è verificato.
 3. Se `pin_corretto` vale 1 autorizzare il pagamento, altrimenti bloccare
    la carta.
 
-### Caso d'uso 2 – Tre errori
+## 3. Casi di test
 
-**a) Input** – 11111, 22222, 33333
+Per ogni caso si esegue il programma con la sequenza di input indicata e si
+confronta quanto stampato con l'output atteso. Il PIN della carta è 27183.
 
-**b) Output** – due messaggi di PIN errato con i tentativi rimasti, poi
-"Carta BLOCCATA: troppi tentativi errati."
+### Test 1 – PIN corretto dopo un formato errato e un errore
+- **Cosa si verifica:** il formato errato non consuma un tentativo
+- **Input:** 1234 (formato errato), 11111 (errato), 27183 (corretto)
+- **Output atteso:** "Formato non valido", "PIN errato. Tentativi rimasti: 2",
+  "PIN corretto. Pagamento autorizzato."
 
-**c) Variabili di supporto** – come nel caso 1
+### Test 2 – Tre errori
+- **Cosa si verifica:** il ciclo termina perché `tentativi` raggiunge 3
+- **Input:** 11111, 22222, 33333
+- **Output atteso:** due messaggi di PIN errato con i tentativi rimasti, poi
+  "Carta BLOCCATA: troppi tentativi errati."
 
-**d) Vincoli** – il ciclo termina perché `tentativi` raggiunge 3
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – PIN corretto al terzo tentativo
-
-**a) Input** – 11111, 22222, 27183
-
-**b) Output** – "PIN corretto. Pagamento autorizzato."
-
-**c) Variabili di supporto** – `pin_corretto`
-
-**d) Vincoli** – al termine `tentativi` vale 3 come nel caso 2: per questo
-l'esito si decide guardando il flag e non il numero di tentativi
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
+### Test 3 – PIN corretto al terzo tentativo
+- **Cosa si verifica:** l'esito dipende dal flag, non dal numero di tentativi
+- **Input:** 11111, 22222, 27183
+- **Output atteso:** "PIN corretto. Pagamento autorizzato."

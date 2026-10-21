@@ -8,73 +8,87 @@ calcolare i totali per prodotto e per mese, il fatturato di ogni prodotto e
 complessivo, il prodotto con il fatturato più alto e i prodotti con vendite
 in crescita ogni mese.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `vendite` | `int[][]` | 5 × 3 | Riga = prodotto, colonna = mese |
-| `codici` | `int[]` | 5 | Codice prodotto, parallelo alle righe |
-| `prezzi` | `double[]` | 5 | Prezzo unitario, parallelo alle righe |
-| `pezzi_prodotto`, `pezzi_mese` | `int` | — | Totali di riga e di colonna |
-| `fatturato`, `fatturato_totale` | `double` | — | Fatturato del prodotto e complessivo |
-| `fatturato_max`, `p_max` | `double`, `int` | — | Prodotto migliore |
-| `in_crescita` | `int` (0/1) | — | Flag di verifica della crescita |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-Gli array paralleli possono essere anche numerici: `codici` e `prezzi`
-completano le informazioni di ogni riga della matrice.
+| Variabile | Tipo       | Dimensione | Descrizione                                |
+|-----------|------------|------------|--------------------------------------------|
+| `vendite` | `int[][]`  | 5 × 3      | Riga = prodotto, colonna = mese            |
+| `codici`  | `int[]`    | 5          | Codice del prodotto, parallelo alle righe  |
+| `prezzi`  | `double[]` | 5          | Prezzo unitario, parallelo alle righe      |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La tabella: per ogni prodotto codice, pezzi dei tre mesi, pezzi totali,
+  prezzo e fatturato;
+- i pezzi totali di ogni mese;
+- il fatturato del trimestre e il prodotto con il fatturato più alto;
+- l'elenco dei prodotti con vendite in crescita ogni mese.
 
-### Caso d'uso 1 – Totali per prodotto e fatturato
+### Vincoli
+- Fatturato di un prodotto = pezzi totali × prezzo
+- Totale di prodotto = somma di una **riga**; totale di mese = somma di una
+  **colonna**
+- Un prodotto è in crescita se ogni mese vende **strettamente** più del
+  mese precedente: vendite uguali in due mesi non sono una crescita
+- La verifica della crescita parte dall'ipotesi vera e si ferma al primo
+  mese che la smentisce, tramite il flag nella condizione (niente `break`)
+- Il massimo del fatturato è inizializzato con il primo prodotto
+  (`p == 0`); a parità resta il primo
+- Se nessun prodotto è in crescita, l'elenco resta vuoto senza messaggi
 
-**a) Input** – `vendite`, `codici`, `prezzi`
+### Assunzioni
+- Pezzi e prezzi sono non negativi
 
-**b) Output** – tabella con pezzi per mese, pezzi totali, prezzo e fatturato;
-fatturato del trimestre 39707.40 euro; migliore il prodotto 3301
+### Variabili di supporto
 
-**c) Variabili di supporto** – `pezzi_prodotto`, `fatturato`, `fatturato_max`, `p_max`
+| Variabile                     | Tipo     | Descrizione                         |
+|-------------------------------|----------|-------------------------------------|
+| `pezzi_prodotto`, `pezzi_mese`| `int`    | Totali di riga e di colonna         |
+| `fatturato`, `fatturato_totale` | `double` | Fatturato del prodotto e complessivo |
+| `fatturato_max`, `p_max`      | `double`, `int` | Prodotto migliore            |
+| `in_crescita`                 | `int` (0/1) | Esito della verifica di crescita |
+| `PRODOTTI`, `MESI`            | `#define` | 5, 3                               |
 
-**d) Vincoli** – il fatturato è `pezzi_prodotto × prezzi[p]`; il massimo è
-inizializzato dal primo prodotto
+### Algoritmo in linguaggio naturale
+1. Per ogni prodotto: stampare codice e pezzi dei tre mesi sommandoli;
+   calcolare il fatturato, sommarlo al totale e aggiornare il massimo;
+   stampare pezzi, prezzo e fatturato.
+2. Per ogni mese sommare la colonna e stampare il totale.
+3. Stampare il fatturato del trimestre e il prodotto migliore.
+4. Per ogni prodotto porre `in_crescita = 1` e, dal secondo mese, finché
+   resta vero, azzerarlo se le vendite non superano il mese precedente;
+   se alla fine vale 1 stampare il prodotto con le tre vendite.
 
-**e) Assunzioni** – prezzi costanti nel trimestre
+## 3. Casi di test
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni prodotto: sommare le vendite della riga stampandole.
-2. Calcolare il fatturato, sommarlo al totale, stampare la riga.
-3. Se è il primo prodotto o il fatturato supera il massimo, aggiornarlo.
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 2 – Totali per mese
+### Test 1 – Tabella e totali
+- **Output atteso:**
+```
+    1101 |   42 |   38 |   51 |   131 |    19.90 |   2606.90
+    1102 |   15 |   18 |   22 |    55 |   149.00 |   8195.00
+    2201 |   60 |   55 |   48 |   163 |     9.50 |   1548.50
+    3301 |    8 |   12 |   15 |    35 |   599.00 |  20965.00
+    3302 |   25 |   25 |   30 |    80 |    79.90 |   6392.00
+  -------|------|------|------|
+  Totale |  150 |  148 |  166 |
 
-**a) Input** – `vendite`
+Fatturato del trimestre: 39707.40 euro
+Prodotto con il fatturato piu' alto: 3301 (20965.00 euro)
+```
+- **Osservazione:** il prodotto più venduto per pezzi (2201) è quello con
+  il fatturato più basso
 
-**b) Output** – riga "Totale" con 150, 148, 166
-
-**c) Variabili di supporto** – `pezzi_mese`
-
-**d) Vincoli** – somma per colonne
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni mese sommare la colonna su
-tutti i prodotti e stampare il risultato.
-
-### Caso d'uso 3 – Prodotti in crescita
-
-**a) Input** – `vendite`, `codici`
-
-**b) Output** – 1102 (15 → 18 → 22) e 3301 (8 → 12 → 15)
-
-**c) Variabili di supporto** – `in_crescita`
-
-**d) Vincoli** – il confronto `<=` esclude i mesi uguali: 3302 (25, 25, 30)
-non è in crescita; il ciclo interno si ferma al primo mese che smentisce
-l'ipotesi grazie al flag nella condizione
-
-**e) Assunzioni** – crescita stretta, mese per mese
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni prodotto: ipotizzare `in_crescita = 1`.
-2. Dal secondo mese, finché l'ipotesi regge: se le vendite non superano quelle
-   del mese precedente, porre `in_crescita = 0`.
-3. Se l'ipotesi è rimasta vera, stampare codice e vendite.
+### Test 2 – Prodotti in crescita
+- **Cosa si verifica:** 3302 (25 → 25 → 30) non è in crescita perché i
+  primi due mesi sono uguali; 1101 cala a febbraio
+- **Output atteso:**
+```
+--- Prodotti con vendite in crescita ogni mese ---
+  1102: 15 -> 18 -> 22
+  3301: 8 -> 12 -> 15
+```

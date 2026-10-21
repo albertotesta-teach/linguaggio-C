@@ -8,136 +8,96 @@ di classe: media, voto più alto, voto più basso, numero di promossi e bocciati
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il programma gestisce dati paralleli: per ogni studente esistono un nome e un voto.
-Si usano due array con lo stesso numero di elementi (`NUMERO_STUDENTI`), in cui
-l'indice `i` identifica sempre lo stesso studente in entrambi gli array.
+### Input
+Nessun input da tastiera: nomi e voti sono inizializzati nel codice.
 
-| Variabile        | Tipo       | Dimensione           | Motivazione                                         |
-|------------------|------------|----------------------|-----------------------------------------------------|
-| `nomi`           | `char[][]` | 8 × 20               | 8 studenti, nome+cognome max 19 caratteri + `'\0'`  |
-| `voti`           | `int[]`    | 8                    | Un voto intero per ogni studente                    |
-| `somma`          | `int`      | —                    | Accumulatore per il calcolo della media             |
-| `minimo`         | `int`      | —                    | Voto più basso trovato finora                       |
-| `massimo`        | `int`      | —                    | Voto più alto trovato finora                        |
-| `indice_min`     | `int`      | —                    | Indice dello studente con voto minimo               |
-| `indice_max`     | `int`      | —                    | Indice dello studente con voto massimo              |
-| `promossi`       | `int`      | —                    | Contatore studenti con voto >= 6                    |
-| `bocciati`       | `int`      | —                    | Contatore studenti con voto < 6                     |
-| `NUMERO_STUDENTI`| `#define`  | 8                    | Costante per dimensione array e limiti cicli        |
+| Variabile | Tipo       | Dimensione | Descrizione                                       |
+|-----------|------------|------------|---------------------------------------------------|
+| `nomi`    | `char[][]` | 8 × 20     | Cognome e nome di ogni studente                   |
+| `voti`    | `int[]`    | 8          | Voto di ogni studente, parallelo a `nomi`         |
+
+### Output
+- Il registro: numero progressivo, nome e voto di ogni studente in colonne
+  allineate;
+- la media della classe (un decimale), il voto più basso e quello più alto
+  con il nome dello studente;
+- il numero di promossi (voto ≥ 6) e di bocciati.
+
+### Vincoli
+- `nomi` e `voti` hanno la stessa dimensione: l'indice `i` identifica lo
+  stesso studente in entrambi gli array
+- Il numero progressivo stampato è `i + 1`, perché gli indici partono da 0
+- Minimo e massimo partono dal primo elemento, non da valori arbitrari
+- La media si calcola con una divisione reale
+- promossi + bocciati = 8; la soglia di sufficienza è 6 inclusa
+- In caso di parità per il minimo o il massimo si riporta il primo studente
+  trovato
+
+### Assunzioni
+- I dati sono validi: voti tra 1 e 10, nomi di al massimo 19 caratteri
+- L'array contiene almeno un elemento
+
+### Variabili di supporto
+
+| Variabile        | Tipo      | Descrizione                                 |
+|------------------|-----------|---------------------------------------------|
+| `somma`          | `int`     | Accumulatore per la media                   |
+| `minimo`, `massimo`        | `int` | Voti estremi trovati                  |
+| `indice_min`, `indice_max` | `int` | Posizioni degli estremi negli array   |
+| `promossi`, `bocciati`     | `int` | Contatori                             |
+| `NUMERO_STUDENTI`| `#define` | 8: dimensione degli array e limite dei cicli |
+
+### Algoritmo in linguaggio naturale
+1. Stampare l'intestazione e, per ogni studente, `i + 1`, `nomi[i]` e
+   `voti[i]`.
+2. Sommare tutti i voti e stampare la media `somma / NUMERO_STUDENTI`.
+3. Porre minimo e massimo uguali a `voti[0]` e i loro indici a 0; per gli
+   studenti da 1 in poi aggiornare minimo o massimo e il relativo indice
+   quando si trova un voto più piccolo o più grande.
+4. Stampare voto minimo e massimo con il nome corrispondente.
+5. Contare promossi (voto ≥ 6) e bocciati e stamparli.
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 1 – Stampa del registro formattato
-
-**a) Input**
-Array `nomi` e `voti` inizializzati staticamente nel codice.
-
-**b) Output**
+### Test 1 – Registro e statistiche con i dati del programma
+- **Input:** voti 7, 8, 6, 9, 5, 8, 7, 10
+- **Valori intermedi attesi:** somma 60, media 60 / 8 = 7.5
+- **Output atteso:**
 ```
-============================================
-      REGISTRO VOTI - MATEMATICA
-============================================
-  N.  | Nome               | Voto
-------|--------------------|------
    1  | Rossi Marco        |    7
-  ...
+   2  | Bianchi Sara       |    8
+   3  | Verdi Luca         |    6
+   4  | Ferrari Anna       |    9
+   5  | Russo Pietro       |    5
+   6  | Colombo Giulia     |    8
+   7  | Marino Davide      |    7
+   8  | Greco Elena        |   10
 ============================================
-```
 
-**c) Variabili di supporto**
-- `i` (`int`): indice del ciclo for.
-
-**d) Vincoli**
-- Gli array `nomi` e `voti` devono avere la stessa dimensione (`NUMERO_STUDENTI`).
-- Il numero progressivo stampato è `i + 1` (gli indici partono da 0).
-
-**e) Assunzioni**
-- I dati sono statici e validi (nessun controllo di input).
-- I nomi non superano 19 caratteri.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Stampare intestazione e separatori.
-2. Per i da 0 a NUMERO_STUDENTI - 1:
-   a. Stampare i+1, nomi[i] e voti[i] in colonne allineate.
-3. Stampare la riga di chiusura.
-```
-
----
-
-### Caso d'uso 2 – Calcolo di media, minimo e massimo
-
-**a) Input**
-Array `voti`.
-
-**b) Output**
-```
 Media della classe : 7.5
 Voto più basso     : 5 (Russo Pietro)
 Voto più alto      : 10 (Greco Elena)
-```
 
-**c) Variabili di supporto**
-- `somma` (`int`): somma accumulata.
-- `minimo`, `massimo` (`int`): valori estremi correnti.
-- `indice_min`, `indice_max` (`int`): posizioni degli estremi.
-
-**d) Vincoli**
-- `minimo` e `massimo` devono essere inizializzati al primo elemento (`voti[0]`),
-  non a valori arbitrari come 0 o 100.
-- Il ciclo per minimo e massimo parte da `i = 1` perché `i = 0` è già considerato.
-
-**e) Assunzioni**
-- L'array contiene almeno un elemento.
-- I voti sono compresi tra 1 e 10.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare somma = 0.
-2. Per i da 0 a NUMERO_STUDENTI - 1: somma += voti[i].
-3. media = somma / NUMERO_STUDENTI (divisione floating point).
-4. Inizializzare minimo = massimo = voti[0]; indice_min = indice_max = 0.
-5. Per i da 1 a NUMERO_STUDENTI - 1:
-   a. Se voti[i] < minimo: aggiorna minimo e indice_min.
-   b. Se voti[i] > massimo: aggiorna massimo e indice_max.
-6. Stampare media, minimo con nome, massimo con nome.
-```
-
----
-
-### Caso d'uso 3 – Conteggio promossi e bocciati
-
-**a) Input**
-Array `voti`.
-
-**b) Output**
-```
 Studenti promossi  : 7 su 8
 Studenti bocciati  : 1 su 8
 ```
 
-**c) Variabili di supporto**
-- `promossi` (`int`): contatore studenti con voto >= 6.
-- `bocciati` (`int`): contatore studenti con voto < 6.
+### Test 2 – Massimo nel primo elemento
+- **Cosa si verifica:** l'inizializzazione con `voti[0]` non perde il primo
+  studente
+- **Procedura:** cambiare i voti in `{10, 8, 6, 9, 5, 8, 7, 4}`, ricompilare
+  ed eseguire
+- **Output atteso:** `Voto più alto      : 10 (Rossi Marco)`,
+  `Voto più basso     : 4 (Greco Elena)`, promossi 6, bocciati 2
 
-**d) Vincoli**
-- `promossi + bocciati` deve essere sempre uguale a `NUMERO_STUDENTI`.
-- La soglia di sufficienza è 6 (inclusa).
-
-**e) Assunzioni**
-- Non esistono voti nulli o non assegnati.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Inizializzare promossi = 0, bocciati = 0.
-2. Per i da 0 a NUMERO_STUDENTI - 1:
-   a. Se voti[i] >= 6: promossi += 1.
-   b. Altrimenti: bocciati += 1.
-3. Stampare promossi e bocciati con il totale.
-```
+### Test 3 – Voto al limite della sufficienza
+- **Cosa si verifica:** il voto 6 conta come promosso
+- **Procedura:** nei dati del Test 1 controllare Verdi Luca (voto 6)
+- **Output atteso:** è incluso nei 7 promossi

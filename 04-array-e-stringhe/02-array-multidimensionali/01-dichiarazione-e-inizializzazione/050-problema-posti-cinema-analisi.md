@@ -7,72 +7,90 @@ Una sala con 6 file (A-F) da 10 posti registra lo stato di ogni posto
 liberi per fila e in totale, calcolare il riempimento, indicare la fila più
 libera e cercare 4 posti liberi consecutivi nella stessa fila.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `sala` | `int[][]` | 6 × 10 | 0 = libero, 1 = occupato |
-| `liberi_fila`, `liberi_totali` | `int` | — | Contatori |
-| `max_liberi`, `fila_max` | `int` | — | Fila con più posti liberi |
-| `consecutivi` | `int` | — | Posti liberi di seguito nella fila corrente |
-| `trovato_gruppo` | `int` (0/1) | — | Flag che ferma la ricerca |
-| `fila_gruppo`, `posto_gruppo` | `int` | — | Posizione del gruppo trovato |
+### Input
+Nessun input da tastiera: lo stato della sala è inizializzato nel codice.
 
-Costanti: `FILE_SALA`, `POSTI`, `LIBERO`, `OCCUPATO`, `GRUPPO`.
-La lettera della fila si calcola come `'A' + fila`.
+| Variabile | Tipo      | Dimensione | Descrizione                         |
+|-----------|-----------|------------|-------------------------------------|
+| `sala`    | `int[][]` | 6 × 10     | 0 = libero, 1 = occupato            |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La mappa della sala: per ogni fila (A–F) i posti con O (libero) o
+  X (occupato) e il numero di posti liberi;
+- i posti liberi totali su 60 e la percentuale di riempimento;
+- la fila con più posti liberi;
+- la posizione del primo gruppo di 4 posti liberi consecutivi nella stessa
+  fila, oppure il messaggio che non ce ne sono.
 
-### Caso d'uso 1 – Mappa e conteggi
+### Vincoli
+- La lettera della fila si ricava dall'indice di riga: `'A' + fila`
+- I posti sono numerati da 1 per lo spettatore, mentre gli indici partono
+  da 0: la conversione avviene solo nella stampa
+- Riempimento = posti occupati / posti totali × 100
+- A parità di posti liberi la fila più libera è la prima
+- I posti consecutivi devono essere nella stessa fila: il conteggio riparte
+  da zero a ogni fila e a ogni posto occupato
+- La ricerca si ferma al primo gruppo trovato, partendo dalla fila A,
+  tramite un flag nella condizione di entrambi i cicli (niente `break`)
 
-**a) Input** – matrice `sala` inizializzata nel codice
+### Assunzioni
+- Le file sono quelle della sala reale: la fila A è la più vicina allo
+  schermo
 
-**b) Output** – mappa con O/X e posti liberi per fila; 34 liberi su 60,
-riempimento 43,3%, fila più libera F
+### Variabili di supporto
 
-**c) Variabili di supporto** – `liberi_fila`, `liberi_totali`, `max_liberi`, `fila_max`
+| Variabile        | Tipo        | Descrizione                                     |
+|------------------|-------------|-------------------------------------------------|
+| `liberi_fila`, `liberi_totali` | `int` | Contatori                             |
+| `max_liberi`, `fila_max` | `int` | Fila con più posti liberi                     |
+| `consecutivi`    | `int`       | Posti liberi di seguito nella fila corrente     |
+| `trovato_gruppo` | `int` (0/1) | Ferma la ricerca                                |
+| `fila_gruppo`, `posto_gruppo` | `int` | Fila e primo posto del gruppo trovato  |
+| `FILE_SALA`, `POSTI`, `LIBERO`, `OCCUPATO`, `GRUPPO` | `#define` | 6, 10, 0, 1, 4 |
 
-**d) Vincoli** – il riempimento si calcola sui posti occupati, in reale
+### Algoritmo in linguaggio naturale
+1. Per ogni fila: stampare O o X per ogni posto contando i liberi, stampare
+   il conteggio, sommarlo al totale e aggiornare la fila più libera.
+2. Stampare posti liberi totali, riempimento e fila più libera.
+3. Per ogni fila, finché non si è trovato un gruppo:
+   a. azzerare `consecutivi`;
+   b. per ogni posto: se è libero incrementare `consecutivi` e, se arriva a
+      4, memorizzare fila e primo posto del gruppo (`posto − 3`);
+      se è occupato azzerare `consecutivi`.
+4. Stampare il gruppo trovato oppure il messaggio di assenza.
 
-**e) Assunzioni** – la matrice contiene solo 0 e 1
+## 3. Casi di test
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni fila: stampare la lettera, poi per ogni posto O se libero
-   (contandolo) o X se occupato.
-2. Stampare i liberi della fila, sommarli al totale, aggiornare la fila più libera.
-3. Stampare totale, percentuale di riempimento e fila più libera.
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare la sala e ricompilare.
 
-### Caso d'uso 2 – Quattro posti vicini
+### Test 1 – Mappa e conteggi
+- **Output atteso:**
+```
+  A   X  X  X  O  O  X  X  X  X  O     3
+  B   X  X  X  X  X  X  X  O  X  X     1
+  C   O  X  X  O  O  O  O  X  X  O     6
+  D   O  O  X  X  O  X  O  O  X  O     6
+  E   O  O  O  X  X  O  O  O  O  O     8
+  F   O  O  O  O  O  O  O  O  O  O    10
 
-**a) Input** – matrice `sala`
+Posti liberi : 34 su 60
+Riempimento  : 43.3%
+Fila piu' libera: F (10 posti)
+```
 
-**b) Output** – "4 posti vicini disponibili: fila C, posti da 4 a 7"
+### Test 2 – Primo gruppo di 4 posti vicini
+- **Cosa si verifica:** la ricerca si ferma alla fila C, anche se le file E
+  e F hanno gruppi più lunghi
+- **Output atteso:** `4 posti vicini disponibili: fila C, posti da 4 a 7`
 
-**c) Variabili di supporto** – `consecutivi`, `trovato_gruppo`
-
-**d) Vincoli** – il conteggio riparte da zero a ogni fila e a ogni posto
-occupato; la ricerca termina al primo gruppo grazie al flag nelle condizioni
-dei due cicli, senza `break`
-
-**e) Assunzioni** – si propone il primo gruppo trovato partendo dalla fila A
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni fila, finché non è trovato un gruppo: azzerare `consecutivi`.
-2. Per ogni posto, finché non è trovato: se libero incrementare `consecutivi`;
-   se arriva a 4, memorizzare fila e primo posto (`posto - 3`) e alzare il flag.
-   Se occupato, azzerare `consecutivi`.
-3. Stampare il gruppo (posti numerati da 1) oppure che non esiste.
-
-### Caso d'uso 3 – Sala senza gruppi liberi
-
-**a) Input** – una sala con al massimo 3 posti liberi consecutivi per fila
-
-**b) Output** – "Nessun gruppo di 4 posti vicini disponibile."
-
-**c) Variabili di supporto** – `trovato_gruppo` resta 0
-
-**d) Vincoli** – nessuno in più
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 2.
+### Test 3 – Nessun gruppo di 4 posti
+- **Cosa si verifica:** il messaggio alternativo
+- **Procedura:** occupare il posto 7 delle file C ed E e i posti 1, 4, 7, 10
+  della fila F, in modo che nessuna fila abbia più di 3 posti liberi di
+  seguito
+- **Output atteso:** `Posti liberi : 28 su 60`, `Riempimento  : 53.3%`,
+  `Fila piu' libera: E (7 posti)` e
+  `Nessun gruppo di 4 posti vicini disponibile.`

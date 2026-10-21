@@ -8,75 +8,102 @@ deve avere da 8 a 20 caratteri ed essere diversa dall'attuale. La nuova
 password va riscritta per conferma; se le due versioni non coincidono si
 ricomincia. Alla fine la nuova password sostituisce la vecchia.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `password` | `char[]` | 40 | Password memorizzata (inizialmente "Sole2024") |
-| `inserita` | `char[]` | 40 | Tentativo di password attuale |
-| `nuova`, `conferma` | `char[]` | 40 | Nuova password e sua ripetizione |
-| `errori` | `int` | — | Tentativi sbagliati |
-| `autenticato`, `cambiata` | `int` | — | Flag che governano i due cicli |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Variabile  | Tipo     | Dimensione | Descrizione                         |
+|------------|----------|------------|-------------------------------------|
+| `inserita` | `char[]` | 40         | Tentativo di password attuale       |
+| `nuova`    | `char[]` | 40         | Nuova password                      |
+| `conferma` | `char[]` | 40         | Ripetizione della nuova password    |
 
-### Caso d'uso 1 – Password attuale errata, poi corretta
+La password memorizzata è inizializzata nel codice: `Sole2024`.
 
-**a) Input** – `sole2024`, poi `Sole2024`
+### Output
+- Per ogni tentativo sbagliato "Password errata (n di 3 tentativi).";
+- per ogni nuova password rifiutata il motivo: lunghezza non valida (con il
+  numero di caratteri), uguale all'attuale, conferma diversa;
+- alla fine "Password cambiata (N caratteri)." oppure "Troppi tentativi
+  errati: procedura annullata.".
 
-**b) Output** – "Password errata (1 di 3 tentativi)."; poi richiesta della nuova password
+### Vincoli
+- Le stringhe si confrontano con `strcmp` (0 = uguali), che distingue le
+  maiuscole; la lunghezza si misura con `strlen`
+- La password attuale ha al massimo `TENTATIVI` (3) tentativi
+- La nuova password deve avere da 8 a 20 caratteri (estremi compresi) ed
+  essere diversa dall'attuale
+- Se la conferma non coincide si ricomincia dalla richiesta della nuova
+  password
+- La nuova password sostituisce la vecchia con `strcpy` solo dopo la
+  conferma
+- I due cicli sono governati da flag (`autenticato`, `cambiata`,
+  `fine_input`), senza `break`
+- Se l'input termina (`leggi_riga` restituisce 0) la procedura si annulla
+  con il messaggio `Input terminato: procedura annullata.`
 
-**c) Variabili di supporto** – `errori`, `autenticato`
+### Assunzioni
+- Le password non contengono spazi iniziali o finali significativi
 
-**d) Vincoli** – `strcmp` distingue maiuscole e minuscole
+### Variabili di supporto
 
-**e) Assunzioni** – nessuna
+| Variabile     | Tipo  | Descrizione                                  |
+|---------------|-------|----------------------------------------------|
+| `password`    | `char[]` (40) | Password memorizzata                 |
+| `errori`      | `int` | Tentativi sbagliati                          |
+| `autenticato`, `cambiata` | `int` | Flag dei due cicli               |
+| `fine_input`  | `int` | 1 se l'input è terminato                     |
+| `lung`        | `int` | Lunghezza della nuova password               |
 
-**f) Algoritmo in linguaggio naturale** – finché non autenticato e
-`errori < 3`: leggere, confrontare con `strcmp`; se uguale impostare
-`autenticato`, altrimenti incrementare `errori`.
+### Algoritmo in linguaggio naturale
+1. Finché non autenticato, i tentativi sono meno di 3 e l'input non è
+   terminato: leggere la password; se la lettura fallisce porre
+   `fine_input = 1`; se coincide porre `autenticato = 1`, altrimenti
+   contare l'errore e segnalarlo.
+2. Finché autenticato, non ancora cambiata e l'input non è terminato:
+   a. leggere la nuova password (se la lettura fallisce porre
+      `fine_input = 1`) e misurarla;
+   b. se la lunghezza non è tra 8 e 20, oppure è uguale all'attuale,
+      segnalarlo;
+   c. altrimenti leggere la conferma (se la lettura fallisce porre
+      `fine_input = 1`): se diversa segnalarlo, altrimenti copiare la nuova
+      password e porre `cambiata = 1`.
+3. Stampare l'esito: password cambiata, input terminato oppure troppi
+   tentativi errati.
 
-### Caso d'uso 2 – Nuova password non valida
+## 3. Casi di test
 
-**a) Input** – `abc`; `Sole2024`
+Si inseriscono le password nell'ordine richiesto.
 
-**b) Output** – "Lunghezza non valida: 3 caratteri."; "La nuova password deve essere diversa…"
+### Test 1 – Cambio riuscito dopo tre rifiuti
+- **Input:** `Sole2024` (attuale), `corta`, `Sole2024`, `Luna2025!` con
+  conferma `Luna2025?`, poi `Luna2025!` con conferma `Luna2025!`
+- **Output atteso:** `Lunghezza non valida: 5 caratteri.`,
+  `La nuova password deve essere diversa da quella attuale.`,
+  `Le due password non coincidono, ricomincia.` e infine
+  `Password cambiata (9 caratteri).`
 
-**c) Variabili di supporto** – `lung`
+### Test 2 – Tre tentativi sbagliati
+- **Input:** `a`, `b`, `c`
+- **Output atteso:**
+```
+  Password errata (1 di 3 tentativi).
+  Password errata (2 di 3 tentativi).
+  Password errata (3 di 3 tentativi).
+Troppi tentativi errati: procedura annullata.
+```
 
-**d) Vincoli** – 8 ≤ `strlen(nuova)` ≤ 20; `strcmp(nuova, password) != 0`
+### Test 3 – Maiuscole
+- **Cosa si verifica:** `strcmp` distingue le maiuscole
+- **Input:** `sole2024`
+- **Output atteso:** `Password errata (1 di 3 tentativi).`
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – controllare prima la lunghezza, poi
-la differenza dalla password attuale; in caso di errore si richiede.
-
-### Caso d'uso 3 – Conferma diversa, poi corretta
-
-**a) Input** – `Luna2025!` / `Luna2025`, poi `Luna2025!` / `Luna2025!`
-
-**b) Output** – "Le due password non coincidono, ricomincia."; poi "Password cambiata (9 caratteri)."
-
-**c) Variabili di supporto** – `conferma`, `cambiata`
-
-**d) Vincoli** – la sostituzione avviene solo dopo la conferma
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se `strcmp(nuova, conferma) == 0`
-copiare `nuova` in `password` con `strcpy` e impostare `cambiata`.
-
-### Caso d'uso 4 – Tentativi esauriti
-
-**a) Input** – tre password attuali sbagliate
-
-**b) Output** – "Troppi tentativi errati: procedura annullata."
-
-**c) Variabili di supporto** – `errori`, `autenticato`
-
-**d) Vincoli** – il secondo ciclo non parte se `autenticato` vale 0
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – al termine si stampa l'esito in base
-al valore di `cambiata`.
+### Test 4 – Fine dell'input durante la procedura
+- **Cosa si verifica:** se l'input termina, la procedura si chiude invece
+  di ripetere la richiesta all'infinito
+- **Input:** `Sole2024` e poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
+```
+Password attuale: Nuova password (8-20 caratteri): 
+Input terminato: procedura annullata.
+```

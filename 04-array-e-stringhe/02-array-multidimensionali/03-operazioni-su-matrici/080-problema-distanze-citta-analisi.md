@@ -7,69 +7,100 @@ Il programma deve verificare che la tabella sia coerente (diagonale nulla e
 simmetria), trovare per ogni città la più vicina, la coppia più lontana e la
 lunghezza di un itinerario indicato come sequenza di città.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `distanze` | `int[][]` | 6 × 6 | Km tra la città riga e la città colonna |
-| `citta` | `char[][]` | 6 × 14 | Nomi: valgono sia per le righe sia per le colonne |
-| `itinerario` | `int[]` | 5 | Indici delle città nell'ordine di visita |
-| `coerente` | `int` (0/1) | — | Esito della verifica |
-| `piu_vicina` | `int` | — | Colonna del minimo nella riga corrente |
-| `i_max`, `j_max` | `int` | — | Coppia più lontana |
-| `km_totali` | `int` | — | Lunghezza dell'itinerario |
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice.
 
-In una matrice quadrata di relazioni tra gli stessi elementi, un solo array
-di nomi descrive sia righe sia colonne.
+| Variabile    | Tipo       | Dimensione | Descrizione                                    |
+|--------------|------------|------------|------------------------------------------------|
+| `distanze`   | `int[][]`  | 6 × 6      | Km tra la città riga e la città colonna        |
+| `citta`      | `char[][]` | 6 × 14     | Nomi: valgono sia per le righe sia per le colonne |
+| `itinerario` | `int[]`    | 5          | Indici delle città nell'ordine di visita       |
 
-## 3. Casi d'uso e funzionalità
+Itinerario: Alessandria → Pavia → Milano → Asti → Torino.
 
-### Caso d'uso 1 – Verifica della tabella
+### Output
+- Gli eventuali errori della tabella e l'esito della verifica
+  ("verificate" oppure "ERRORI");
+- per ogni città la più vicina, con la distanza;
+- la coppia di città più lontane;
+- i tratti dell'itinerario con i km e il totale.
 
-**a) Input** – `distanze`
+### Vincoli
+- La tabella è coerente se la diagonale è tutta a zero e se
+  `distanze[i][j] == distanze[j][i]`; per la simmetria basta controllare le
+  celle sopra la diagonale (j > i)
+- La città più vicina è il minimo della riga **escludendo la diagonale**:
+  l'ipotesi iniziale è la prima colonna diversa da i
+- La coppia più lontana si cerca solo sopra la diagonale, perché ogni coppia
+  compare due volte nella matrice
+- Un tratto dell'itinerario va dalla tappa t alla tappa t + 1: la distanza
+  è nella riga `itinerario[t]` e nella colonna `itinerario[t + 1]`; i tratti
+  sono `TAPPE − 1`
+- A parità vince la prima città o coppia trovata
 
-**b) Output** – "Diagonale nulla e simmetria: verificate", oppure i messaggi
-di errore con le coppie non simmetriche
+### Assunzioni
+- Le distanze sono positive e approssimate al chilometro
+- Gli indici dell'itinerario sono validi
 
-**c) Variabili di supporto** – `coerente`
+### Variabili di supporto
 
-**d) Vincoli** – la simmetria si controlla solo per j > i
+| Variabile     | Tipo        | Descrizione                                |
+|---------------|-------------|--------------------------------------------|
+| `coerente`    | `int` (0/1) | Esito della verifica                       |
+| `piu_vicina`  | `int`       | Colonna del minimo nella riga corrente     |
+| `i_max`, `j_max` | `int`    | Coppia più lontana                         |
+| `km_totali`   | `int`       | Lunghezza dell'itinerario                  |
+| `CITTA`, `TAPPE` | `#define`| 6, 5                                       |
 
-**e) Assunzioni** – nessuna
+### Algoritmo in linguaggio naturale
+1. Per ogni città: se la distanza da sé non è 0 segnalarlo; per ogni città
+   successiva, se le due distanze simmetriche sono diverse segnalarlo.
+   Stampare l'esito.
+2. Per ogni riga i partire dalla prima colonna diversa da i e cercare il
+   minimo tra le colonne j ≠ i; stampare la città più vicina.
+3. Scorrere le celle con j > i e cercare il massimo; stampare la coppia.
+4. Per ogni tratto dell'itinerario leggere la distanza, stamparla e
+   sommarla; stampare il totale.
 
-**f) Algoritmo in linguaggio naturale** – per ogni i: controllare `[i][i] == 0`;
-per ogni j > i controllare `[i][j] == [j][i]`.
+## 3. Casi di test
 
-### Caso d'uso 2 – Città più vicina e coppia più lontana
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare la tabella e ricompilare.
 
-**a) Input** – `distanze`, `citta`
+### Test 1 – Verifica e città più vicine
+- **Cosa si verifica:** la diagonale (0) non viene scelta come minimo
+- **Output atteso:**
+```
+Diagonale nulla e simmetria: verificate
 
-**b) Output** – per ogni città la più vicina (es. Milano → Pavia 38 km);
-"Coppia piu' lontana: Genova - Torino (170 km)"
+--- Citta' piu' vicina ---
+  Alessandria  -> Asti           37 km
+  Asti         -> Alessandria    37 km
+  Genova       -> Alessandria    80 km
+  Milano       -> Pavia          38 km
+  Torino       -> Asti           60 km
+  Pavia        -> Milano         38 km
+```
 
-**c) Variabili di supporto** – `piu_vicina`, `i_max`, `j_max`
+### Test 2 – Coppia più lontana e itinerario
+- **Output atteso:**
+```
+Coppia piu' lontana: Genova - Torino (170 km)
 
-**d) Vincoli** – il minimo di riga esclude la diagonale: l'ipotesi iniziale è
-una colonna diversa da i; la coppia più lontana si cerca sopra la diagonale
+--- Itinerario ---
+  Alessandria  -> Pavia          63 km
+  Pavia        -> Milano         38 km
+  Milano       -> Asti          125 km
+  Asti         -> Torino         60 km
+  Totale: 286 km
+```
 
-**e) Assunzioni** – in caso di parità vale la prima trovata
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni riga: ipotesi `piu_vicina` = 1 se i = 0, altrimenti 0; per ogni
-   j ≠ i, se la distanza è minore aggiornare.
-2. Per i < j: se la distanza supera quella di (`i_max`, `j_max`), aggiornare.
-
-### Caso d'uso 3 – Lunghezza di un itinerario
-
-**a) Input** – `itinerario` = Alessandria, Pavia, Milano, Asti, Torino
-
-**b) Output** – i quattro tratti e "Totale: 286 km"
-
-**c) Variabili di supporto** – `km_totali`
-
-**d) Vincoli** – un itinerario di 5 tappe ha 4 tratti: il ciclo va fino a `TAPPE - 1`
-
-**e) Assunzioni** – gli indici dell'itinerario sono validi
-
-**f) Algoritmo in linguaggio naturale** – per ogni t da 0 a TAPPE - 2 sommare
-`distanze[itinerario[t]][itinerario[t + 1]]`.
+### Test 3 – Tabella non simmetrica
+- **Cosa si verifica:** la verifica individua l'errore di trascrizione
+- **Procedura:** nella riga di Asti cambiare la distanza da Torino da 60 a 65
+- **Output atteso:** `Errore: Asti-Torino = 65 ma Torino-Asti = 60` e
+  `Diagonale nulla e simmetria: ERRORI`
+- **Osservazione:** il messaggio di errore compare prima del titolo della
+  tabella, perché la verifica precede la stampa dell'intestazione

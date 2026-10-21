@@ -7,73 +7,114 @@ tessera dell'auto, oppure 0 se il posto è libero. Da un menu ripetuto si
 gestiscono ingressi (assegnazione del primo posto libero), uscite (ricerca
 della tessera e liberazione del posto) e la visualizzazione dello stato.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `parcheggio` | `int[][]` | 3 × 6 | Tessera dell'auto o 0 (`LIBERO`) |
-| `scelta` | `int` | — | Voce del menu |
-| `tessera` | `int` | — | Tessera in ingresso o in uscita |
-| `trovato` | `int` (0/1) | — | Flag che ferma le ricerche |
-| `piano_trovato`, `posto_trovato` | `int` | — | Posizione individuata |
-| `liberi_piano` | `int` | — | Contatore per la visualizzazione |
+### Input
 
-La matrice contiene dati (le tessere) e non solo uno stato 0/1: lo stesso
-valore 0 indica il posto libero, quindi la tessera 0 non è ammessa.
+| Variabile | Tipo  | Descrizione                                               |
+|-----------|-------|-----------------------------------------------------------|
+| `scelta`  | `int` | Voce del menu: 1 ingresso, 2 uscita, 3 stato, 0 fine      |
+| `tessera` | `int` | Tessera dell'auto in ingresso o in uscita                 |
 
-## 3. Casi d'uso e funzionalità
+Lo stato iniziale è inizializzato nel codice: piano 0 con un posto libero,
+piano 1 con tre posti liberi, piano 2 vuoto.
 
-### Caso d'uso 1 – Ingresso
+### Output
+- Ingresso: il piano e il posto assegnati, oppure "Parcheggio completo.";
+- uscita: il piano e il posto liberati, oppure "Tessera N non presente nel
+  parcheggio.";
+- stato: per ogni piano, dall'alto verso il basso, le tessere (`----` per i
+  posti liberi) e il numero di posti liberi;
+- "Scelta non valida." per voci non previste, "Chiusura cassa." alla fine.
 
-**a) Input** – scelta 1, tessera 1500
+### Vincoli
+- La matrice contiene dati (le tessere), non solo uno stato: il valore 0
+  indica il posto libero, quindi la tessera 0 non è ammessa
+- All'ingresso si assegna il **primo** posto libero, cercando dal piano
+  terra verso l'alto e, in ogni piano, dal posto 1 in avanti
+- Entrambe le ricerche si fermano al primo risultato tramite un flag nella
+  condizione dei due cicli annidati (niente `break`)
+- All'uscita la tessera 0 è sempre rifiutata, anche se esistono posti con
+  valore 0: altrimenti "libererebbe" un posto già libero
+- I piani sono numerati da 0, i posti si stampano da 1
+- Il menu si ripete finché la scelta è diversa da 0 (`do-while` con
+  `switch`); il `break` di ogni `case` chiude il `case`, non il ciclo
+- Il valore restituito da `scanf` si controlla: una scelta non numerica è
+  una scelta non valida, una tessera non numerica (o non positiva) in
+  ingresso è una tessera non valida; il resto della riga si scarta con
+  `getchar`. A fine input (EOF) il programma si comporta come la scelta 0
 
-**b) Output** – "Tessera 1500: piano 0, posto 3."
+### Assunzioni
+- Il programma non controlla che una tessera in ingresso sia già presente
 
-**c) Variabili di supporto** – `trovato`, `piano_trovato`, `posto_trovato`
+### Variabili di supporto
 
-**d) Vincoli** – il primo posto libero si cerca per righe (piano 0, poi 1,
-poi 2) e la ricerca si ferma al primo trovato grazie al flag nelle
-condizioni di entrambi i cicli
+| Variabile        | Tipo      | Descrizione                                  |
+|------------------|-----------|----------------------------------------------|
+| `parcheggio`     | `int[][]` | 3 × 6: tessera dell'auto o `LIBERO` (0)      |
+| `trovato`        | `int` (0/1) | Ferma le ricerche                          |
+| `piano_trovato`, `posto_trovato` | `int` | Posizione individuata         |
+| `liberi_piano`   | `int`     | Posti liberi del piano, per lo stato         |
+| `PIANI`, `POSTI`, `LIBERO` | `#define` | 3, 6, 0                         |
 
-**e) Assunzioni** – nessuna
+### Algoritmo in linguaggio naturale
+Ripetere: mostrare il menu, leggere la scelta ed eseguire il ramo
+corrispondente, finché la scelta è diversa da 0.
+1. Ingresso: leggere la tessera; scorrere piani e posti finché non si trova
+   una cella libera; se trovata scrivervi la tessera e stamparne la
+   posizione, altrimenti segnalare il parcheggio completo.
+2. Uscita: leggere la tessera; cercarla allo stesso modo; se trovata e
+   diversa da 0 liberare il posto e stamparlo, altrimenti segnalare che la
+   tessera non è presente.
+3. Stato: per ogni piano dal più alto al piano terra stampare le celle e
+   contare i posti liberi.
+4. 0: stampare la chiusura. Altro: "Scelta non valida."
 
-**f) Algoritmo in linguaggio naturale**
-1. Leggere la tessera; porre `trovato = 0`.
-2. Per ogni piano e ogni posto, finché non trovato: se la cella vale 0,
-   memorizzare la posizione e porre `trovato = 1`.
-3. Se trovato, scrivere la tessera nella cella e stampare la posizione;
-   altrimenti segnalare che il parcheggio è completo.
+## 3. Casi di test
 
-### Caso d'uso 2 – Uscita
+Il programma è interattivo: ogni test è una sequenza di scelte in una nuova
+sessione, che parte dallo stato iniziale e termina con 0.
 
-**a) Input** – scelta 2, tessera 1302 (presente) oppure 999 (assente)
+### Test 1 – Ingressi
+- **Cosa si verifica:** il primo posto libero si cerca dal piano terra
+- **Input:** `1 1401`, poi `1 1402`
+- **Output atteso:** `Tessera 1401: piano 0, posto 3.` e
+  `Tessera 1402: piano 1, posto 2.`
 
-**b) Output** – "Uscita registrata: liberato piano 1, posto 3." oppure
-"Tessera 999 non presente nel parcheggio."
+### Test 2 – Uscite
+- **Input:** `2 1302`, poi `2 9999`, poi `2 0`
+- **Output atteso:** `Uscita registrata: liberato piano 1, posto 3.`;
+  `Tessera 9999 non presente nel parcheggio.`;
+  `Tessera 0 non presente nel parcheggio.`
 
-**c) Variabili di supporto** – come nel caso 1
+### Test 3 – Stato dopo i test 1 e 2
+- **Input:** le operazioni dei test 1 e 2 nella stessa sessione, poi `3`
+- **Output atteso:**
+```
+  Piano 2 |  ----  ----  ----  ----  ----  ---- | liberi: 6
+  Piano 1 |  1300  1402  ----  ----  ----  1310 | liberi: 3
+  Piano 0 |  1201  1202  1401  1210  1215  1220 | liberi: 0
+```
 
-**d) Vincoli** – la tessera 0 non libera alcun posto
+### Test 4 – Scelta non valida
+- **Input:** `7`, poi `0`
+- **Output atteso:** `Scelta non valida.`, poi `Chiusura cassa.`
 
-**e) Assunzioni** – ogni tessera compare al più una volta
+### Test 5 – Parcheggio completo
+- **Procedura:** inizializzare la matrice senza celle a 0, poi chiedere un
+  ingresso
+- **Output atteso:** `Parcheggio completo.`
 
-**f) Algoritmo in linguaggio naturale**
-1. Leggere la tessera e cercarla con lo stesso schema del caso 1.
-2. Se trovata (e diversa da 0), porre la cella a 0 e stampare la posizione;
-   altrimenti segnalare l'assenza.
+### Test 6 – Dati non numerici e fine dell'input
+- **Cosa si verifica:** la gestione di testo al posto dei numeri e la chiusura senza ciclo infinito
+- **Input:** `uno`, `1`, `abc`, poi fine dell'input (Ctrl+D, o input da pipe)
+- **Output atteso:**
+```
+Scelta: Scelta non valida.
 
-### Caso d'uso 3 – Stato
+1 - Ingresso   2 - Uscita   3 - Stato   0 - Fine
+Scelta: Numero tessera: Tessera non valida.
 
-**a) Input** – scelta 3
-
-**b) Output** – una riga per piano, dall'alto in basso, con tessere o `----`
-e posti liberi
-
-**c) Variabili di supporto** – `liberi_piano`
-
-**d) Vincoli** – i piani si stampano in ordine inverso, come in un edificio
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni piano dal più alto: stampare
-le celle contando quelle libere, poi il conteggio.
+1 - Ingresso   2 - Uscita   3 - Stato   0 - Fine
+Scelta: Chiusura cassa.
+```

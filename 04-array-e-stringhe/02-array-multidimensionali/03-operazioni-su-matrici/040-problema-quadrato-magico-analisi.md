@@ -8,53 +8,90 @@ pari alla costante magica `N (N² + 1) / 2 = 34`. Il programma verifica il
 quadrato di Dürer (magico) e una sua variante con due numeri scambiati (non
 magica), stampando le somme che non tornano.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `quadrati` | `int[][][]` | 2 × 4 × 4 | I due quadrati da verificare, uno dopo l'altro |
-| `conteggio` | `int[]` | 17 | Quante volte compare ogni valore (indice = valore) |
-| `costante` | `int` | — | Somma attesa, calcolata dalla formula |
-| `somma` | `int` | — | Accumulatore riutilizzato per righe, colonne, diagonali |
-| `numeri_validi`, `somme_corrette` | `int` (0/1) | — | Esito dei due controlli |
+### Input
+Nessun input da tastiera: i due quadrati sono inizializzati nel codice.
 
-`quadrati` ha tre dimensioni solo per verificare due esempi con lo stesso
-codice: `quadrati[k]` è la matrice *k*.
+| Variabile  | Tipo        | Dimensione | Descrizione                                     |
+|------------|-------------|------------|-------------------------------------------------|
+| `quadrati` | `int[][][]` | 2 × 4 × 4  | I due quadrati; `quadrati[k]` è la matrice k    |
 
-## 3. Casi d'uso e funzionalità
+### Output
+Per ogni quadrato:
+- la matrice;
+- se i numeri da 1 a 16 compaiono una volta sola ("si'" / "no");
+- la costante magica attesa;
+- le righe, colonne e diagonali la cui somma è diversa dalla costante, con
+  la somma trovata;
+- l'esito: "QUADRATO MAGICO" oppure "non e' un quadrato magico".
 
-### Caso d'uso 1 – Quadrato magico
+### Vincoli
+- La costante si calcola dalla formula `N × (N² + 1) / 2`, non è scritta a
+  mano
+- Il controllo dei numeri usa un array di contatori indicizzato dal valore:
+  un valore fuori da 1–16 o un contatore diverso da 1 rendono il quadrato
+  non valido
+- Si controllano tutte le N righe, le N colonne e le due diagonali; la
+  diagonale secondaria usa la colonna `N − 1 − i`
+- Il quadrato è magico solo se entrambi i controlli sono superati
+- Si stampano tutte le somme sbagliate, non solo la prima, per mostrare
+  dove fallisce
+- I contatori si azzerano prima di verificare ogni quadrato
 
-**a) Input** – il quadrato di Dürer
+### Assunzioni
+- Le matrici sono quadrate di ordine `N`
 
-**b) Output** – "Numeri da 1 a 16 presenti una volta: si'" ed
-"Esito: QUADRATO MAGICO"
+### Variabili di supporto
 
-**c) Variabili di supporto** – `conteggio`, `somma`
+| Variabile        | Tipo        | Dimensione | Descrizione                                |
+|------------------|-------------|------------|--------------------------------------------|
+| `conteggio`      | `int[]`     | 17         | Presenze di ogni valore (indice = valore)  |
+| `costante`       | `int`       | —          | Somma attesa                               |
+| `somma`          | `int`       | —          | Accumulatore per righe, colonne, diagonali |
+| `numeri_validi`, `somme_corrette` | `int` (0/1) | — | Esito dei due controlli      |
+| `N`, `MAX_VALORE`| `#define`   | —          | 4 e 16                                     |
 
-**d) Vincoli** – entrambi i controlli devono riuscire
-
-**e) Assunzioni** – N = 4
-
-**f) Algoritmo in linguaggio naturale**
-1. Azzerare `conteggio`; per ogni cella: se il valore è fuori da [1, 16]
-   segnare l'errore, altrimenti incrementare `conteggio[valore]`.
-2. Verificare che ogni `conteggio[v]` con v da 1 a 16 valga 1.
-3. Per ogni riga, ogni colonna e le due diagonali calcolare la somma; se è
-   diversa dalla costante, stamparla e segnare l'errore.
+### Algoritmo in linguaggio naturale
+Per ciascuno dei due quadrati:
+1. Stampare la matrice.
+2. Azzerare i contatori; per ogni cella, se il valore è fuori da 1–16
+   segnare i numeri come non validi, altrimenti incrementarne il contatore;
+   poi verificare che ogni contatore da 1 a 16 valga 1.
+3. Per ogni riga, ogni colonna e le due diagonali calcolare la somma e, se
+   diversa dalla costante, stamparla e segnare le somme come non corrette.
 4. Stampare l'esito.
 
-### Caso d'uso 2 – Quadrato non magico
+## 3. Casi di test
 
-**a) Input** – lo stesso quadrato con 6 e 7 scambiati nella terza riga
+Il programma non legge dati: si esegue con i due quadrati del codice; il
+Test 3 richiede di modificare il primo quadrato e ricompilare.
 
-**b) Output** – colonne 2 e 3 e le due diagonali con somma 33 o 35; esito negativo
+### Test 1 – Quadrato di Dürer
+- **Output atteso:**
+```
+Numeri da 1 a 16 presenti una volta: si'
+Costante magica attesa: 34
+Esito: QUADRATO MAGICO
+```
 
-**c) Variabili di supporto** – come nel caso 1
+### Test 2 – Due numeri scambiati
+- **Cosa si verifica:** i numeri sono ancora tutti presenti, ma le somme di
+  due colonne e delle diagonali cambiano; le righe restano corrette
+- **Output atteso:**
+```
+Numeri da 1 a 16 presenti una volta: si'
+Costante magica attesa: 34
+  colonna 2: somma 35
+  colonna 3: somma 33
+  diagonale principale: somma 33
+  diagonale secondaria: somma 35
+Esito: non e' un quadrato magico
+```
 
-**d) Vincoli** – i numeri sono ancora tutti presenti: fallisce solo il controllo
-delle somme. Le righe restano corrette perché lo scambio avviene nella stessa riga
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
+### Test 3 – Numero ripetuto
+- **Cosa si verifica:** il controllo dei numeri fallisce
+- **Procedura:** nel primo quadrato sostituire l'ultimo valore (1) con 16
+- **Output atteso:** `Numeri da 1 a 16 presenti una volta: no`; le somme
+  sbagliate `riga 4: somma 49`, `colonna 4: somma 49`,
+  `diagonale principale: somma 49`; esito non magico

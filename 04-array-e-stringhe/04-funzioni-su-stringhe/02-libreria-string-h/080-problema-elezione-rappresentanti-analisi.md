@@ -8,67 +8,126 @@ un candidato è valida, ogni altro testo è nullo. Il programma fa lo spoglio,
 stampa i voti con le percentuali sui voti validi e indica gli eletti; se c'è
 un pareggio per il secondo posto segnala che serve un ballottaggio.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `candidati` | `char[][]` | 4 × 24 | Nomi dei candidati |
-| `voti` | `int[]` | 4 | Voti di ciascun candidato (parallelo) |
-| `schede` | `char[][]` | 20 × 24 | Testo trascritto da ogni scheda |
-| `bianche`, `nulle`, `valide` | `int` | — | Conteggi dello spoglio |
-| `primo`, `secondo` | `int` | — | Indici dei primi due classificati |
-| `pari_merito` | `int` | — | Candidati con i voti del secondo |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `candidati` | `char[4][24]` | Nomi dei candidati: Bianchi Luca, Neri Giulia, Russo Marco, Gallo Sara |
+| `schede` | `char[20][24]` | Testo trascritto da ogni scheda |
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da tastiera.
+
+### Output
+
+- Elenco delle schede nulle con il loro numero e il testo.
+- Riepilogo: schede totali, valide, bianche, nulle.
+- Voti e percentuale (sui voti validi) di ogni candidato.
+- Il primo eletto; i candidati al secondo posto e il secondo eletto,
+  oppure la segnalazione di ballottaggio in caso di pareggio.
+
+### Vincoli
+
+- Una scheda è valida solo se il testo coincide esattamente con un candidato
+  (`strcmp`): maiuscole diverse o refusi la rendono nulla.
+- Le percentuali si calcolano sui voti validi; se `valide` è 0 si stampa 0.
+- Il secondo classificato si cerca escludendo il primo.
+
+### Assunzioni
+
+- Le schede sono già trascritte senza spazi in eccesso.
+- Il primo posto non è in pareggio (in caso di parità per il primo posto il
+  programma elegge il candidato con indice minore e mette l'altro al secondo posto).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `voti` | `int[4]` | Voti di ciascun candidato (parallelo a `candidati`) |
+| `bianche`, `nulle`, `valide` | `int` | Conteggi dello spoglio |
+| `c` | `int` | Indice del candidato trovato sulla scheda (-1 se nulla) |
+| `primo`, `secondo` | `int` | Indici dei primi due classificati |
+| `pari_merito` | `int` | Candidati (escluso il primo) con i voti del secondo |
 
 | Funzione | Compito |
 |----------|---------|
-| `cerca_candidato` | Indice del candidato con `strcmp`, oppure -1 |
+| `cerca_candidato` | Restituisce l'indice del candidato uguale alla scheda (`strcmp`), oppure -1 |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Classificazione delle schede
+1. Per ogni scheda:
+   1. se `strlen(scheda) == 0` incrementare `bianche`;
+   2. altrimenti cercare il candidato: se -1 incrementare `nulle` e stampare
+      la scheda, se no incrementare `voti[c]` e `valide`.
+2. Stampare il riepilogo dello spoglio.
+3. Per ogni candidato stampare voti e `100.0 * voti[c] / valide`.
+4. Trovare l'indice del massimo (`primo`) e stamparlo come eletto.
+5. Trovare il massimo tra gli altri candidati (`secondo`).
+6. Stampare tutti i candidati diversi da `primo` con i voti di `secondo`,
+   contandoli in `pari_merito`.
+7. Se `pari_merito > 1` segnalare il ballottaggio, altrimenti stampare
+   `secondo` come eletto.
 
-**a) Input** – `"Neri Giulia"`, `""`, `"neri giulia"`, `"Neri Giula"`
+## 3. Casi di test
 
-**b) Output** – valida, bianca, nulla, nulla
+### Test 1 – Classificazione delle schede
 
-**c) Variabili di supporto** – `c`
+- **Cosa si verifica**: distinzione tra schede valide, bianche e nulle
+  (maiuscole sbagliate, refuso, persona non candidata).
+- **Input**: le 20 schede del sorgente, tra cui `""` (2 volte),
+  `"neri giulia"`, `"Verdi Paolo"`, `"Neri Giula"`.
+- **Valori intermedi attesi**: `bianche` = 2, `nulle` = 3, `valide` = 15.
+- **Output atteso**:
+  ```
+  === SPOGLIO ===
+    scheda  8 nulla: "neri giulia"
+    scheda 16 nulla: "Verdi Paolo"
+    scheda 20 nulla: "Neri Giula"
+  Schede: 20  valide: 15  bianche: 2  nulle: 3
+  ```
 
-**d) Vincoli** – `strcmp` richiede il testo esatto: maiuscole e refusi rendono la scheda nulla
+### Test 2 – Percentuali sui voti validi
 
-**e) Assunzioni** – le schede sono già trascritte
+- **Cosa si verifica**: le percentuali sono calcolate sulle 15 schede valide, non sulle 20 totali.
+- **Input**: dati del sorgente.
+- **Valori intermedi attesi**: `voti` = {2, 5, 4, 4}; ad esempio 100 × 5 / 15 = 33.3.
+- **Output atteso**:
+  ```
+  === RISULTATI ===
+    Bianchi Luca    2 voti   13.3%
+    Neri Giulia     5 voti   33.3%
+    Russo Marco     4 voti   26.7%
+    Gallo Sara      4 voti   26.7%
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Se `strlen(scheda) == 0` è bianca.
-2. Altrimenti cercare il candidato: se -1 è nulla, se no incrementare i suoi voti.
+### Test 3 – Pareggio per il secondo posto
 
-### Caso d'uso 2 – Percentuali
+- **Cosa si verifica**: due candidati a pari merito per il secondo posto portano al ballottaggio.
+- **Input**: dati del sorgente.
+- **Valori intermedi attesi**: `primo` = 1 (Neri Giulia), `secondo` = 2
+  (Russo Marco, il primo con 4 voti), `pari_merito` = 2.
+- **Output atteso**:
+  ```
+  Eletto: Neri Giulia
+  Secondo posto con 4 voti: Russo Marco, Gallo Sara
+  Pareggio: serve un ballottaggio per il secondo rappresentante.
+  ```
 
-**a) Input** – `voti[]`, `valide`
+### Test 4 – Secondo eletto senza pareggio
 
-**b) Output** – voti e percentuale per candidato
-
-**c) Variabili di supporto** – nessuna
-
-**d) Vincoli** – percentuale calcolata sui voti validi; se `valide` è 0 si stampa 0
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – `100.0 * voti[c] / valide`.
-
-### Caso d'uso 3 – Eletti e pareggio
-
-**a) Input** – voti 2, 5, 4, 4
-
-**b) Output** – "Eletto: Neri Giulia"; secondo posto Russo Marco, Gallo Sara; "serve un ballottaggio"
-
-**c) Variabili di supporto** – `primo`, `secondo`, `pari_merito`
-
-**d) Vincoli** – il secondo si cerca escludendo il primo
-
-**e) Assunzioni** – il primo posto non è in pareggio
-
-**f) Algoritmo in linguaggio naturale**
-1. Trovare l'indice del massimo (`primo`).
-2. Trovare il massimo tra gli altri (`secondo`).
-3. Contare e stampare i candidati diversi da `primo` con i voti di `secondo`.
-4. Se sono più di uno serve un ballottaggio, altrimenti `secondo` è eletto.
+- **Cosa si verifica**: con un secondo classificato unico il programma lo
+  elegge direttamente.
+- **Procedura**: nel sorgente sostituire la ventesima scheda `"Neri Giula"`
+  con `"Russo Marco"`, ricompilare ed eseguire.
+- **Input**: schede modificate (Russo Marco sale a 5 voti).
+- **Valori intermedi attesi**: `nulle` = 2, `valide` = 16, `voti` = {2, 5, 5, 4};
+  `primo` = 1 (Neri Giulia, indice minore a parità), `secondo` = 2, `pari_merito` = 1.
+- **Output atteso** (righe finali):
+  ```
+  Schede: 20  valide: 16  bianche: 2  nulle: 2
+  ...
+  Eletto: Neri Giulia
+  Secondo posto con 5 voti: Russo Marco
+  Eletto: Russo Marco
+  ```

@@ -9,131 +9,110 @@ e visualizza il messaggio formattato con le statistiche di utilizzo.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile            | Tipo     | Dimensione | Motivazione                                              |
-|----------------------|----------|------------|----------------------------------------------------------|
-| `mittente`           | `char[]` | 12         | Nome mittente preimpostato + `'\0'`                      |
-| `destinatario`       | `char[]` | 13         | Nome destinatario preimpostato + `'\0'`                  |
-| `messaggio`          | `char[]` | 162        | 160 caratteri + 1 per `'\n'` di fgets + 1 per `'\0'`    |
-| `num_caratteri`      | `int`    | —          | Numero di caratteri del messaggio (calcolato manualmente)|
-| `caratteri_rimasti`  | `int`    | —          | LIMITE_CARATTERI - num_caratteri                         |
-| `i`                  | `int`    | —          | Indice per scorrere il buffer (rimozione '\n' e conteggio)|
-| `LIMITE_CARATTERI`   | `#define`| —          | Costante: limite massimo di 160 caratteri                |
+### Input
 
----
+| Variabile   | Tipo     | Dimensione | Descrizione                                         |
+|-------------|----------|------------|-----------------------------------------------------|
+| `messaggio` | `char[]` | 162        | Testo del messaggio (160 + `'\n'` + `'\0'`)         |
 
-## 3. Casi d'uso e funzionalità
+Mittente e destinatario sono preimpostati nel codice.
 
----
+### Output
+- L'anteprima: mittente, destinatario e testo;
+- i caratteri usati su 160 e quelli rimanenti;
+- una barra di utilizzo di 10 simboli (`#` usati, `.` liberi) con la
+  percentuale;
+- lo stato: "Messaggio pronto per l'invio." oppure
+  "ATTENZIONE: messaggio vuoto, invio annullato.".
 
-### Caso d'uso 1 – Lettura e pulizia del messaggio
+### Vincoli
+- Il `'\n'` lasciato da `fgets` si sostituisce con `'\0'`; nello stesso ciclo
+  si contano i caratteri: alla fine l'indice del terminatore è la lunghezza
+- Il conteggio non usa `strlen`
+- La barra ha un `#` ogni 16 caratteri (160 / 10), con divisione intera; la
+  percentuale è `caratteri × 100 / 160`, anch'essa intera
+- Un messaggio vuoto non viene inviato
+- `fgets(messaggio, 162, stdin)` legge al massimo 161 caratteri: se il
+  messaggio supera i 160 caratteri si tronca a 160 e si avvisa l'utente; i
+  caratteri rimasti nell'input oltre il buffer vengono scartati con `getchar`
+- Se l'input termina senza testo il messaggio è vuoto
 
-**a) Input**
-Testo digitato dall'utente da tastiera, max 160 caratteri visibili.
+### Assunzioni
+- I caratteri sono a un byte (niente lettere accentate o emoji, che in UTF-8
+  occupano più byte)
 
-**b) Output**
-Nessun output diretto: il testo viene memorizzato in `messaggio`
-senza il `'\n'` finale.
+### Variabili di supporto
 
-**c) Variabili di supporto**
-- `i` (`int`): scorre la stringa per trovare `'\n'` e simultaneamente
-  conta i caratteri.
+| Variabile           | Tipo      | Descrizione                              |
+|---------------------|-----------|------------------------------------------|
+| `num_caratteri`     | `int`     | Caratteri del messaggio                  |
+| `caratteri_rimasti` | `int`     | `LIMITE_CARATTERI − num_caratteri`       |
+| `i`                 | `int`     | Indice di scorrimento e della barra      |
+| `c`                 | `int`     | Carattere scartato oltre il buffer       |
+| `troncato`          | `int`     | 1 se il messaggio è stato accorciato     |
+| `LIMITE_CARATTERI`  | `#define` | 160                                      |
 
-**d) Vincoli**
-- `fgets` è chiamata con dimensione 162 per garantire che non si superi
-  mai il buffer anche nel caso peggiore (160 caratteri + `'\n'` + `'\0'`).
-- Il ciclo si ferma al primo `'\n'` o `'\0'`.
-
-**e) Assunzioni**
-- L'input proviene da `stdin`.
-- Se l'utente digita più di 160 caratteri, `fgets` tronca automaticamente.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Mostrare il prompt di inserimento.
-2. Leggere il messaggio con fgets(messaggio, 162, stdin).
-3. Inizializzare i a 0.
-4. Finché messaggio[i] non è '\n' e non è '\0':
-   a. Incrementare i.
-5. Impostare messaggio[i] a '\0'.
-6. Assegnare i a num_caratteri (l'indice del terminatore = lunghezza).
-```
-
----
-
-### Caso d'uso 2 – Calcolo statistiche di utilizzo
-
-**a) Input**
-`num_caratteri` e la costante `LIMITE_CARATTERI`.
-
-**b) Output**
-Nessun output diretto: calcola `caratteri_rimasti`.
-
-**c) Variabili di supporto**
-- `caratteri_rimasti` (`int`): differenza tra limite e caratteri usati.
-
-**d) Vincoli**
-- `caratteri_rimasti` non può essere negativo grazie al limite di `fgets`.
-
-**e) Assunzioni**
-- `num_caratteri` è già stato calcolato correttamente nel caso d'uso 1.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Calcolare caratteri_rimasti = LIMITE_CARATTERI - num_caratteri.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare intestazione, mittente, destinatario e limite.
+2. Leggere il messaggio con `fgets`.
+3. Scorrere fino a `'\n'` o `'\0'`; se il buffer è pieno senza `'\n'`,
+   scartare il resto della riga; scrivere `'\0'` nella posizione raggiunta,
+   che è il numero di caratteri.
+4. Se i caratteri sono più di 160, troncare il messaggio a 160 e
+   ricordarlo in `troncato`.
+5. Stampare l'anteprima, i caratteri usati e quelli rimanenti; se il
+   messaggio è stato troncato, avvisare.
+6. Stampare la barra e la percentuale.
+7. Se il messaggio è vuoto annullare l'invio, altrimenti dichiararlo pronto.
 
 ---
 
-### Caso d'uso 3 – Visualizzazione messaggio e statistiche
+## 3. Casi di test
 
-**a) Input**
-`messaggio`, `mittente`, `destinatario`, `num_caratteri`,
-`caratteri_rimasti`, `LIMITE_CARATTERI`.
+Per ogni caso si esegue il programma con l'input indicato.
 
-**b) Output**
-Anteprima del messaggio formattata, statistiche e barra di utilizzo:
+### Test 1 – Messaggio breve
+- **Input:** `Ci vediamo alle 18 in piazza`
+- **Output atteso:**
 ```
-══════════════════════════════════════════════
-  ANTEPRIMA MESSAGGIO
-══════════════════════════════════════════════
-  Da  : Mario Rossi
-  A   : Anna Bianchi
-  Msg : Ciao Anna, ci vediamo domani alle 10?
-══════════════════════════════════════════════
+Caratteri usati      : 28 / 160
+Caratteri rimanenti  : 132
 
-Caratteri usati      : 41 / 160
-Caratteri rimanenti  : 119
-
-Utilizzo: [##........] 25%
+Utilizzo: [#.........] 17%
 
 Messaggio pronto per l'invio.
 ```
 
-**c) Variabili di supporto**
-- `i` (`int`): riutilizzato per scorrere le 10 posizioni della barra.
+### Test 2 – Messaggio vuoto
+- **Input:** solo Invio
+- **Output atteso:** `Utilizzo: [..........] 0%` e
+  `ATTENZIONE: messaggio vuoto, invio annullato.`
 
-**d) Vincoli**
-- La barra di utilizzo ha sempre 10 celle, ognuna rappresenta 16 caratteri.
-- Il messaggio di stato finale dipende da `num_caratteri`.
+### Test 3 – Esattamente 160 caratteri
+- **Cosa si verifica:** il caso limite ammesso
+- **Input:** 160 caratteri
+- **Output atteso:** `Caratteri usati      : 160 / 160`,
+  `Caratteri rimanenti  : 0`, `Utilizzo: [##########] 100%`,
+  `Messaggio pronto per l'invio.`
 
-**e) Assunzioni**
-- La divisione intera `num_caratteri / 16` determina le celle `'#'` della barra.
-- La percentuale è calcolata con aritmetica intera (troncata, non arrotondata).
-
-**f) Algoritmo in linguaggio naturale**
+### Test 4 – Messaggio oltre il limite
+- **Cosa si verifica:** il troncamento a 160 caratteri e lo scarto del testo in eccesso
+- **Input:** 200 caratteri
+- **Output atteso:**
 ```
-1. Stampare la scheda con mittente, destinatario e testo del messaggio.
-2. Stampare il numero di caratteri usati e quelli rimasti.
-3. Stampare la barra di utilizzo:
-   a. Inizializzare i a 0.
-   b. Finché i < 10:
-      - Se i < num_caratteri / 16: stampare '#'.
-      - Altrimenti: stampare '.'.
-      - Incrementare i.
-4. Stampare la percentuale di utilizzo.
-5. Stampare il messaggio di stato:
-   - Se num_caratteri è 0: "messaggio vuoto".
-   - Altrimenti: "pronto per l'invio".
+Caratteri usati      : 160 / 160
+Caratteri rimanenti  : 0
+Il testo superava il limite: messaggio troncato a 160 caratteri.
+
+Utilizzo: [##########] 100%
+
+Messaggio pronto per l'invio.
 ```
+
+### Test 5 – Un solo carattere oltre il limite
+- **Cosa si verifica:** con 161 caratteri `fgets` riempie il buffer senza
+  leggere il `'\n'`, che va scartato; il messaggio viene comunque troncato
+- **Input:** 161 caratteri
+- **Output atteso:** come nel Test 4

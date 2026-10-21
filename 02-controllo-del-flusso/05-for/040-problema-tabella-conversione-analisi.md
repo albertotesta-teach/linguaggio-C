@@ -7,14 +7,40 @@ Fahrenheit e Kelvin, per un intervallo e un passo scelti dall'utente
 (es. da -20 a 100 ogni 20 gradi). Le righe di 0 °C e 100 °C vanno
 evidenziate.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Motivazione |
-|-----------|------|-------------|
-| `inizio`, `fine`, `passo` | `int` | Parametri della tabella |
-| `celsius` | `int` | Variabile di controllo del for |
-| `fahrenheit`, `kelvin` | `double` | Valori convertiti |
-| `righe` | `int` | Contatore delle righe stampate |
+### Input
+
+| Variabile | Tipo  | Significato                              |
+|-----------|-------|------------------------------------------|
+| `inizio`  | `int` | Temperatura iniziale della tabella (°C)  |
+| `fine`    | `int` | Temperatura finale della tabella (°C)    |
+| `passo`   | `int` | Incremento tra una riga e la successiva  |
+
+### Output
+Un'intestazione e una riga per ogni temperatura con i valori in Celsius,
+Fahrenheit e Kelvin; la riga di 0 °C è annotata con "l'acqua gela", quella
+di 100 °C con "l'acqua bolle". In fondo il numero di righe stampate.
+
+### Vincoli
+- `fine >= inizio`: la richiesta si ripete finché non è rispettato
+- `passo > 0`: con passo 0 il ciclo non terminerebbe mai, con passo negativo
+  la condizione `celsius <= fine` resterebbe sempre vera
+- La temperatura finale è inclusa solo se il passo la raggiunge esattamente
+  (condizione `<=`)
+
+### Assunzioni
+- Le temperature sono intere
+- L'utente inserisce numeri interi
+
+### Variabili di supporto
+
+| Variabile    | Tipo     | Significato                       |
+|--------------|----------|-----------------------------------|
+| `celsius`    | `int`    | Variabile di controllo del for    |
+| `fahrenheit` | `double` | Valore convertito in °F           |
+| `kelvin`     | `double` | Valore convertito in K            |
+| `righe`      | `int`    | Contatore delle righe stampate    |
 
 Formule: `F = C * 9 / 5 + 32` (con `9.0` per la divisione reale) e
 `K = C + 273.15`.
@@ -22,23 +48,7 @@ Formule: `F = C * 9 / 5 + 32` (con `9.0` per la divisione reale) e
 Una volta letti i tre parametri il numero di righe è determinato: si usa il
 `for`. I parametri si validano con `do-while`.
 
-## 3. Casi d'uso e funzionalità
-
-### Caso d'uso 1 – Tabella da -20 a 100 ogni 20 gradi
-
-**a) Input** – inizio -20, fine 100, passo 20
-
-**b) Output** – 7 righe; la riga di 0 °C con "l'acqua gela", quella di 100 °C
-con "l'acqua bolle"
-
-**c) Variabili di supporto** – `righe`
-
-**d) Vincoli** – la temperatura finale è inclusa se raggiunta esattamente dal
-passo (condizione `<=`)
-
-**e) Assunzioni** – le temperature sono intere
-
-**f) Algoritmo in linguaggio naturale**
+### Algoritmo in linguaggio naturale
 1. Leggere la temperatura iniziale.
 2. Leggere la finale ripetendo finché è minore dell'iniziale.
 3. Leggere il passo ripetendo finché non è positivo.
@@ -48,32 +58,26 @@ passo (condizione `<=`)
    `celsius` vale 0 o 100, contare la riga.
 6. Stampare il numero di righe.
 
-### Caso d'uso 2 – Dati non validi
+## 3. Casi di test
 
-**a) Input** – finale -30 con iniziale -20, oppure passo 0
+Per ogni caso si esegue il programma con l'input indicato e si confronta
+quanto stampato con l'output atteso.
 
-**b) Output** – la richiesta viene ripetuta
+### Test 1 – Tabella da -20 a 100 ogni 20 gradi
+- **Input:** inizio -20, fine 100, passo 20
+- **Output atteso:** 7 righe (-20, 0, 20, 40, 60, 80, 100); la riga di 0 °C
+  con "l'acqua gela", quella di 100 °C con "l'acqua bolle"
 
-**c) Variabili di supporto** – nessuna
+### Test 2 – Fine non raggiunta esattamente dal passo
+- **Cosa si verifica:** il valore che supera la fine non viene stampato
+- **Input:** inizio 0, fine 50, passo 15
+- **Output atteso:** 4 righe (0, 15, 30, 45); il valore 60 supera la fine
+  e non compare
 
-**d) Vincoli** – con passo 0 il ciclo non terminerebbe mai; con passo
-negativo la condizione `celsius <= fine` resterebbe sempre vera
+### Test 3 – Temperatura finale minore dell'iniziale
+- **Input:** inizio -20, poi fine -30
+- **Output atteso:** la richiesta della temperatura finale viene ripetuta
 
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1, passi 2 e 3.
-
-### Caso d'uso 3 – Fine non raggiunta esattamente dal passo
-
-**a) Input** – da 0 a 50 ogni 15
-
-**b) Output** – righe 0, 15, 30, 45: il valore 60 supera la fine e non viene
-stampato
-
-**c) Variabili di supporto** – come nel caso 1
-
-**d) Vincoli** – nessuno in più
-
-**e) Assunzioni** – nessuna in più
-
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
+### Test 4 – Passo non positivo
+- **Input:** passo 0 oppure -5
+- **Output atteso:** la richiesta del passo viene ripetuta

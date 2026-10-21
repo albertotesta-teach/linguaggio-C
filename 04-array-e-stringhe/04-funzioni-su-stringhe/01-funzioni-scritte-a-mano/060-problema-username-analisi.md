@@ -7,73 +7,86 @@ nuovi iscritti. Lo username è formato dall'iniziale del nome seguita dalle
 lettere del cognome, tutto in minuscolo e al massimo 8 caratteri. Se lo
 stesso username è già stato assegnato si aggiunge una cifra (2, 3, …).
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `nomi` | `char[][]` | 8 × 25 | Nome di ogni iscritto |
-| `cognomi` | `char[][]` | 8 × 25 | Cognome (array parallelo a `nomi`) |
-| `usernames` | `char[][]` | 8 × 25 | Username assegnati (parallelo) |
-| `base` | `char[]` | 25 | Username senza cifra |
-| `candidato` | `char[]` | 25 | Username da verificare |
-| `numero` | `int` | — | Cifra da aggiungere (1 = nessuna) |
+### Input
+Nessun input da tastiera: nomi e cognomi sono inizializzati nel codice.
 
-| Funzione | Compito |
-|----------|---------|
-| `crea_base` | Iniziale del nome + lettere del cognome, minuscolo, max 8 |
-| `gia_presente` | Cerca il candidato tra gli username già assegnati |
-| `copia`, `lunghezza`, `confronta` | Funzioni di base scritte a mano |
-| `minuscola`, `e_lettera` | Operazioni sul singolo carattere |
+| Variabile | Tipo       | Dimensione | Descrizione                                 |
+|-----------|------------|------------|---------------------------------------------|
+| `nomi`    | `char[][]` | 8 × 25     | Nome di ogni iscritto                       |
+| `cognomi` | `char[][]` | 8 × 25     | Cognome, parallelo a `nomi`                 |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Una tabella con nome, cognome e username di ogni iscritto;
+- il numero di account creati e quanti hanno ricevuto una cifra.
 
-### Caso d'uso 1 – Username nuovo
+### Vincoli
+- Base dello username: iniziale del nome + solo le lettere del cognome
+  (spazi e apostrofi eliminati), tutto in minuscolo, al massimo
+  `MAX_BASE` (8) caratteri: i cognomi lunghi vengono troncati
+- Se il candidato è già stato assegnato si prova la base con la cifra 2,
+  poi 3, e così via, finché non è libero
+- La cifra si aggiunge dopo la base, quindi uno username con cifra può
+  avere 9 caratteri
+- I duplicati si cercano solo tra gli username già assegnati (le prime k
+  righe di `usernames`), che è un terzo array parallelo
+- Tutte le funzioni sulle stringhe sono scritte a mano
 
-**a) Input** – `Giuseppe`, `D'Amico`
+### Assunzioni
+- Non ci sono più di 9 iscritti con la stessa base: la cifra è una sola
+  (`'0' + numero`)
+- I nomi non contengono lettere accentate
 
-**b) Output** – `gdamico`
+### Variabili di supporto
 
-**c) Variabili di supporto** – `base`
+| Variabile    | Tipo       | Dimensione | Descrizione                              |
+|--------------|------------|------------|------------------------------------------|
+| `usernames`  | `char[][]` | 8 × 25     | Username assegnati, parallelo a `nomi`   |
+| `base`       | `char[]`   | 25         | Username senza cifra                     |
+| `candidato`  | `char[]`   | 25         | Username da verificare                   |
+| `numero`     | `int`      | —          | Cifra da aggiungere (1 = nessuna)        |
+| `lung_base`  | `int`      | —          | Posizione in cui scrivere la cifra       |
+| `con_numero` | `int`      | —          | Account con cifra aggiunta               |
 
-**d) Vincoli** – l'apostrofo non è una lettera e viene scartato
+| Funzione | Descrizione |
+|---|---|
+| `void crea_base(char dest[], const char nome[], const char cognome[])` | Iniziale + lettere del cognome, max 8 |
+| `int gia_presente(const char candidato[], const char elenco[][LUNG], int n)` | 1 se il candidato è tra i primi n |
+| `copia`, `lunghezza`, `confronta`, `minuscola`, `e_lettera` | Funzioni di base |
 
-**e) Assunzioni** – il nome inizia con una lettera
+### Algoritmo in linguaggio naturale
+Per ogni iscritto k:
+1. Costruire la base e copiarla nel candidato; porre `numero = 1`.
+2. Finché il candidato è tra gli username già assegnati: incrementare
+   `numero`, ricopiare la base e aggiungere la cifra.
+3. Se `numero > 1` contare l'account tra quelli con cifra.
+4. Salvare il candidato in `usernames[k]` e stampare la riga.
 
-**f) Algoritmo in linguaggio naturale**
-1. Scrivere in `base` la minuscola della prima lettera del nome.
-2. Aggiungere le lettere del cognome in minuscolo finché `base` ha meno di 8 caratteri.
-3. Terminare con `'\0'`.
+Alla fine stampare il riepilogo.
 
-### Caso d'uso 2 – Username già usato
+## 3. Casi di test
 
-**a) Input** – `Marco Rossi` dopo `Mario Rossi`; poi `Mirko Rossi`
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-**b) Output** – `mrossi2`, `mrossi3`
+### Test 1 – Tabella degli username
+- **Cosa si verifica:** omonimie (mrossi, mrossi2, mrossi3), cognomi con
+  spazio e apostrofo, troncamento a 8 caratteri
+- **Output atteso:**
+```
+  Nome         Cognome        Username
+  Mario        Rossi          mrossi
+  Marco        Rossi          mrossi2
+  Anna Maria   De Luca        adeluca
+  Giuseppe     D'Amico        gdamico
+  Laura        Bianchi        lbianchi
+  Francesca    Santangelo     fsantang
+  Mattia       Santangelini   msantang
+  Mirko        Rossi          mrossi3
 
-**c) Variabili di supporto** – `numero`, `lung_base`
-
-**d) Vincoli** – il confronto avviene solo con i `k` username già assegnati
-
-**e) Assunzioni** – al massimo 9 omonimi (una sola cifra)
-
-**f) Algoritmo in linguaggio naturale**
-1. Copiare `base` in `candidato`, `numero = 1`.
-2. Finché `candidato` è già presente: incrementare `numero`, ricopiare `base`
-   e scrivere la cifra `'0' + numero` dopo l'ultimo carattere, seguita da `'\0'`.
-3. Salvare `candidato` in `usernames[k]`.
-
-### Caso d'uso 3 – Cognome lungo
-
-**a) Input** – `Francesca Santangelo`, `Mattia Santangelini`
-
-**b) Output** – `fsantang`, `msantang`
-
-**c) Variabili di supporto** – `j` in `crea_base`
-
-**d) Vincoli** – massimo 8 caratteri
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la copia del cognome si ferma quando
-`base` raggiunge 8 caratteri; le due persone ottengono username diversi
-grazie all'iniziale del nome.
+Account creati: 8, di cui 2 con cifra aggiunta
+```
+- **Osservazione:** fsantang e msantang non sono duplicati perché hanno
+  iniziali diverse; Mirko Rossi riceve il 3 perché mrossi e mrossi2 sono già
+  assegnati

@@ -9,82 +9,101 @@ con orari in formato HH:MM.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è la **sincronizzazione dei tappi**: entrambi gli array
-paralleli hanno il tappo nella stessa posizione; ogni operazione deve
-aggiornare il tappo in entrambi gli array contemporaneamente.
+### Input
+Nessun input da tastiera: la coda iniziale e le operazioni sono fisse nel
+codice.
 
-| Variabile       | Tipo    | Dimensione | Motivazione                                             |
-|-----------------|---------|------------|---------------------------------------------------------|
-| `id_pazienti`   | `int[]` | MAX (12)   | ID paziente; terminato da TAPPO (-1)                    |
-| `orari_visita`  | `int[]` | MAX (12)   | Orario in minuti; terminato da TAPPO (-1)               |
-| `TAPPO`         | `#define`| -1        | Sentinella: gli ID e gli orari sono sempre ≥ 0          |
-| `MAX`           | `#define`| 12        | Capacità totale incluso il tappo                        |
+| Variabile      | Tipo    | Dimensione | Descrizione                                      |
+|----------------|---------|------------|--------------------------------------------------|
+| `id_pazienti`  | `int[]` | `MAX` (12) | ID del paziente, terminati da `TAPPO` (-1)       |
+| `orari_visita` | `int[]` | `MAX` (12) | Orario in minuti dalla mezzanotte, terminati da `TAPPO` |
 
----
+Coda iniziale: 1042 alle 9:00, 2387 alle 9:30, 1905 alle 10:00, 3201 alle
+10:30. Operazioni: aggiunta del paziente 4455 alle 11:00, rimozione del primo.
 
-## 3. Casi d'uso e funzionalità
+### Output
+- Lo stato iniziale della coda: posizione, ID e orario `HH:MM`, oppure
+  "(coda vuota)";
+- l'esito dell'aggiunta ("OK" con il numero di prenotazioni, oppure
+  "CODA PIENA") e della rimozione ("OK" oppure "CODA VUOTA");
+- lo stato finale della coda.
 
----
+### Vincoli
+- I due array hanno il tappo **nella stessa posizione**: ogni operazione
+  aggiorna entrambi
+- La coda è FIFO: si aggiunge in fondo e si rimuove dalla testa
+- L'aggiunta è possibile solo se resta spazio per il tappo
+  (`pos + 1 < MAX`): al massimo `MAX − 1` prenotazioni
+- La rimozione sposta tutti gli elementi di una posizione a sinistra, tappo
+  compreso
+- L'orario si stampa come `minuti / 60` ore e `minuti % 60` minuti, su due
+  cifre
 
-### Caso d'uso 1 – Aggiunta in fondo
+### Assunzioni
+- ID e orari sono ≥ 0, quindi -1 non è mai un dato valido
+- Le prenotazioni sono già in ordine di orario
 
-**a) Input** — Array `id`, `orari`, nuovi valori `nuovo_id`, `nuovo_orario`.
-**b) Output** — Restituisce 1 (OK) o 0 (coda piena).
+### Variabili di supporto
 
-**c) Vincoli**
-- Il tappo deve essere aggiornato in entrambi gli array nello stesso punto.
-- La condizione `pos + 1 < MAX` garantisce spazio per elemento + tappo.
+| Variabile | Tipo      | Descrizione                         |
+|-----------|-----------|-------------------------------------|
+| `ore`, `minuti` | `int` | Orario convertito per la stampa |
+| `TAPPO`   | `#define` | -1                                  |
+| `MAX`     | `#define` | 12, capacità incluso il tappo       |
 
-**f) Algoritmo**
-```
-pos = conta(id).
-Se pos + 1 < MAX:
-  id[pos] = nuovo_id; orari[pos] = nuovo_orario.
-  id[pos+1] = TAPPO; orari[pos+1] = TAPPO.
-  return 1.
-Altrimenti: return 0.
-```
+| Funzione | Descrizione |
+|---|---|
+| `int conta(const int id[])` | Indice del tappo |
+| `int aggiungi(int id[], int orari[], int nuovo_id, int nuovo_orario)` | 1 se aggiunta, 0 se piena |
+| `int rimuovi_primo(int id[], int orari[])` | 1 se rimossa, 0 se vuota |
+| `void stampa_coda(const int id[], const int orari[])` | Coda con orari HH:MM |
 
----
-
-### Caso d'uso 2 – Rimozione della testa (FIFO)
-
-**a) Input** — Array `id`, `orari`.
-**b) Output** — Restituisce 1 (OK) o 0 (coda vuota).
-
-**c) Vincoli**
-- Lo shift deve avvenire su entrambi gli array in parallelo.
-- Il ciclo arriva fino a `i < len` (non `i <= len`): il tappo viene copiato
-  da `id[i+1]` a `id[i]` nell'ultima iterazione quando `i = len - 1`,
-  poiché `id[len] == TAPPO`.
-- Se la coda è vuota (`len == 0`), l'operazione viene rifiutata.
-
-**f) Algoritmo**
-```
-len = conta(id).
-Se len > 0:
-  Per i da 0 a len - 1:
-    id[i] = id[i+1]; orari[i] = orari[i+1].
-  return 1.
-Altrimenti: return 0.
-```
+### Algoritmo in linguaggio naturale
+1. Stampare lo stato iniziale.
+2. Aggiunta: trovare la posizione del tappo; se c'è spazio scrivere ID e
+   orario in quella posizione e il tappo nella successiva, in entrambi gli
+   array.
+3. Rimozione: se la coda non è vuota, per ogni posizione da 0 alla
+   lunghezza − 1 copiare l'elemento successivo, in entrambi gli array.
+4. Stampare lo stato finale.
 
 ---
 
-### Caso d'uso 3 – Stampa con orario HH:MM
+## 3. Casi di test
 
-**a) Input** — Array `id`, `orari`.
-**b) Output**
+Il programma non legge dati: si esegue con i dati del codice; i test 3 e 4
+richiedono modifiche al codice.
+
+### Test 1 – Aggiunta e rimozione
+- **Output atteso:**
 ```
-  Pos. | ID paz. | Orario
-  -----|---------|-------
-     1  |   2387  | 09:30
-     2  |   1905  | 10:00
-  ...
+Aggiunta paziente 4455 alle 11:00 (660 minuti):
+  OK -> 5 prenotazioni in coda
+
+Paziente 1042 visitato - rimozione dalla coda:
+  OK -> 4 prenotazioni rimanenti
 ```
-**d) Vincoli**
-- Conversione: `ore = orari[i] / 60`, `minuti = orari[i] % 60`.
-- Il formato `%02d` garantisce due cifre (es. `09:30` non `9:30`).
-- Se la coda è vuota (`id[0] == TAPPO`), si stampa un messaggio esplicito.
+
+### Test 2 – Stato finale
+- **Cosa si verifica:** il primo paziente è uscito e il nuovo è in fondo
+- **Output atteso:**
+```
+    1  |   2387  | 09:30
+    2  |   1905  | 10:00
+    3  |   3201  | 10:30
+    4  |   4455  | 11:00
+```
+
+### Test 3 – Coda piena
+- **Procedura:** porre `MAX` a 5 (4 prenotazioni + tappo)
+- **Output atteso:** `CODA PIENA`
+
+### Test 4 – Coda inizialmente vuota
+- **Cosa si verifica:** la stampa della coda vuota e il ritorno a vuota dopo
+  aggiunta e rimozione
+- **Procedura:** inizializzare entrambi gli array con il solo `TAPPO`
+- **Output atteso:** `Stato iniziale (0 prenotazioni):` con `(coda vuota)`;
+  aggiunta `OK -> 1 prenotazioni in coda`; rimozione del paziente 4455
+  `OK -> 0 prenotazioni rimanenti`; stato finale `(coda vuota)`

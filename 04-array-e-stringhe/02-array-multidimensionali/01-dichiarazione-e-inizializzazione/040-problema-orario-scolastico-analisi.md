@@ -7,72 +7,91 @@ L'orario settimanale di una classe va rappresentato come una tabella di
 Il programma deve stampare l'orario in forma leggibile, calcolare le ore
 settimanali di ogni materia e indicare il giorno con più ore di Informatica.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `orario` | `int[][]` | 5 × 6 | Riga = giorno, colonna = ora; il valore è il codice materia |
-| `materia` | `int` | — | Codice in esame durante il conteggio (da 1 a 7) |
-| `ore_materia` | `int` | — | Contatore delle celle con quel codice |
-| `ore_info_giorno` | `int` | — | Ore di Informatica in un giorno |
-| `max_ore_info`, `giorno_max_info` | `int` | — | Massimo e indice del giorno corrispondente |
+### Input
+Nessun input da tastiera: l'orario è inizializzato nel codice.
 
-Costanti: `GIORNI`, `ORE`, `NUM_MATERIE`, `INFORMATICA`.
+| Variabile | Tipo      | Dimensione | Descrizione                                         |
+|-----------|-----------|------------|-----------------------------------------------------|
+| `orario`  | `int[][]` | 5 × 6      | Riga = giorno, colonna = ora, valore = codice materia |
 
-I codici numerici rendono la matrice compatta; le sigle e i nomi vengono
-stampati con uno `switch` sul codice, perché gli array di stringhe non sono
-ancora stati introdotti.
+Codici: 1 Italiano, 2 Matematica, 3 Inglese, 4 Informatica, 5 Sistemi,
+6 Storia, 7 Scienze motorie.
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La tabella dell'orario con la sigla di tre lettere di ogni materia
+  ("???" per un codice sconosciuto);
+- le ore settimanali di ogni materia e il totale;
+- il giorno con più ore di Informatica e il numero di ore.
 
-### Caso d'uso 1 – Stampa dell'orario
+### Vincoli
+- Il totale delle ore delle materie è uguale al numero di celle
+  (5 × 6 = 30) se tutti i codici sono validi
+- Per contare le ore di una materia si scorre tutta la matrice; per contare
+  le ore di Informatica di un giorno si scorre una sola riga
+- A parità di ore di Informatica vince il primo giorno della settimana,
+  perché il confronto è stretto (`>`)
+- Nomi e sigle si stampano con uno `switch` sul codice, perché gli array di
+  stringhe non sono ancora stati introdotti
 
-**a) Input** – matrice `orario` inizializzata nel codice
+### Assunzioni
+- I codici delle materie sono tra 1 e 7
+- Almeno un giorno ha ore di Informatica
 
-**b) Output** – tabella con le sigle (ITA, MAT, ...) e i giorni abbreviati
+### Variabili di supporto
 
-**c) Variabili di supporto** – `giorno`, `ora`
+| Variabile         | Tipo      | Descrizione                                 |
+|-------------------|-----------|---------------------------------------------|
+| `materia`         | `int`     | Codice in esame durante il conteggio (1–7)  |
+| `ore_materia`     | `int`     | Celle con quel codice                       |
+| `totale_ore`      | `int`     | Somma delle ore di tutte le materie         |
+| `ore_info_giorno` | `int`     | Ore di Informatica in un giorno             |
+| `max_ore_info`, `giorno_max_info` | `int` | Massimo e giorno corrispondente |
+| `GIORNI`, `ORE`, `NUM_MATERIE`, `INFORMATICA` | `#define` | 5, 6, 7, 4 |
 
-**d) Vincoli** – un codice non previsto viene stampato come `???`
+### Algoritmo in linguaggio naturale
+1. Per ogni giorno stampare l'abbreviazione del giorno e, per ogni ora, la
+   sigla della materia.
+2. Per ogni codice da 1 a 7: contare le celle della matrice con quel codice,
+   sommarle al totale e stampare nome e ore. Stampare il totale.
+3. Per ogni giorno contare le ore di Informatica della riga e aggiornare il
+   massimo se è maggiore. Stampare il giorno e le ore.
 
-**e) Assunzioni** – ogni ora contiene esattamente una materia
+## 3. Casi di test
 
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni giorno: stampare l'abbreviazione del giorno.
-2. Per ogni ora del giorno: stampare la sigla corrispondente al codice.
-3. Andare a capo alla fine della riga.
+Il programma non legge dati: si esegue con i dati del codice; il Test 3
+richiede di modificare l'orario e ricompilare.
 
-### Caso d'uso 2 – Ore settimanali per materia
+### Test 1 – Stampa dell'orario
+- **Output atteso:**
+```
+          1a    2a    3a    4a    5a    6a
+  Lun     ITA   ITA   MAT   INF   INF   STO 
+  Mar     MAT   ING   SIS   SIS   ITA   MOT 
+  Mer     INF   INF   INF   MAT   STO   ING 
+  Gio     ITA   MAT   MAT   SIS   ING   MOT 
+  Ven     SIS   INF   INF   ITA   MAT   STO 
+```
 
-**a) Input** – matrice `orario`
+### Test 2 – Ore per materia e giorno con più Informatica
+- **Cosa si verifica:** il totale è 30
+- **Output atteso:**
+```
+  Italiano        : 5 ore
+  Matematica      : 6 ore
+  Inglese         : 3 ore
+  Informatica     : 7 ore
+  Sistemi         : 4 ore
+  Storia          : 3 ore
+  Scienze motorie : 2 ore
+  Totale          : 30 ore (5 giorni x 6 ore)
 
-**b) Output** – per ogni materia il numero di ore, e il totale (30)
+Giorno con piu' ore di Informatica: mercoledi' (3 ore)
+```
 
-**c) Variabili di supporto** – `materia`, `ore_materia`, `totale_ore`
-
-**d) Vincoli** – il totale deve coincidere con `GIORNI × ORE`: è un controllo
-di correttezza dei dati
-
-**e) Assunzioni** – i codici vanno da 1 a 7
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni codice di materia da 1 a 7: azzerare il contatore.
-2. Scorrere tutta la matrice e contare le celle uguali al codice.
-3. Stampare il nome della materia e il conteggio; aggiungerlo al totale.
-
-### Caso d'uso 3 – Giorno con più ore di Informatica
-
-**a) Input** – matrice `orario`
-
-**b) Output** – "Giorno con piu' ore di Informatica: mercoledi' (3 ore)"
-
-**c) Variabili di supporto** – `ore_info_giorno`, `max_ore_info`, `giorno_max_info`
-
-**d) Vincoli** – in caso di parità vince il primo giorno trovato (confronto `>`)
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni giorno: contare le celle della riga uguali a `INFORMATICA`.
-2. Se il conteggio supera il massimo, aggiornare massimo e giorno.
-3. Stampare il giorno trovato.
+### Test 3 – Parità tra due giorni
+- **Cosa si verifica:** a parità vince il primo giorno
+- **Procedura:** al venerdì sostituire la 4a ora (ITA, codice 1) con
+  Informatica (codice 4), così venerdì ha anche lui 3 ore di Informatica
+- **Output atteso:** `Giorno con piu' ore di Informatica: mercoledi' (3 ore)`

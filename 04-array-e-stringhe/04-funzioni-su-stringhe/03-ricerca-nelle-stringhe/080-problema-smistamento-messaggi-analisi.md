@@ -9,70 +9,127 @@ di cui contiene più parole chiave. Se non ne contiene nessuna, o se due
 uffici sono a pari merito, va alla Segreteria generale. Alla fine si conta
 quanti messaggi ha ricevuto ogni ufficio.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `uffici` | `char[][]` | 4 × 24 | Nomi degli uffici; l'ultimo è la Segreteria generale |
-| `parole` | `char[][]` | 11 × 14 | Parole chiave (anche solo radici: "pagell", "assenz") |
-| `ufficio_di` | `int[]` | 11 | Ufficio di ogni parola (parallelo a `parole`) |
-| `messaggi` | `char[][]` | 6 × 80 | Richieste arrivate |
-| `punteggi` | `int[]` | 4 | Parole trovate per ufficio nel messaggio corrente |
-| `ricevuti` | `int[]` | 4 | Messaggi assegnati a ogni ufficio |
-| `testo` | `char[]` | 80 | Messaggio in minuscolo |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `uffici` | `char[4][24]` | Nomi degli uffici; l'ultimo è la Segreteria generale |
+| `parole` | `char[11][14]` | Parole chiave, anche solo radici (`pagell`, `assenz`) |
+| `ufficio_di` | `int[11]` | Ufficio di ogni parola (parallelo a `parole`) |
+| `messaggi` | `char[6][80]` | Richieste arrivate |
+
+I dati sono inizializzati nel sorgente: il programma non legge nulla da tastiera.
+
+### Output
+
+- Per ogni messaggio: il testo, il numero di parole chiave trovate per
+  Didattica, Amministrazione e Servizi e l'ufficio a cui viene inoltrato.
+- Riepilogo dei messaggi ricevuti da ogni ufficio.
+
+### Vincoli
+
+- La ricerca non distingue maiuscole e minuscole: si cerca in una copia
+  del messaggio convertita in minuscolo.
+- Ogni parola chiave conta al massimo una volta per messaggio (si verifica
+  solo se `strstr` la trova).
+- Se il punteggio massimo è 0 oppure è raggiunto da più uffici il messaggio
+  va alla Segreteria generale.
+- `scegli_ufficio` ha una sola `return`.
+
+### Assunzioni
+
+- Le parole chiave sono scritte in minuscolo; usando la radice si
+  riconoscono singolare e plurale (`pagell` trova `pagella` e `pagelle`).
+- La Segreteria generale non ha parole chiave proprie.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `testo` | `char[80]` | Messaggio in minuscolo |
+| `punteggi` | `int[4]` | Parole trovate per ufficio nel messaggio corrente |
+| `ricevuti` | `int[4]` | Messaggi assegnati a ogni ufficio |
+| `m`, `p`, `u` | `int` | Indici di messaggio, parola, ufficio |
+| `migliore`, `pari`, `scelta` | `int` | In `scegli_ufficio`: ufficio con il massimo, quanti lo raggiungono, risultato |
 
 | Funzione | Compito |
 |----------|---------|
 | `in_minuscolo` | Copia in minuscolo |
 | `scegli_ufficio` | Ufficio con il punteggio massimo, oppure la Segreteria generale |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Un ufficio prevale
+1. Per ogni messaggio:
+   1. copiarlo in minuscolo e azzerare i punteggi;
+   2. per ogni parola chiave, se è contenuta nel testo incrementare il
+      punteggio del suo ufficio;
+   3. scegliere l'ufficio: trovare il massimo tra i primi tre, contare
+      quanti uffici lo raggiungono; se il massimo è 0 o è condiviso
+      scegliere la Segreteria generale;
+   4. incrementare `ricevuti` dell'ufficio scelto e stampare il dettaglio.
+2. Stampare il riepilogo per ufficio.
 
-**a) Input** – "Vorrei prenotare un colloquio per parlare dei voti di mio figlio"
+## 3. Casi di test
 
-**b) Output** – didattica 2 → Didattica
+### Test 1 – Un ufficio prevale
 
-**c) Variabili di supporto** – `punteggi`
+- **Cosa si verifica**: più parole dello stesso ufficio portano a quell'ufficio.
+- **Input**: `Vorrei prenotare un colloquio per parlare dei voti di mio figlio` (dati del sorgente).
+- **Valori intermedi attesi**: trovate `voti` e `colloquio` → `punteggi` = {2, 0, 0}.
+- **Output atteso**:
+  ```
+     parole trovate: didattica 2, amministrazione 0, servizi 0 -> Didattica
+  ```
 
-**d) Vincoli** – i punteggi vanno azzerati a ogni messaggio
+### Test 2 – Parola chiave in maiuscolo
 
-**e) Assunzioni** – le parole chiave sono in minuscolo
+- **Cosa si verifica**: la conversione in minuscolo del messaggio.
+- **Input**: `Lo SCUOLABUS di via Roma passa in ritardo`.
+- **Output atteso**:
+  ```
+     parole trovate: didattica 0, amministrazione 0, servizi 1 -> Servizi
+  ```
 
-**f) Algoritmo in linguaggio naturale**
-1. Convertire il messaggio in minuscolo e azzerare i punteggi.
-2. Per ogni parola chiave presente (`strstr != NULL`) incrementare il
-   punteggio del suo ufficio (`ufficio_di[p]`).
-3. Scegliere l'ufficio con il punteggio massimo.
+### Test 3 – Radice di una parola
 
-### Caso d'uso 2 – Radice di una parola
+- **Cosa si verifica**: la radice `pagell` è contenuta in `pagelle`.
+- **Input**: `Quando escono le pagelle del primo quadrimestre?`
+- **Output atteso**:
+  ```
+     parole trovate: didattica 1, amministrazione 0, servizi 0 -> Didattica
+  ```
 
-**a) Input** – "Quando escono le pagelle del primo quadrimestre?"
+### Test 4 – Pareggio
 
-**b) Output** – Didattica
+- **Cosa si verifica**: un massimo condiviso da più uffici manda il messaggio
+  alla Segreteria generale.
+- **Input**: `Chiedo il rimborso della mensa per i giorni di assenza`.
+- **Valori intermedi attesi**: `punteggi` = {1, 1, 1}, `migliore` = 0, `pari` = 3.
+- **Output atteso**:
+  ```
+     parole trovate: didattica 1, amministrazione 1, servizi 1 -> Segreteria generale
+  ```
 
-**c) Variabili di supporto** – parola chiave "pagell"
+### Test 5 – Nessuna parola chiave
 
-**d) Vincoli** – "pagella" non sarebbe contenuta in "pagelle": si usa la radice
+- **Cosa si verifica**: con punteggio massimo 0 il messaggio va alla Segreteria generale.
+- **Input**: `Buongiorno, a chi posso chiedere informazioni?`
+- **Output atteso**:
+  ```
+     parole trovate: didattica 0, amministrazione 0, servizi 0 -> Segreteria generale
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 6 – Riepilogo
 
-**f) Algoritmo in linguaggio naturale** – come nel caso 1.
-
-### Caso d'uso 3 – Pareggio o nessuna parola
-
-**a) Input** – "Chiedo il rimborso della mensa per i giorni di assenza"; "Buongiorno, a chi posso chiedere informazioni?"
-
-**b) Output** – Segreteria generale in entrambi i casi
-
-**c) Variabili di supporto** – `migliore`, `pari`
-
-**d) Vincoli** – una sola `return` in `scegli_ufficio`
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale**
-1. Trovare il punteggio massimo e contare quanti uffici lo raggiungono.
-2. Se il massimo è 0 o è raggiunto da più uffici scegliere la Segreteria
-   generale, altrimenti l'ufficio con il massimo.
+- **Cosa si verifica**: conteggio dei messaggi ricevuti su tutti i sei messaggi del sorgente.
+- **Input**: dati del sorgente.
+- **Output atteso**:
+  ```
+  === MESSAGGI PER UFFICIO ===
+    Didattica            2
+    Amministrazione      1
+    Servizi              1
+    Segreteria generale  2
+  ```

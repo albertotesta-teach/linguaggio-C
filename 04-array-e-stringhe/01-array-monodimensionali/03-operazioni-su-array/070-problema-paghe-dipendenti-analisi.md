@@ -9,148 +9,92 @@ pagato e confrontare ogni paga con la media.
 
 ---
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-Il punto chiave è la presenza di un **array calcolato** (`paghe`) costruito
-a partire da due array di input (`ore` e `tariffe`). Questo pattern — produrre
-un array di risultati da array di dati grezzi — è molto comune nella pratica.
+### Input
+Nessun input da tastiera: i dati sono inizializzati nel codice in tre array
+paralleli.
 
-| Variabile    | Tipo         | Dimensione | Motivazione                                          |
-|--------------|--------------|------------|------------------------------------------------------|
-| `nomi`       | `char[][]`   | 6 × 20     | Nome e cognome di ogni dipendente                    |
-| `ore`        | `int[]`      | 6          | Ore lavorate nel mese per ogni dipendente            |
-| `tariffe`    | `double[]`   | 6          | Tariffa oraria in euro per ogni dipendente           |
-| `paghe`      | `double[]`   | 6          | Paga lorda calcolata: `paghe[i] = ore[i] * tariffe[i]` |
-| `totale`     | `double`     | —          | Somma di tutte le paghe (costo aziendale totale)     |
-| `media`      | `double`     | —          | `totale / DIPENDENTI`                                |
-| `indice_max` | `int`        | —          | Indice del dipendente con paga massima               |
-| `indice_min` | `int`        | —          | Indice del dipendente con paga minima                |
-| `DIPENDENTI` | `#define`    | 6          | Dimensione degli array e limite dei cicli            |
+| Variabile | Tipo       | Dimensione | Descrizione                         |
+|-----------|------------|------------|-------------------------------------|
+| `nomi`    | `char[][]` | 6 × 20     | Cognome e nome del dipendente       |
+| `ore`     | `int[]`    | 6          | Ore lavorate nel mese               |
+| `tariffe` | `double[]` | 6          | Tariffa oraria in euro              |
+
+### Output
+- Il prospetto: nome, ore, tariffa e paga lorda di ogni dipendente;
+- il costo aziendale totale e la paga media;
+- il dipendente con la paga più alta e quello con la più bassa;
+- per ogni dipendente la differenza dalla media ("sopra", "sotto" o "nella
+  media").
+
+### Vincoli
+- `paghe[i] = ore[i] × tariffe[i]`: l'array delle paghe si calcola prima di
+  ogni altra elaborazione
+- Massimo e minimo si cercano per indice, partendo dal primo dipendente; in
+  caso di parità resta il primo trovato
+- La differenza dalla media ha il segno "+" solo se positiva
+
+### Assunzioni
+- Ore e tariffe sono positive
+- Le paghe sono lorde: niente trattenute
+
+### Variabili di supporto
+
+Il punto chiave è l'**array calcolato** `paghe`, costruito da due array di
+dati: un pattern molto comune nella pratica.
+
+| Variabile    | Tipo       | Dimensione | Descrizione                              |
+|--------------|------------|------------|------------------------------------------|
+| `paghe`      | `double[]` | 6          | Paga lorda di ogni dipendente            |
+| `totale`, `media` | `double` | —       | Costo aziendale e paga media             |
+| `indice_max`, `indice_min` | `int` | — | Dipendenti più e meno pagati             |
+| `diff`       | `double`   | —          | Paga − media                             |
+| `DIPENDENTI` | `#define`  | 6          | Numero di dipendenti                     |
+
+### Algoritmo in linguaggio naturale
+1. Per ogni dipendente calcolare `paghe[i] = ore[i] × tariffe[i]`.
+2. Stampare il prospetto.
+3. Sommare le paghe, calcolare la media e stampare entrambe.
+4. Cercare gli indici della paga massima e minima e stamparli.
+5. Per ogni dipendente calcolare `diff = paghe[i] − media` e stampare
+   "sopra", "sotto" o "nella media".
 
 ---
 
-## 3. Casi d'uso e funzionalità
+## 3. Casi di test
 
----
+Il programma non legge dati: si esegue una volta e si confronta con l'output
+atteso.
 
-### Caso d'uso 1 – Calcolo paghe e prospetto
-
-**a) Input**
-Array `ore` e `tariffe` inizializzati staticamente.
-
-**b) Output**
+### Test 1 – Prospetto paghe
+- **Output atteso:**
 ```
-=======================================================
-              PROSPETTO PAGHE MENSILI
-=======================================================
-  Dipendente       | Ore  | Tariffa | Paga lorda
-  -----------------|------|---------|------------
   Rossi Anna       | 168  |  12.50€ |   2100.00€
   Bianchi Carlo    | 152  |  15.00€ |   2280.00€
-  ...
+  Verdi Elena      | 176  |  11.80€ |   2076.80€
+  Ferrari Marco    | 160  |  18.00€ |   2880.00€
+  Russo Giulia     | 144  |  13.20€ |   1900.80€
+  Conti Pietro     | 168  |  16.50€ |   2772.00€
 ```
 
-**c) Variabili di supporto**
-- `paghe[i]` (`double`): calcolato nel primo ciclo, usato in tutti gli altri.
-
-**d) Vincoli**
-- L'array `paghe` deve essere popolato completamente prima di qualsiasi
-  altra elaborazione (media, estremi, confronto).
-- La moltiplicazione `ore[i] * tariffe[i]` produce un `double` perché
-  `tariffe[i]` è `double` (promozione automatica del tipo).
-
-**e) Assunzioni**
-- Le ore sono positive e le tariffe maggiori di zero.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 2 – Totali ed estremi
+- **Output atteso:**
 ```
-1. Per i da 0 a DIPENDENTI - 1: paghe[i] = ore[i] * tariffe[i].
-2. Stampare intestazione tabella.
-3. Per i da 0 a DIPENDENTI - 1: stampare nomi[i], ore[i], tariffe[i], paghe[i].
-```
+Totale costo aziendale : 14009.60€
+Paga media mensile     : 2334.93€
 
----
-
-### Caso d'uso 2 – Totale e paga media
-
-**a) Input**
-Array `paghe`.
-
-**b) Output**
-```
-Totale costo aziendale : 13056.00€
-Paga media mensile     : 2176.00€
-```
-
-**c) Variabili di supporto**
-- `totale` (`double`): accumulatore.
-- `media` (`double`): `totale / DIPENDENTI`.
-
-**d) Vincoli**
-- `media` deve essere calcolata e disponibile prima del caso d'uso 4.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. totale = 0.0. Per i da 0 a DIPENDENTI-1: totale += paghe[i].
-2. media = totale / DIPENDENTI.
-```
-
----
-
-### Caso d'uso 3 – Paga più alta e più bassa
-
-**a) Input**
-Array `paghe`.
-
-**b) Output**
-```
 Paga piu' alta  : Ferrari Marco (2880.00€)
 Paga piu' bassa : Russo Giulia (1900.80€)
 ```
 
-**c) Variabili di supporto**
-- `indice_max`, `indice_min` (`int`): inizializzati a 0, aggiornati con pattern "ipotesi + smentita".
-
-**d) Vincoli**
-- Entrambi i cicli partono da `i = 1` perché `i = 0` è già il riferimento iniziale.
-
-**f) Algoritmo in linguaggio naturale**
+### Test 3 – Confronto con la media
+- **Output atteso:**
 ```
-1. indice_max = indice_min = 0.
-2. Per i da 1 a DIPENDENTI - 1:
-   a. Se paghe[i] > paghe[indice_max]: indice_max = i.
-   b. Se paghe[i] < paghe[indice_min]: indice_min = i.
-3. Stampare nomi[indice_max], paghe[indice_max], nomi[indice_min], paghe[indice_min].
-```
-
----
-
-### Caso d'uso 4 – Confronto con la media
-
-**a) Input**
-Array `paghe`, variabile `media`.
-
-**b) Output**
-```
-Confronto con la media (2176.00€):
-  Rossi Anna       : -76.00€ sotto la media
-  Bianchi Carlo    : +104.00€ sopra la media
-  ...
-```
-
-**c) Variabili di supporto**
-- `diff` (`double`): `paghe[i] - media`, può essere positiva, negativa o zero.
-
-**d) Vincoli**
-- I tre casi (sopra, sotto, nella media) producono messaggi distinti.
-- Il confronto `diff == 0.0` su double è tecnicamente fragile, ma corretto
-  per questo scenario didattico con valori interi × double semplici.
-
-**f) Algoritmo in linguaggio naturale**
-```
-1. Per i da 0 a DIPENDENTI - 1:
-   a. diff = paghe[i] - media.
-   b. Se diff > 0: stampare "+diff sopra la media".
-   c. Se diff < 0: stampare "diff sotto la media".
-   d. Altrimenti: stampare "nella media".
+  Rossi Anna       : -234.93€ sotto la media
+  Bianchi Carlo    : -54.93€ sotto la media
+  Verdi Elena      : -258.13€ sotto la media
+  Ferrari Marco    : +545.07€ sopra la media
+  Russo Giulia     : -434.13€ sotto la media
+  Conti Pietro     : +437.07€ sopra la media
 ```

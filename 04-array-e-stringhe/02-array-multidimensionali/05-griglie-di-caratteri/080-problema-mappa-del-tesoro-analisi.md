@@ -10,86 +10,104 @@ percorre i tratti tracciando il cammino con `o`, si ferma se le istruzioni
 portano in mare, sulle rocce o fuori dalla mappa e infine dice se nella cella
 raggiunta c'è il tesoro.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `isola` | `char[][]` | 8 × (14 + 1) | Mappa inizializzata con stringhe |
-| `direzioni` | `char[]` | 4 | Direzione di ogni tratto |
-| `passi` | `int[]` | 4 | Lunghezza di ogni tratto (parallelo a `direzioni`) |
-| `r`, `c` | `int` | — | Posizione attuale |
-| `dr`, `dc` | `int` | — | Spostamento di un passo nel tratto corrente |
-| `bloccato`, `trovato_partenza` | `int` | — | Flag per fermare i cicli |
+### Input
+Nessun input da tastiera: la mappa e le istruzioni sono inizializzate nel
+codice.
 
-| Funzione | Compito |
-|----------|---------|
-| `stampa_mappa` | Stampa le `COLONNE` celle di ogni riga |
+| Variabile   | Tipo       | Dimensione   | Descrizione                                 |
+|-------------|------------|--------------|---------------------------------------------|
+| `isola`     | `char[][]` | 8 × (14 + 1) | Mappa dell'isola                            |
+| `direzioni` | `char[]`   | 4            | Direzione di ogni tratto: E, S, E, N        |
+| `passi`     | `int[]`    | 4            | Passi di ogni tratto: 5, 4, 1, 1 (parallelo a `direzioni`) |
 
-## 3. Casi d'uso e funzionalità
+### Output
+- La mappa iniziale e la posizione del relitto;
+- per ogni tratto direzione e numero di passi ("passo" al singolare);
+- se il cammino si blocca, il motivo ("Fuori dalla mappa!" oppure
+  "Ostacolo in riga r, colonna c: istruzioni sbagliate.");
+- la posizione finale, l'esito ("TESORO TROVATO!" oppure "Qui non c'e'
+  nessun tesoro.", solo se il cammino non si è bloccato) e la mappa con la
+  traccia.
 
-### Caso d'uso 1 – Ricerca della partenza
+### Vincoli
+- La partenza si cerca scorrendo la mappa fino alla `X`; poiché i `for`
+  incrementano gli indici anche dopo il ritrovamento, alla fine si torna
+  indietro di una riga e una colonna
+- Ogni tratto si percorre un passo alla volta: un passo è possibile solo se
+  la cella di arrivo è dentro la mappa e non è mare né roccia; il controllo
+  dei limiti viene prima dell'accesso alla cella
+- Al primo passo impossibile il cammino si ferma: un flag nella condizione
+  di entrambi i cicli interrompe sia il tratto sia i tratti successivi
+  (niente `break`)
+- La traccia `o` si scrive nella cella che si lascia, tranne sul relitto; la
+  cella finale mantiene il suo simbolo, così si può verificare il tesoro
+- Le posizioni stampate sono indici della matrice, quindi partono da 0
 
-**a) Input** – mappa
+### Assunzioni
+- La mappa contiene un solo relitto `X`
+- Le direzioni sono solo N, S, E, O (qualsiasi altro carattere è trattato
+  come O)
 
-**b) Output** – riga e colonna di `X`
+### Variabili di supporto
 
-**c) Variabili di supporto** – `trovato_partenza`
+| Variabile   | Tipo  | Descrizione                                          |
+|-------------|-------|------------------------------------------------------|
+| `r`, `c`    | `int` | Posizione attuale                                    |
+| `dr`, `dc`  | `int` | Spostamento di un passo nel tratto corrente          |
+| `bloccato`  | `int` | 1 quando un passo è impossibile                      |
+| `trovato_partenza` | `int` | Ferma la ricerca della `X`                    |
+| `RIGHE`, `COLONNE`, `TRATTI` | `#define` | 8, 14, 4                    |
 
-**d) Vincoli** – i due `for` si fermano con il flag; poiché l'incremento
-avviene prima del controllo, al termine `r` e `c` vanno diminuiti di 1
+### Algoritmo in linguaggio naturale
+1. Cercare la `X` nella mappa e correggere gli indici; stampare mappa e
+   partenza.
+2. Per ogni tratto, finché il cammino non è bloccato:
+   a. scegliere `dr`, `dc` con uno `switch` sulla direzione e stampare il
+      tratto;
+   b. per ogni passo, finché non è bloccato: se la cella di arrivo è fuori
+      dalla mappa o è mare o roccia, bloccare e stampare il motivo;
+      altrimenti lasciare la traccia e spostarsi.
+3. Stampare la posizione finale, l'esito se il cammino non è bloccato, e la
+   mappa.
 
-**e) Assunzioni** – la mappa contiene esattamente una `X`
+## 3. Casi di test
 
-**f) Algoritmo in linguaggio naturale**
-1. Scorrere righe e colonne finché non si trova `X`.
-2. Riportare `r` e `c` sulla cella trovata.
+Il programma non legge dati: si esegue con le istruzioni del codice; i test
+2 e 3 richiedono di modificare l'array `passi` e ricompilare.
 
-### Caso d'uso 2 – Percorso corretto
+### Test 1 – Tesoro trovato
+- **Output atteso:**
+```
+Partenza dal relitto in riga 1, colonna 2
 
-**a) Input** – `direzioni = {E, S, E, N}`, `passi = {5, 4, 1, 1}`
+Tratto 1: 5 passi verso E
+Tratto 2: 4 passi verso S
+Tratto 3: 1 passo verso E
+Tratto 4: 1 passo verso N
 
-**b) Output** – i tratti percorsi, "TESORO TROVATO!" e la mappa con la traccia
+Posizione finale: riga 4, colonna 8
+TESORO TROVATO!
+  ~~~~~~~~~~~~~~
+  ~~Xooooo.~~~~~
+  ~~...^^o..~~~~
+  ~~..^^#o^..~~~
+  ~~~..^^o$..~~~
+  ~~~....oo.~~~~
+  ~~~~~...~~~~~~
+  ~~~~~~~~~~~~~~
+```
 
-**c) Variabili di supporto** – `t`, `p`, `dr`, `dc`
+### Test 2 – Istruzioni che portano in mare
+- **Cosa si verifica:** il cammino si ferma al primo ostacolo e i tratti
+  successivi non vengono eseguiti
+- **Procedura:** porre il primo tratto a 8 passi
+- **Output atteso:** `Tratto 1: 8 passi verso E`,
+  `Ostacolo in riga 1, colonna 9: istruzioni sbagliate.`,
+  `Posizione finale: riga 1, colonna 8`, senza esito sul tesoro
 
-**d) Vincoli** – si avanza di un passo alla volta per controllare ogni cella
-attraversata, non solo quella di arrivo
-
-**e) Assunzioni** – il tesoro è sulla cella finale, che non viene sovrascritta
-dalla traccia
-
-**f) Algoritmo in linguaggio naturale**
-1. Per ogni tratto `t`: con uno `switch` su `direzioni[t]` impostare `dr`, `dc`.
-2. Ripetere `passi[t]` volte: verificare la cella successiva; se è
-   percorribile lasciare `o` nella cella attuale (tranne sulla `X`) e avanzare.
-3. Al termine controllare se la cella raggiunta contiene `$`.
-
-### Caso d'uso 3 – Istruzioni sbagliate
-
-**a) Input** – un tratto che attraversa mare o rocce, o esce dalla mappa
-
-**b) Output** – "Ostacolo in riga r, colonna c" oppure "Fuori dalla mappa!"
-
-**c) Variabili di supporto** – `bloccato`
-
-**d) Vincoli** – il flag ferma sia il ciclo dei passi sia quello dei tratti;
-il controllo dei limiti precede l'accesso alla matrice
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – impostare `bloccato = 1` e stampare
-la mappa con il percorso fatto fino all'ostacolo.
-
-### Caso d'uso 4 – Nessun tesoro
-
-**a) Input** – istruzioni percorribili che terminano su una cella senza `$`
-
-**b) Output** – "Qui non c'e' nessun tesoro."
-
-**c) Variabili di supporto** – `bloccato`, `isola[r][c]`
-
-**d) Vincoli** – nessuno
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – controllo finale sul contenuto della cella.
+### Test 3 – Arrivo nel posto sbagliato
+- **Procedura:** porre il secondo tratto a 3 passi
+- **Output atteso:** `Posizione finale: riga 3, colonna 8` e
+  `Qui non c'e' nessun tesoro.`
