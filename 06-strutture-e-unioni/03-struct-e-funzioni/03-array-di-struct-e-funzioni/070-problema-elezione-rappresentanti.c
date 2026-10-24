@@ -37,6 +37,7 @@ typedef struct {
 
 Candidato *cerca(Candidato c[], int n, int numero);
 void classifica_primi(const Candidato c[], int n, int *primo, int *secondo);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -56,13 +57,17 @@ int main(void)
     int secondo;
     int i;
     int pari_merito = 0;
+    int letti;
 
     while (scheda != -1) {
         printf("Scheda (numero candidato, 0 bianca, -1 fine): ");
-        if (scanf("%d", &scheda) != 1) {
-            scheda = -1;
-        }
-        if (scheda == 0) {
+        letti = scanf("%d", &scheda);
+        if (letti == EOF) {
+            scheda = -1;                /* input terminato: come -1 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            printf("  Inserimento non valido, ripetere.\n");
+        } else if (scheda == 0) {
             bianche++;
         } else if (scheda != -1) {
             votato = cerca(lista, CANDIDATI, scheda);
@@ -81,18 +86,27 @@ int main(void)
                lista[i].voti);
     }
 
-    classifica_primi(lista, CANDIDATI, &primo, &secondo);
-    printf("\nPrimo eletto:   %s (voti %d)\n", lista[primo].nome, lista[primo].voti);
-    for (i = 0; i < CANDIDATI; i++) {
-        if (i != primo && i != secondo && lista[i].voti == lista[secondo].voti) {
-            pari_merito++;
-        }
-    }
-    if (pari_merito > 0) {
-        printf("Secondo posto: %s e altri %d a pari voti (%d): serve il ballottaggio\n",
-               lista[secondo].nome, pari_merito, lista[secondo].voti);
+    if (valide == 0) {
+        printf("\nNessun voto valido: nessun eletto.\n");
     } else {
-        printf("Secondo eletto: %s (voti %d)\n", lista[secondo].nome, lista[secondo].voti);
+        classifica_primi(lista, CANDIDATI, &primo, &secondo);
+        printf("\nPrimo eletto:   %s (voti %d)\n", lista[primo].nome, lista[primo].voti);
+        for (i = 0; i < CANDIDATI; i++) {
+            if (i != primo && i != secondo && lista[i].voti == lista[secondo].voti) {
+                pari_merito++;
+            }
+        }
+        if (pari_merito > 0) {
+            printf("Secondo posto: %s e ", lista[secondo].nome);
+            if (pari_merito == 1) {
+                printf("un altro");
+            } else {
+                printf("altri %d", pari_merito);
+            }
+            printf(" a pari voti (%d): serve il ballottaggio\n", lista[secondo].voti);
+        } else {
+            printf("Secondo eletto: %s (voti %d)\n", lista[secondo].nome, lista[secondo].voti);
+        }
     }
 
     return 0;
@@ -130,5 +144,16 @@ void classifica_primi(const Candidato c[], int n, int *primo, int *secondo)
         } else if (c[i].voti > c[*secondo].voti) {
             *secondo = i;
         }
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

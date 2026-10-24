@@ -48,6 +48,7 @@ int main(void)
     char messaggio[LUNG];
     char copia[LUNG];
     char *a_capo;
+    int resto;
     int m;
     int continua = 1;
 
@@ -59,6 +60,11 @@ int main(void)
             a_capo = strchr(messaggio, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
             }
             continua = messaggio[0] != '\0';
             for (m = 0; m < METODI && continua; m++) {

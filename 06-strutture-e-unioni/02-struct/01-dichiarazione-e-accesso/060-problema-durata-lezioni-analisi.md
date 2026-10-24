@@ -2,65 +2,107 @@
 
 ## 1. Problema
 
-La segreteria inserisce inizio e fine di ogni lezione di una giornata. Il programma controlla gli orari, calcola la durata in minuti, segnala lezioni più lunghe di 60 o più corte di 50 minuti e sovrapposizioni con la lezione precedente; alla fine stampa il tempo totale. Un inizio 0 0 termina.
+La segreteria inserisce inizio e fine di ogni lezione di una giornata. Il
+programma controlla gli orari, calcola la durata in minuti, segnala le
+lezioni più lunghe di 60 o più corte di 50 minuti e le sovrapposizioni con
+la lezione precedente; alla fine stampa il numero di lezioni e il tempo
+totale. Un inizio `0 0` termina. Gli orari sono struct `Orario`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Orario` | `ore, minuti` | un'ora del giorno |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `inizio`, `fine` | `Orario` | — | Orari della lezione |
-| `fine_precedente` | `Orario` | — | Fine dell'ultima lezione accettata |
-| `durata`, `totale` | `int` | — | Minuti |
-| `lezione` | `int` | — | Numero della lezione |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `inizio` | `Orario` | Ore e minuti di inizio; `0 0` termina |
+| `fine` | `Orario` | Ore e minuti di fine |
+
+### Output
+
+- Per ogni lezione valida: `HH:MM - HH:MM  N minuti` con le eventuali
+  note `(troppo lunga)` / `(troppo corta)` e
+  `(si sovrappone alla precedente)`.
+- `Orario non valido.` o `La fine deve venire dopo l'inizio.` per le
+  lezioni scartate.
+- Alla fine: `Lezioni registrate: N, tempo totale H h MM min`.
+
+### Vincoli
+
+- Ore 0-23, minuti 0-59.
+- I confronti si fanno sui minuti da mezzanotte (`ore * 60 + minuti`).
+- La fine deve essere strettamente dopo l'inizio.
+- Durata normale da 50 a 60 minuti compresi.
+- Sovrapposizione: l'inizio viene prima della fine della lezione
+  precedente valida.
+- Una lezione scartata non viene numerata né sommata.
+- Un orario non numerico viene scartato (resto della riga) e segnalato;
+  a fine input il programma termina come con `0 0`.
+
+### Assunzioni
+
+- Le lezioni sono nella stessa giornata (nessuna attraversa la
+  mezzanotte); per questo `0 0` può fare da terminatore.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Orario` | `typedef struct { int ore; int minuti; } Orario;` | Un orario della giornata |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `fine_precedente` | `Orario` | Fine dell'ultima lezione valida |
+| `da_mezzanotte_inizio`, `da_mezzanotte_fine` | `int` | Orari in minuti |
+| `durata`, `totale` | `int` | Durata della lezione e somma |
+| `lezione` | `int` | Numero della prossima lezione |
+| `letti` | `int` | Valore restituito da `scanf` |
 
 | Funzione | Compito |
 |----------|---------|
-| `valido(ore, minuti)` | 1 se ore 0-23 e minuti 0-59 |
+| `valido(ore, minuti)` | 1 se l'orario è nell'intervallo |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Lezione regolare
+1. Finché l'inizio non è `0 0`:
+   1. leggere l'inizio (fine input → `0 0`; testo → orario non valido);
+   2. se non è `0 0` leggere la fine (testo o fine input → non valida);
+   3. se un orario non è valido o la fine non viene dopo l'inizio,
+      segnalarlo;
+   4. altrimenti calcolare la durata, stamparla con le note, sommarla,
+      ricordare la fine e passare alla lezione successiva.
+2. Stampare il numero di lezioni e il totale in ore e minuti.
 
-**a) Input** – `8 0`, `8 55`
+## 3. Casi di test
 
-**b) Output** – "08:00 - 08:55  55 minuti"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `durata`
+### Test 1 – Giornata con lezioni scartate
 
-**d) Vincoli** – fine dopo l'inizio
+- **Cosa si verifica:** note di durata, sovrapposizione, orari non validi e
+  non numerici, fine prima dell'inizio.
+- **Input:** `8 0` `8 55`, `9 0` `10 10`, `10 0` `10 40`, `abc`, `11 0`
+  `xx`, `25 0` `11 0`, `11 0` `10 30`, `0 0`
+- **Valori intermedi attesi:** 55 + 70 + 40 = 165 minuti; 10:00 viene prima
+  della fine precedente 10:10.
+- **Output atteso:**
+  ```
+    08:00 - 08:55  55 minuti
+    09:00 - 10:10  70 minuti  (troppo lunga)
+    10:00 - 10:40  40 minuti  (troppo corta)  (si sovrappone alla precedente)
+    Orario non valido.
+    Orario non valido.
+    Orario non valido.
+    La fine deve venire dopo l'inizio.
+  Lezioni registrate: 3, tempo totale 2 h 45 min
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna lezione
 
-**f) Algoritmo in linguaggio naturale** – durata = (ore*60+minuti) della fine - quella dell'inizio.
+- **Input:** `0 0`
+- **Output atteso:** `Lezioni registrate: 0, tempo totale 0 h 00 min`.
 
-### Caso d'uso 2 – Anomalie
+### Test 3 – Fine input
 
-**a) Input** – `9 45`, `11 0` dopo una lezione finita alle 9:50
-
-**b) Output** – "75 minuti (troppo lunga) (si sovrappone alla precedente)"
-
-**c) Variabili di supporto** – `fine_precedente`
-
-**d) Vincoli** – durata 50-60 minuti
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confrontare l'inizio con la fine precedente, copiata campo per campo.
-
-### Caso d'uso 3 – Orario errato
-
-**a) Input** – `11 0`, `10 30`; `25 0`
-
-**b) Output** – "La fine deve venire dopo l'inizio."; "Orario non valido."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – la lezione non viene contata
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la lezione si ripete con lo stesso numero.
+- **Input:** `8 0` `9 0`, poi fine input.
+- **Output atteso:** `Lezioni registrate: 1, tempo totale 1 h 00 min`.

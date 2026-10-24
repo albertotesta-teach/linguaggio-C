@@ -29,6 +29,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define BICI 4
 #define GRATIS 30
@@ -46,6 +47,7 @@ Bici *bici_di(Bici b[], int n, int tessera);
 int noleggia(Bici *b, int tessera, int ora);
 int restituisci(Bici *b, int ora);
 double costo(int minuti);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -66,11 +68,13 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (N tessera hh:mm, R tessera hh:mm, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'N' || comando == 'R') {
-            if (scanf("%d %d:%d", &tessera, &ore, &minuti) != 3) {
-                comando = 'Q';
+            if (scanf("%d %d:%d", &tessera, &ore, &minuti) != 3 || ore < 0 || ore > 23 ||
+                minuti < 0 || minuti > 59) {
+                printf("  Dati non validi.\n");
             } else if (comando == 'N') {
                 if (bici_di(parco, BICI, tessera) != NULL) {
                     printf("  La tessera %d ha gia' una bici.\n", tessera);
@@ -104,6 +108,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -170,4 +175,15 @@ double costo(int minuti)
         euro = 0.50 * ((minuti - GRATIS + 29) / 30);
     }
     return euro;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -2,81 +2,94 @@
 
 ## 1. Problema
 
-Il bar della scuola accetta contanti, carta e buoni pasto; ogni metodo ha dati diversi (somma consegnata, ultime 4 cifre, codice del buono). Il programma controlla ogni pagamento con uno switch sul metodo, stampa la ricevuta e alla fine i totali per metodo con array indicizzati dall'enum.
+Il bar della scuola accetta contanti, carta e buoni pasto; ogni metodo ha
+dati diversi (somma consegnata, ultime 4 cifre della carta, codice del
+buono), raccolti in una `union` dentro la struct `Pagamento`. Il programma
+controlla ogni pagamento con uno `switch` sul metodo, stampa la ricevuta e
+alla fine i totali per metodo con array indicizzati dall'`enum`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Metodo` | `CONTANTI, CARTA, BUONO, NUM_METODI` | metodo di pagamento |
-| `Pagamento` | `metodo, importo, union dati {consegnato, ultime_cifre, codice_buono}` | pagamento |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `p` | `Pagamento` | — | Pagamento letto |
-| `totali`, `quanti` | `double[]`, `int[]` | NUM_METODI | Incassi e numero di pagamenti per metodo |
-| `esito` | `int` | — | Risultato della lettura |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| pagamento | una riga | `C importo consegnato`, `K importo cifre`, `B importo codice`; `FINE` termina |
+
+### Output
+
+- Ricevuta: `I euro in contanti, resto R`, `I euro con carta **** NNNN`,
+  `I euro con buono CODICE (non da' resto)`.
+- `Pagamento rifiutato.`, `Pagamento non riconosciuto.`,
+  `Dati mancanti.`
+- Alla fine: per ogni metodo numero di pagamenti e totale.
+
+### Vincoli
+
+- Importo positivo per tutti i metodi.
+- Contanti: consegnato ≥ importo. Carta: esattamente 4 cifre. Buono:
+  importo al massimo 5.00 euro e codice che inizia con `BU-`.
+- Si legge solo il membro della union corrispondente al metodo.
+- Un pagamento per riga: il resto viene scartato. A fine input il
+  programma termina come con `FINE`.
+
+### Assunzioni
+
+- Tutti i dati di un pagamento stanno sulla stessa riga.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Metodo` | `typedef enum { CONTANTI, CARTA, BUONO, NUM_METODI } Metodo;` | Metodo di pagamento |
+| `Pagamento` | `typedef struct { Metodo metodo; double importo; union { double consegnato; char ultime_cifre[5]; char codice_buono[8]; } dati; } Pagamento;` | Un pagamento |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `totali`, `quanti` | `double[3]`, `int[3]` | Incassi per metodo |
+| `esito` | `int` | 1 letto, 0 fine, −1 metodo sconosciuto, −2 dati mancanti |
+| `VALORE_BUONO` | `#define` | 5.00 euro |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_pagamento(&p)` | 1 letto, 0 FINE, -1 metodo sconosciuto |
-| `valido(&p)` | Consegnato sufficiente, 4 cifre, buono BU- fino a 5 euro |
-| `ricevuta(&p)` | Resto, carta mascherata o codice del buono |
+| `leggi_pagamento(p)` | Legge metodo e dati |
+| `valido(p)` | Controlli con `switch` sul metodo |
+| `ricevuta(p)` | Stampa con `switch` sul metodo |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Contanti
+1. Finché non si termina: leggere il pagamento e scartare il resto della
+   riga; segnalare metodo sconosciuto, dati mancanti o pagamento
+   rifiutato; altrimenti stampare la ricevuta e aggiornare i totali del
+   metodo.
+2. Stampare gli incassi per metodo.
 
-**a) Input** – `C 3.20 5`
+## 3. Casi di test
 
-**b) Output** – "3.20 euro in contanti, resto 1.80"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `p.dati.consegnato`
+### Test 1 – Giornata al bar
 
-**d) Vincoli** – consegnato ≥ importo
+- **Input:** `C 3.50 5`, `K 4.20 1234`, `B 4.80 BU-0042`, `C 3 2`,
+  `K 2 12345`, `K 2 12a4`, `B 6 BU-1`, `B 3 XX-1`, `Z 3`, `C 2 abc`,
+  `C 1.5 2`, `FINE`
+- **Output atteso:**
+  ```
+    3.50 euro in contanti, resto 1.50
+    4.20 euro con carta **** 1234
+    4.80 euro con buono BU-0042 (non da' resto)
+    Pagamento rifiutato.
+    Pagamento rifiutato.
+    Pagamento rifiutato.
+    Pagamento rifiutato.
+    Pagamento rifiutato.
+    Pagamento non riconosciuto.
+    Dati mancanti.
+    1.50 euro in contanti, resto 0.50
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – resto = consegnato - importo.
-
-### Caso d'uso 2 – Carta e buono
-
-**a) Input** – `K 4.50 1234`; `B 2.80 BU-17`
-
-**b) Output** – "con carta **** 1234"; "con buono BU-17"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – 4 cifre; buono fino a 5 euro
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – ogni metodo legge solo il suo campo della union.
-
-### Caso d'uso 3 – Rifiuti
-
-**a) Input** – `C 2.00 1.50`; `K 1.00 12345`; `B 6.00 BU-18`
-
-**b) Output** – "Pagamento rifiutato."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – più di 4 cifre lasciano il campo vuoto, che il controllo rifiuta.
-
-### Caso d'uso 4 – Totali
-
-**a) Input** – `FINE`
-
-**b) Output** – contanti pagamenti 2, 4.50 euro; carta 1; buono 1
-
-**c) Variabili di supporto** – `totali`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – totali[p.metodo] += p.importo.
+  Incassi del giorno
+    contanti  pagamenti  2     5.00 euro
+    carta     pagamenti  1     4.20 euro
+    buono     pagamenti  1     4.80 euro
+  ```

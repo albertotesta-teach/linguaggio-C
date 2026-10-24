@@ -36,6 +36,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define TESSERE 5
 
@@ -59,6 +60,7 @@ typedef struct {
 
 Fascia da_isee(double isee, const Tariffa tariffe[]);
 Tessera *cerca(Tessera t[], int n, int numero);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -92,11 +94,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P numero, S numero, R, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P' || comando == 'S') {
             if (scanf("%d", &numero) != 1) {
-                comando = 'Q';
+                printf("  Numero non valido.\n");
             } else {
                 t = cerca(tessere, TESSERE, numero);
                 if (t == NULL) {
@@ -131,6 +134,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -159,4 +163,15 @@ Tessera *cerca(Tessera t[], int n, int numero)
         i++;
     }
     return trovata;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -63,6 +63,7 @@ int leggi_data(Data *d);
 int leggi_indirizzo(Indirizzo *i);
 int leggi_iscrizione(Iscrizione *s);
 void stampa(const Iscrizione *s);
+void scarta_resto(const char riga[]);
 
 int main(void)
 {
@@ -98,6 +99,7 @@ int leggi_testo(const char *domanda, char dest[], int dimensione)
 
     printf("%s: ", domanda);
     if (fgets(riga, LUNG, stdin) != NULL) {
+        scarta_resto(riga);
         riga[strcspn(riga, "\n")] = '\0';
         if (riga[0] != '\0' && (int) strlen(riga) < dimensione) {
             strcpy(dest, riga);
@@ -114,8 +116,12 @@ int leggi_data(Data *d)
     int valida = 0;
 
     printf("Data di nascita (gg/mm/aaaa): ");
-    if (fgets(riga, LUNG, stdin) != NULL &&
-        sscanf(riga, "%d/%d/%d", &d->giorno, &d->mese, &d->anno) == 3 &&
+    if (fgets(riga, LUNG, stdin) == NULL) {
+        riga[0] = '\0';                 /* input terminato: data non valida */
+    } else {
+        scarta_resto(riga);
+    }
+    if (sscanf(riga, "%d/%d/%d", &d->giorno, &d->mese, &d->anno) == 3 &&
         d->anno >= ANNO_MINIMO && d->anno <= ANNO_MASSIMO && d->mese >= 1 && d->mese <= 12) {
         if (d->anno % 4 == 0) {
             giorni[1] = 29;
@@ -159,4 +165,18 @@ void stampa(const Iscrizione *s)
     printf("  %s, nato/a il %02d/%02d/%d\n", s->nome, s->nascita.giorno, s->nascita.mese,
            s->nascita.anno);
     printf("  %s, %s %s\n", s->residenza.via, s->residenza.cap, s->residenza.comune);
+}
+
+/* Se la riga letta con fgets non contiene l'a capo era troppo lunga:
+ * scarta il resto, che altrimenti sarebbe letto come risposta successiva. */
+void scarta_resto(const char riga[])
+{
+    int c;
+
+    if (strchr(riga, '\n') == NULL) {
+        c = getchar();
+        while (c != '\n' && c != EOF) {
+            c = getchar();
+        }
+    }
 }

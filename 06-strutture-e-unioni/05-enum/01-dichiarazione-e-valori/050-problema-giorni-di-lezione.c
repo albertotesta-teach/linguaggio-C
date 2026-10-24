@@ -28,6 +28,8 @@ typedef enum {
     LUNEDI, MARTEDI, MERCOLEDI, GIOVEDI, VENERDI, SABATO, NUM_GIORNI
 } Giorno;
 
+void svuota_riga(void);
+
 int main(void)
 {
     const char *nomi[NUM_GIORNI] = {
@@ -49,7 +51,7 @@ int main(void)
             if (letto == EOF) {
                 ore[g] = 0;
             } else if (letto != 1) {
-                scanf("%*s");
+                svuota_riga();          /* scarta la riga non numerica */
                 printf("  Scrivi un numero.\n");
             } else if (ore[g] < 0 || ore[g] > MAX_ORE) {
                 printf("  Da 0 a %d ore.\n", MAX_ORE);
@@ -78,4 +80,15 @@ int main(void)
     printf("\n");
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

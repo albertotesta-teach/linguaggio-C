@@ -35,6 +35,7 @@ Frazione quoziente(Frazione a, Frazione b);
 Frazione normalizza(Frazione f);
 int mcd(int a, int b);
 void stampa(Frazione f);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -43,14 +44,24 @@ int main(void)
     Frazione risultato;
     char operatore;
     int continua = 1;
+    int letti;
 
     while (continua) {
         printf("Espressione (a/b op c/d, 0/0 per finire): ");
-        if (scanf("%d/%d", &a.num, &a.den) != 2 || (a.num == 0 && a.den == 0)) {
+        letti = scanf("%d/%d", &a.num, &a.den);
+        if (letti == EOF) {
+            continua = 0;               /* input terminato: come 0/0 */
+        } else if (letti != 2) {
+            svuota_riga();              /* non e' nella forma a/b */
+            printf("  Espressione non valida.\n");
+        } else if (a.num == 0 && a.den == 0) {
             continua = 0;
-        } else if (scanf(" %c %d/%d", &operatore, &b.num, &b.den) != 3) {
+        } else if ((letti = scanf(" %c %d/%d", &operatore, &b.num, &b.den)) == EOF) {
             printf("  Espressione incompleta.\n");
             continua = 0;
+        } else if (letti != 3) {
+            svuota_riga();              /* operatore o seconda frazione errati */
+            printf("  Espressione non valida.\n");
         } else if (a.den == 0 || b.den == 0) {
             printf("  Denominatore nullo.\n");
         } else if (operatore == ':' && b.num == 0) {
@@ -141,5 +152,16 @@ void stampa(Frazione f)
         printf("%d", f.num);
     } else {
         printf("%d/%d", f.num, f.den);
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

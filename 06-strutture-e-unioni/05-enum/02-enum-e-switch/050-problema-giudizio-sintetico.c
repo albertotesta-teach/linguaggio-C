@@ -31,6 +31,7 @@ typedef enum {
 
 Giudizio da_voto(double voto);
 const char *nome(Giudizio g);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -39,11 +40,17 @@ int main(void)
     int studenti = 0;
     Giudizio g;
     int k;
+    int letti;
 
     while (voto != -1) {
         printf("Voto (-1 per finire): ");
-        if (scanf("%lf", &voto) != 1) {
-            voto = -1;
+        letti = scanf("%lf", &voto);
+        if (letti == EOF) {
+            voto = -1;                  /* input terminato: come -1 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            printf("  Voto non valido.\n");
+            voto = 0;                   /* si continua */
         } else if (voto != -1 && (voto < 1 || voto > 10)) {
             printf("  Voto non valido.\n");
         } else if (voto != -1) {
@@ -111,4 +118,15 @@ const char *nome(Giudizio g)
         break;
     }
     return testo;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

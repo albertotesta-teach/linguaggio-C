@@ -183,7 +183,7 @@ Codice prodotto (0 per chiudere): 0
 Tessera studenti? (S/N): S
 
   Totale             11.40
-  Sconto 10%         - 1.14
+  Sconto 10%         -1.14
   Da pagare          10.26 euro
 ```
 

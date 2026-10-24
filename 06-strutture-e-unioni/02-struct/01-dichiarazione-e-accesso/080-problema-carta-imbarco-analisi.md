@@ -2,66 +2,103 @@
 
 ## 1. Problema
 
-Al gate del viaggio d'istruzione un accompagnatore controlla la carta d'imbarco di ogni studente: il volo deve essere quello della classe e l'imbarco non deve essere chiuso. Due tipi diversi descrivono il volo e la carta. Il cognome FINE termina e il programma stampa gli studenti imbarcati.
+Al gate del viaggio d'istruzione un accompagnatore controlla la carta
+d'imbarco di ogni studente: il volo deve essere quello della classe e
+l'imbarco non deve essere chiuso. Due tipi struct diversi descrivono il
+volo (`Volo`) e la carta (`CartaImbarco`). Il cognome `FINE` termina e il
+programma stampa quanti studenti sono stati imbarcati.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Volo` | `codice, gate, chiusura_ore, chiusura_minuti` | volo della classe |
-| `CartaImbarco` | `cognome, volo, posto` | carta di uno studente |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `classe` | `Volo` | — | Volo della classe |
-| `carta` | `CartaImbarco` | — | Carta dello studente |
-| `ore`, `minuti` | `int` | — | Ora attuale |
-| `passati` | `int` | — | Studenti imbarcati |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `carta.cognome` | `char[20]` | Cognome dello studente; `FINE` termina |
+| `ore`, `minuti` | `int` | Ora attuale |
+| `carta.volo`, `carta.posto` | `char[8]`, `char[4]` | Volo e posto scritti sulla carta |
+| `classe` | `Volo` | Volo della classe (nel sorgente): FR1452, gate 14, chiusura 09:35 |
+
+### Output
+
+- L'intestazione con volo, gate e ora di chiusura.
+- Per ogni studente: `<cognome>: passa, posto <posto>.`,
+  `<cognome>: volo sbagliato (X invece di FR1452).`,
+  `<cognome>: imbarco chiuso.` oppure
+  `<cognome>: dati non validi, ripetere.`
+- Alla fine: `Studenti imbarcati: N`.
+
+### Vincoli
+
+- Le due struct hanno campi con lo stesso significato (`codice` del volo e
+  `volo` della carta) confrontati con `strcmp`.
+- L'imbarco è chiuso dall'ora di chiusura in poi (09:35 è già chiuso).
+- Un cognome per riga e una riga di dati per studente: il resto della
+  riga viene scartato.
+- Dati non validi non interrompono il controllo; a fine input il programma
+  termina.
+
+### Assunzioni
+
+- L'ora attuale è un orario valido della stessa giornata.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Volo` | `typedef struct { char codice[8]; int gate; int chiusura_ore; int chiusura_minuti; } Volo;` | Il volo della classe |
+| `CartaImbarco` | `typedef struct { char cognome[20]; char volo[8]; char posto[4]; } CartaImbarco;` | La carta di uno studente |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `carta` | `CartaImbarco` | Carta in esame |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `passati` | `int` | Studenti imbarcati |
+| `fine` | `int` | Flag di uscita |
 
 | Funzione | Compito |
 |----------|---------|
-| `main` | Controllo campo per campo tra le due struct |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Studente in regola
+1. Stampare i dati del volo.
+2. Finché non si termina:
+   1. leggere il cognome; con `FINE` o a fine input terminare;
+   2. leggere ora, minuti, volo e posto (fine input → dati incompleti e
+      fine);
+   3. se i dati non sono quattro, segnalarlo;
+   4. se il volo è diverso, volo sbagliato; se l'ora non è prima della
+      chiusura, imbarco chiuso; altrimenti lo studente passa e si conta.
+3. Stampare gli studenti imbarcati.
 
-**a) Input** – `Rossi`, `9 10 FR1452 12A`
+## 3. Casi di test
 
-**b) Output** – "Rossi: passa, posto 12A."
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `passati`
+### Test 1 – Controllo al gate
 
-**d) Vincoli** – volo uguale, ora prima della chiusura
+- **Cosa si verifica:** i quattro esiti, il confine dell'ora di chiusura e
+  la ripetizione dopo dati non validi.
+- **Input:** `Rossi` `9 10 FR1452 12A`, `Bianchi` `9 12 FR1425 3C`,
+  `Verdi` `9 35 FR1452 7B`, `Neri` `nove e venti`, `Neri`
+  `9 20 FR1452 7B`, `FINE`
+- **Output atteso:**
+  ```
+  Volo FR1452, gate 14, chiusura imbarco 09:35
+    Rossi: passa, posto 12A.
+    Bianchi: volo sbagliato (FR1425 invece di FR1452).
+    Verdi: imbarco chiuso.
+    Neri: dati non validi, ripetere.
+    Neri: passa, posto 7B.
+  Studenti imbarcati: 2
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Input interrotto
 
-**f) Algoritmo in linguaggio naturale** – confrontare carta.volo e classe.codice con strcmp e l'ora con la chiusura.
-
-### Caso d'uso 2 – Volo sbagliato
-
-**a) Input** – `Bianchi`, `9 12 FR1425 14C`
-
-**b) Output** – "volo sbagliato (FR1425 invece di FR1452)"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il primo controllo è sul codice del volo.
-
-### Caso d'uso 3 – Imbarco chiuso
-
-**a) Input** – `Neri`, `9 36 FR1452 16B`
-
-**b) Output** – "Neri: imbarco chiuso."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – chiusura alle 9:35
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confrontare i minuti dalla mezzanotte.
+- **Input:** `Rossi`, poi fine input.
+- **Output atteso:**
+  ```
+    Dati incompleti.
+  Studenti imbarcati: 0
+  ```

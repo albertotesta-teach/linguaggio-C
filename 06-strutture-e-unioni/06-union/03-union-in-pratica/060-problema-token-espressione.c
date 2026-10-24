@@ -62,12 +62,19 @@ int main(void)
     int ok;
     double risultato;
     int finito = 0;
+    int resto;
 
     while (!finito) {
         printf("Espressione (FINE): ");
         if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
             if (strcmp(riga, "FINE") == 0) {
                 finito = 1;
@@ -88,7 +95,8 @@ int main(void)
     return 0;
 }
 
-/* Restituisce il numero di token, -1 per un carattere non ammesso. */
+/* Restituisce il numero di token, -1 per un carattere non ammesso o per
+ * troppi token. */
 int dividi_in_token(const char *testo, Token token[], int massimo)
 {
     char *fine;
@@ -99,8 +107,12 @@ int dividi_in_token(const char *testo, Token token[], int massimo)
         if (isdigit((unsigned char) testo[i]) || testo[i] == '.') {
             token[n].tipo = NUMERO;
             token[n].numero = strtod(testo + i, &fine);
-            i = (int) (fine - testo);
-            n++;
+            if (fine == testo + i) {
+                n = -1;                 /* un punto da solo non e' un numero */
+            } else {
+                i = (int) (fine - testo);
+                n++;
+            }
         } else if (strchr("+-*/", testo[i]) != NULL) {
             token[n].tipo = OPERATORE;
             token[n].simbolo = testo[i];
@@ -116,6 +128,9 @@ int dividi_in_token(const char *testo, Token token[], int massimo)
         } else {
             n = -1;
         }
+    }
+    if (n >= 0 && testo[i] != '\0') {
+        n = -1;                         /* troppi token */
     }
     return n;
 }

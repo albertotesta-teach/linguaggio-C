@@ -2,48 +2,91 @@
 
 ## 1. Problema
 
-Il semaforo pedonale davanti alla scuola ripete il ciclo verde, giallo, rosso. Il programma legge un istante t in secondi e stampa tutti i cambi di colore da 0 a t, il colore all'istante t e quanto manca al cambio successivo. Il colore è un enum e le durate stanno in un array indicizzato dal colore.
+Il semaforo pedonale davanti alla scuola ripete il ciclo verde, giallo,
+rosso. Il programma legge un istante t in secondi e stampa tutti i cambi
+di colore da 0 a t, il colore all'istante t e quanto manca al cambio
+successivo. Il colore è un `enum` e le durate stanno in un array
+indicizzato dal colore.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Colore` | `VERDE, GIALLO, ROSSO, NUM_COLORI` | colore del semaforo; NUM_COLORI conta i colori |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `colore` | `Colore` | — | Colore attuale |
-| `durata` | `int[]` | NUM_COLORI | Secondi di ogni colore |
-| `nomi` | `const char *[]` | NUM_COLORI | Nome di ogni colore |
-| `inizio` | `int` | — | Istante in cui è iniziato il colore attuale |
-| `t` | `int` | — | Istante letto |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `t` | `int` | Istante in secondi, da 1 a 600 |
 
-## 3. Casi d'uso e funzionalità
+### Output
 
-### Caso d'uso 1 – Ciclo completo
+- Una riga `S s  COLORE` per ogni cambio da 0 a t (compreso).
+- `A t s il semaforo e' COLORE: cambia tra N s.`
+- `Istante non valido.`
 
-**a) Input** – `100`
+### Vincoli
 
-**b) Output** – cambi a 0, 40, 45, 90 s; "A 100 s il semaforo e' VERDE: cambia tra 30 s."
+- `typedef enum { VERDE, GIALLO, ROSSO, NUM_COLORI } Colore;`:
+  `NUM_COLORI` vale 3 e dimensiona gli array.
+- Durate: verde 40 s, giallo 5 s, rosso 45 s (ciclo di 90 s); gli array
+  usano inizializzatori designati (`[VERDE] = 40`).
+- Colore successivo: `(colore + 1) % NUM_COLORI`.
+- All'istante esatto di un cambio vale già il nuovo colore.
 
-**c) Variabili di supporto** – `inizio`
+### Assunzioni
 
-**d) Vincoli** – t da 1 a 600
+- A t = 0 il semaforo diventa verde.
 
-**e) Assunzioni** – il ciclo parte da VERDE all'istante 0
+### Variabili di supporto
 
-**f) Algoritmo in linguaggio naturale** – finché il colore attuale finisce entro t: aggiungere la sua durata a inizio e passare a (colore + 1) % NUM_COLORI.
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Colore` | `typedef enum { VERDE, GIALLO, ROSSO, NUM_COLORI } Colore;` | Colore del semaforo |
 
-### Caso d'uso 2 – Istante non valido
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `nomi` | `const char *[3]` | Nomi indicizzati dal colore |
+| `durata` | `int[3]` | Durate indicizzate dal colore |
+| `colore` | `Colore` | Colore corrente |
+| `inizio` | `int` | Istante di inizio del colore corrente |
+| `MASSIMO` | `#define` | 600 secondi |
 
-**a) Input** – `0`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – "Istante non valido."
+1. Leggere t; se fuori intervallo segnalarlo.
+2. Stampare il verde a 0 s.
+3. Finché il colore corrente termina entro t: avanzare `inizio` della sua
+   durata, passare al colore successivo e stampare il cambio.
+4. Stampare il colore a t e i secondi mancanti
+   (`inizio + durata[colore] − t`).
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – nessuna
+### Test 1 – Secondo ciclo
 
-**f) Algoritmo in linguaggio naturale** – nessuna simulazione.
+- **Input:** `100`
+- **Output atteso:**
+  ```
+  Istante (secondi, da 1 a 600):     0 s  VERDE
+     40 s  GIALLO
+     45 s  ROSSO
+     90 s  VERDE
+  A 100 s il semaforo e' VERDE: cambia tra 30 s.
+  ```
+
+### Test 2 – Istante di un cambio
+
+- **Input:** `40`; poi `90`
+- **Output atteso:** `A 40 s il semaforo e' GIALLO: cambia tra 5 s.`;
+  `A 90 s il semaforo e' VERDE: cambia tra 40 s.`
+
+### Test 3 – Primo secondo
+
+- **Input:** `1`
+- **Output atteso:** solo `0 s  VERDE` e
+  `A 1 s il semaforo e' VERDE: cambia tra 39 s.`
+
+### Test 4 – Istante non valido
+
+- **Input:** `0` (poi `601`, `abc`)
+- **Output atteso:** `Istante non valido.`

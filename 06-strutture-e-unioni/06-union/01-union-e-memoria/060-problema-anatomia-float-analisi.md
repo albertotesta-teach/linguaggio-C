@@ -2,78 +2,92 @@
 
 ## 1. Problema
 
-Nel laboratorio di informatica si osserva com'è fatto un float: 1 bit di segno, 8 di esponente, 23 di mantissa. Una union permette di leggere i bit del float come intero senza segno; spostamenti e maschere separano le tre parti.
+Nel laboratorio di informatica si osserva com'è fatto un `float`: 1 bit di
+segno, 8 di esponente, 23 di mantissa. Una `union` permette di leggere i
+bit del float come intero senza segno; spostamenti e maschere separano le
+tre parti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Float` | `union: reale (float), bit (uint32_t)` | lo stesso numero in due forme |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `f` | `Float` | — | Union: reale e bit |
-| `parola` | `char[]` | 32 | Numero letto come testo |
-| `segno`, `esponente`, `mantissa` | `uint32_t` | — | Parti del numero |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `parola` | `char[32]` | Un numero reale; `FINE` termina |
+
+### Output
+
+- Il valore memorizzato (`%.9g`, che mostra l'approssimazione).
+- I 32 bit con uno spazio dopo il segno e dopo l'esponente.
+- `segno S (positivo/negativo), esponente E - 127 = e, mantissa 0xMMMMMM`;
+  per l'esponente 0 con mantissa 0 `(zero)`, per l'esponente 255
+  `(infinito o NaN)`.
+- `Non e' un numero.`
+
+### Vincoli
+
+- Segno = bit 31; esponente = bit 30-23 (`(bit >> 23) & 0xFF`);
+  mantissa = bit 22-0 (`bit & 0x7FFFFF`).
+- L'esponente è memorizzato con un eccesso di 127.
+- Si scrive il campo `reale` della union e si legge il campo `bit`.
+
+### Assunzioni
+
+- `float` in formato IEEE 754 a 32 bit.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Float` | `typedef union { float reale; uint32_t bit; } Float;` | Lo stesso float visto come numero e come bit |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `f` | `Float` | Numero letto |
+| `segno`, `esponente`, `mantissa` | `uint32_t` | Le tre parti |
 
 | Funzione | Compito |
 |----------|---------|
-| `stampa_bit(bit)` | I 32 bit con uno spazio dopo il segno e dopo l'esponente |
+| `stampa_bit(bit)` | Stampa i 32 bit raggruppati |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Numero positivo
+1. Finché non si termina: leggere una parola (fine input o `FINE` →
+   fine); convertirla con `sscanf`; se non è un numero segnalarlo;
+   altrimenti estrarre le tre parti e stamparle.
 
-**a) Input** – `1`
+## 3. Casi di test
 
-**b) Output** – 0 01111111 000...0, esponente 127 - 127 = 0
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `esponente`
+### Test 1 – Numeri caratteristici
 
-**d) Vincoli** – standard IEEE 754
+- **Input:** `1`, `-2.5`, `0.1`, `0`, `abc`, `1e40`, `FINE`
+- **Valori intermedi attesi:** −2.5 = −1.25 × 2¹; 0.1 non è
+  rappresentabile esattamente (0.100000001).
+- **Output atteso:**
+  ```
+    1
+    0 01111111 00000000000000000000000
+    segno 0 (positivo), esponente 127 - 127 = 0, mantissa 0x000000
+    -2.5
+    1 10000000 01000000000000000000000
+    segno 1 (negativo), esponente 128 - 127 = 1, mantissa 0x200000
+    0.100000001
+    0 01111011 10011001100110011001101
+    segno 0 (positivo), esponente 123 - 127 = -4, mantissa 0x4CCCCD
+    0
+    0 00000000 00000000000000000000000
+    segno 0 (positivo), esponente 0 (zero), mantissa 0x000000
+    Non e' un numero.
+    inf
+    0 11111111 00000000000000000000000
+    segno 0 (positivo), esponente 255 (infinito o NaN), mantissa 0x000000
+  ```
+  (1e40 supera il massimo di un `float` e diventa infinito).
 
-**e) Assunzioni** – float a 32 bit
+### Test 2 – Zero negativo
 
-**f) Algoritmo in linguaggio naturale** – segno = bit >> 31; esponente = (bit >> 23) & 0xFF; mantissa = bit & 0x7FFFFF.
-
-### Caso d'uso 2 – Negativo
-
-**a) Input** – `-2.5`
-
-**b) Output** – segno 1, esponente 128 - 127 = 1, mantissa 0x200000
-
-**c) Variabili di supporto** – `segno`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – -2.5 = -1.01 (binario) × 2^1.
-
-### Caso d'uso 3 – 0.1
-
-**a) Input** – `0.1`
-
-**b) Output** – 0.100000001, mantissa 0x4CCCCD
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – 0.1 in binario è periodico: il float ne conserva un'approssimazione.
-
-### Caso d'uso 4 – Zero e testo
-
-**a) Input** – `0`; `abc`
-
-**b) Output** – "esponente 0 (zero)"; "Non e' un numero."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – esponente e mantissa nulli indicano lo zero.
+- **Input:** `-0`, `FINE`
+- **Output atteso:** `segno 1 (negativo), esponente 0 (zero), mantissa
+  0x000000`.

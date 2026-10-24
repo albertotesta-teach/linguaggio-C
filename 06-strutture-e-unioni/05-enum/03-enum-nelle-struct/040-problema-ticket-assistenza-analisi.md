@@ -2,82 +2,105 @@
 
 ## 1. Problema
 
-Il tecnico del laboratorio registra i guasti come ticket con due campi enum, priorità e stato. I cambi di stato permessi sono in una tabella permesso[da][a]; cambia_stato applica il cambio solo se la tabella lo consente. L'elenco mostra i ticket non chiusi dalla priorità più alta.
+Il tecnico del laboratorio registra i guasti come ticket con due campi
+`enum`, priorità e stato. I cambi di stato permessi sono in una tabella
+`permesso[da][a]`; `cambia_stato` applica il cambio solo se la tabella lo
+consente. L'elenco mostra i ticket non chiusi dalla priorità più alta.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Priorita` | `BASSA, MEDIA, ALTA, NUM_PRIORITA` | urgenza |
-| `Stato` | `APERTO, IN_LAVORAZIONE, CHIUSO, NUM_STATI` | fase del ticket |
-| `Ticket` | `numero, pc, priorita, stato` | guasto |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `ticket` | `Ticket[]` | 8 | Ticket registrati |
-| `n_ticket` | `int` | — | Ticket usati |
-| `nuovo` | `Stato` | — | Stato richiesto dal comando |
-| `lettera` | `char` | — | B, M o A |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `N pc B/M/A` nuovo ticket, `L n` in lavorazione, `C n` chiudi, `R n` riapri, `E` elenco, `Q` fine (anche minuscoli) |
+| `lettera` | `char` | Priorità bassa, media, alta (anche minuscola) |
+| `numero` | `int` | Numero del ticket |
+| ticket iniziali | nel sorgente | 1 PC-03 media aperto; 2 PC-11 alta in lavorazione; 3 PC-07 bassa chiuso |
+
+### Output
+
+- `Ticket N aperto.`, `Ticket N: <stato>`,
+  `Ticket N: da <stato> a <stato> non e' permesso.`
+- `Priorita' non valida.`, `Ticket N inesistente.`, `Troppi ticket.`,
+  `Dati incompleti.`, `Numero non valido.`, `Comando sconosciuto.`
+- `E`: i ticket non chiusi, prima quelli ad alta priorità.
+
+### Vincoli
+
+- Cambi permessi: aperto → in lavorazione; in lavorazione → aperto o
+  chiuso; chiuso → aperto. Il passaggio a uno stesso stato non è
+  permesso.
+- Al massimo 8 ticket; i numeri sono progressivi.
+- L'elenco scorre le priorità da `ALTA` a `BASSA` e per ognuna i ticket in
+  ordine di numero.
+- Un comando per riga (il resto viene scartato); i dati non validi non
+  interrompono il programma. A fine input termina come con `Q`.
+
+### Assunzioni
+
+- Comando e argomenti stanno sulla stessa riga.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Priorita` | `typedef enum { BASSA, MEDIA, ALTA, NUM_PRIORITA } Priorita;` | Urgenza |
+| `Stato` | `typedef enum { APERTO, IN_LAVORAZIONE, CHIUSO, NUM_STATI } Stato;` | Avanzamento |
+| `Ticket` | `typedef struct { int numero; char pc[8]; Priorita priorita; Stato stato; } Ticket;` | Un ticket |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `ticket`, `n_ticket` | `Ticket[8]`, `int` | Ticket registrati |
+| `nuovo` | `Stato` | Stato richiesto |
+| `permesso` (in `cambia_stato`) | `int[3][3]` | Tabella dei cambi ammessi |
 
 | Funzione | Compito |
 |----------|---------|
-| `cambia_stato(t, nuovo)` | 1 se il cambio è permesso dalla tabella |
-| `nome_stato(s), nome_priorita(p)` | Tabelle dei nomi |
+| `cambia_stato(t, nuovo)` | Cambia lo stato se permesso; 1 se riuscito |
+| `nome_stato(s)`, `nome_priorita(p)` | Nomi |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Nuovo ticket
+1. Finché il comando non è `Q`:
+   1. leggere il comando in maiuscolo;
+   2. `N`: se c'è posto leggere pc e priorità, controllarla e aprire il
+      ticket;
+   3. `L`/`C`/`R`: leggere il numero, scegliere lo stato richiesto con uno
+      `switch` e chiamare `cambia_stato`;
+   4. `E`: stampare i ticket non chiusi per priorità decrescente;
+   5. scartare il resto della riga.
 
-**a) Input** – `N PC-14 A`; `N PC-02 X`
+## 3. Casi di test
 
-**b) Output** – "Ticket 4 aperto."; "Priorita' non valida."
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `n_ticket`
+### Test 1 – Ciclo di vita dei ticket
 
-**d) Vincoli** – priorità B, M, A
+- **Input:** `E`, `N PC-05 a`, `N PC-09 X`, `L 1`, `l 1`, `C 2`, `C 3`,
+  `R 3`, `C 1`, `R 4`, `L 9`, `L x`, `E`, `Q`
+- **Output atteso:**
+  ```
+    2  PC-11  ALTA   in lavorazione
+    1  PC-03  media  aperto
+    Ticket 4 aperto.
+    Priorita' non valida.
+    Ticket 1: in lavorazione
+    Ticket 1: da in lavorazione a in lavorazione non e' permesso.
+    Ticket 2: chiuso
+    Ticket 3: da chiuso a chiuso non e' permesso.
+    Ticket 3: aperto
+    Ticket 1: chiuso
+    Ticket 4: da aperto a aperto non e' permesso.
+    Ticket 9 inesistente.
+    Numero non valido.
+    4  PC-05  ALTA   aperto
+    3  PC-07  bassa  aperto
+  ```
 
-**e) Assunzioni** – al massimo 8 ticket
+### Test 2 – Ticket esauriti
 
-**f) Algoritmo in linguaggio naturale** – il nuovo ticket parte APERTO.
-
-### Caso d'uso 2 – Ciclo di vita
-
-**a) Input** – `L 1`, `C 1`
-
-**b) Output** – in lavorazione, poi chiuso
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – APERTO → IN_LAVORAZIONE → CHIUSO
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – permesso[t->stato][nuovo] decide.
-
-### Caso d'uso 3 – Cambio non permesso
-
-**a) Input** – `C 4` su un ticket aperto
-
-**b) Output** – "da aperto a chiuso non e' permesso."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la tabella contiene 0 per quella coppia.
-
-### Caso d'uso 4 – Elenco
-
-**a) Input** – `E`
-
-**b) Output** – ALTA prima, poi media e bassa, senza i chiusi
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – ciclo sulle priorità da ALTA a BASSA, dentro un ciclo sui ticket.
+- **Input:** sei volte `N <pc> b`
+- **Output atteso:** `Ticket 4 aperto.` ... `Ticket 8 aperto.`, poi
+  `Troppi ticket.`

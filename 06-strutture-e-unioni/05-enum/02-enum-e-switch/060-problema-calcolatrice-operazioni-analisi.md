@@ -2,65 +2,90 @@
 
 ## 1. Problema
 
-La calcolatrice del corso di recupero legge un'operazione scritta a parole e due interi. La parola diventa un enum con una tabella di nomi; calcola sceglie il calcolo con uno switch e restituisce 0 se l'operazione è impossibile.
+La calcolatrice del corso di recupero legge un'operazione scritta a parole
+e due interi. La parola diventa un `Operazione` (enum) cercandola in una
+tabella di nomi; `calcola` sceglie il calcolo con uno `switch` e
+restituisce 0 se l'operazione è impossibile.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Operazione` | `SOMMA ... POTENZA, NUM_OPERAZIONI, NON_VALIDA` | operazione richiesta |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `parola` | `char[]` | 16 | Operazione letta |
-| `a`, `b`, `risultato` | `int` | — | Operandi e risultato |
-| `op` | `Operazione` | — | Operazione riconosciuta |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `parola` | `char[16]` | `somma`, `differenza`, `prodotto`, `quoziente`, `resto`, `potenza`; `FINE` termina |
+| `a`, `b` | `int` | Operandi |
+
+### Output
+
+- `operazione di a e b = risultato`, oppure
+  `operazione di a e b: impossibile.`,
+  `Operazione "x" sconosciuta.`, `Servono due numeri interi.`
+
+### Vincoli
+
+- `NON_VALIDA` sta dopo `NUM_OPERAZIONI`: non ha un nome nella tabella e
+  indica una parola non trovata.
+- Quoziente e resto sono interi; impossibili con b = 0 (i due `case`
+  condividono il codice).
+- Potenza con esponente non negativo, calcolata con moltiplicazioni
+  ripetute.
+- La parola si confronta con `strcmp`: va scritta in minuscolo.
+- Un'operazione per riga; una riga non valida non interrompe il
+  programma. A fine input termina come con `FINE`.
+
+### Assunzioni
+
+- I risultati stanno in un `int`.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Operazione` | `typedef enum { SOMMA, DIFFERENZA, PRODOTTO, QUOZIENTE, RESTO, POTENZA, NUM_OPERAZIONI, NON_VALIDA } Operazione;` | Operazione richiesta |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `parola` | `char[16]` | Nome letto |
+| `op` | `Operazione` | Operazione trovata |
+| `risultato` | `int` | Parametro di uscita di `calcola` |
+| `finito` | `int` | Flag di uscita |
 
 | Funzione | Compito |
 |----------|---------|
-| `da_testo(parola)` | Costante corrispondente, NON_VALIDA se non esiste |
-| `calcola(op, a, b, &risultato)` | switch; 0 per divisione per zero o esponente negativo |
+| `da_testo(parola)` | Costante corrispondente, o `NON_VALIDA` |
+| `calcola(op, a, b, &risultato)` | Calcolo con `switch`; 0 se impossibile |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Operazioni
+1. Finché non si termina:
+   1. leggere la parola; con `FINE` o a fine input terminare;
+   2. leggere i due numeri; se mancano segnalarlo;
+   3. convertire la parola; se non valida segnalarla;
+   4. altrimenti calcolare e stampare il risultato o l'impossibilità;
+   5. scartare il resto della riga.
 
-**a) Input** – `somma 12 30`; `quoziente 17 5`; `resto 17 5`; `potenza 2 10`
+## 3. Casi di test
 
-**b) Output** – 42; 3; 2; 1024
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `risultato`
+### Test 1 – Tutte le operazioni
 
-**d) Vincoli** – quoziente intero
-
-**e) Assunzioni** – interi senza overflow
-
-**f) Algoritmo in linguaggio naturale** – QUOZIENTE e RESTO condividono il controllo b != 0 con due case consecutivi.
-
-### Caso d'uso 2 – Impossibile
-
-**a) Input** – `quoziente 4 0`; `potenza 2 -1`
-
-**b) Output** – "impossibile."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – b diverso da 0, esponente non negativo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – calcola restituisce 0.
-
-### Caso d'uso 3 – Parola sconosciuta
-
-**a) Input** – `radice 9 2`
-
-**b) Output** – "Operazione \"radice\" sconosciuta."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – da_testo restituisce NON_VALIDA, che sta dopo NUM_OPERAZIONI.
+- **Input:** `somma 7 5`, `differenza 3 10`, `prodotto -4 6`,
+  `quoziente 17 5`, `resto 17 5`, `quoziente 3 0`, `potenza 2 10`,
+  `potenza 2 -1`, `media 3 4`, `somma 3 x`, `Somma 1 1`, `FINE`
+- **Output atteso:**
+  ```
+    somma di 7 e 5 = 12
+    differenza di 3 e 10 = -7
+    prodotto di -4 e 6 = -24
+    quoziente di 17 e 5 = 3
+    resto di 17 e 5 = 2
+    quoziente di 3 e 0: impossibile.
+    potenza di 2 e 10 = 1024
+    potenza di 2 e -1: impossibile.
+    Operazione "media" sconosciuta.
+    Servono due numeri interi.
+    Operazione "Somma" sconosciuta.
+  ```

@@ -45,6 +45,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_VOTI 8
 #define MAX_STUDENTI 4
@@ -78,6 +79,7 @@ Studente *cerca(Registro *r, const char *nome);
 int aggiungi_voto(Studente *s, const Voto *v);
 double media(const Studente *s, const char *materia, const Data *da, const Data *a, int *quanti);
 void stampa_medie(const Registro *r, const char *materia, const Data *da, const Data *a);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -103,18 +105,22 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (V studente materia voto data, M materia, P da a, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'V') {
             if (scanf("%11s %11s %d %d/%d/%d", nome, nuovo.materia, &nuovo.valore,
                       &nuovo.data.giorno, &nuovo.data.mese, &nuovo.data.anno) != 6) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else {
                 studente = cerca(&registro, nome);
                 if (studente == NULL) {
                     printf("  %s non e' nella %s.\n", nome, registro.classe);
                 } else if (nuovo.valore < 1 || nuovo.valore > 10) {
                     printf("  Voto non valido.\n");
+                } else if (nuovo.data.mese < 1 || nuovo.data.mese > 12 || nuovo.data.giorno < 1 ||
+                           nuovo.data.giorno > 31) {
+                    printf("  Data non valida.\n");
                 } else if (!aggiungi_voto(studente, &nuovo)) {
                     printf("  Spazio esaurito per i voti di %s.\n", studente->nome);
                 } else {
@@ -124,14 +130,14 @@ int main(void)
             }
         } else if (comando == 'M') {
             if (scanf("%11s", materia) != 1) {
-                comando = 'Q';
+                printf("  Manca la materia.\n");
             } else {
                 stampa_medie(&registro, materia, NULL, NULL);
             }
         } else if (comando == 'P') {
             if (scanf("%d/%d/%d %d/%d/%d", &da.giorno, &da.mese, &da.anno, &a.giorno, &a.mese,
                       &a.anno) != 6) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else if (confronta_date(&da, &a) > 0) {
                 printf("  Periodo non valido.\n");
             } else {
@@ -140,6 +146,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -208,5 +215,16 @@ void stampa_medie(const Registro *r, const char *materia, const Data *da, const 
             printf("  %-8s %.2f (%d %s)\n", r->studenti[s].nome, m, quanti,
                    quanti == 1 ? "voto" : "voti");
         }
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

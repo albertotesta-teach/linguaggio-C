@@ -54,12 +54,19 @@ int main(void)
     Conteggi conteggi = {0, 0, 0, 0};
     char riga[LUNG];
     int finito = 0;
+    int resto;
 
     printf("Testo (FINE su una riga per terminare):\n");
     while (!finito) {
         if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
             if (strcmp(riga, "FINE") == 0) {
                 finito = 1;

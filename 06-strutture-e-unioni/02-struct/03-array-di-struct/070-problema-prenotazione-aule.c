@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define AULE 3
 #define ORE  6
@@ -35,6 +36,8 @@ typedef struct {
     int postazioni;
     char prenotata[ORE][4];
 } Aula;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -53,13 +56,13 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P aula ora classe studenti, L ora, T, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P') {
             if (scanf("%d %d %3s %d", &a, &ora, classe, &studenti) != 4 || a < 1 || a > AULE ||
                 ora < 1 || ora > ORE || studenti <= 0) {
                 printf("  Dati non validi.\n");
-                comando = 'Q';
             } else if (aule[a - 1].prenotata[ora - 1][0] != '\0') {
                 printf("  %s alla %da ora e' gia' della %s.\n", aule[a - 1].nome, ora,
                        aule[a - 1].prenotata[ora - 1]);
@@ -72,7 +75,6 @@ int main(void)
         } else if (comando == 'L') {
             if (scanf("%d", &ora) != 1 || ora < 1 || ora > ORE) {
                 printf("  Ora non valida.\n");
-                comando = 'Q';
             } else {
                 libere = 0;
                 for (a = 0; a < AULE; a++) {
@@ -99,7 +101,19 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -29,6 +29,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define LATO 8
 
@@ -45,6 +46,7 @@ typedef struct {
 int avanza(Robot *r, int passi);
 void gira(Robot *r, char lato);
 const char *nome(Direzione d);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -56,15 +58,16 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (A n, S, D, P, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (scanf("%d", &passi) != 1 || passi < 0) {
-                comando = 'Q';
+                printf("  Numero di passi non valido.\n");
             } else {
                 fatti = avanza(&robot, passi);
                 if (fatti < passi) {
-                    printf("  Bordo raggiunto dopo %d passi.\n", fatti);
+                    printf("  Bordo raggiunto dopo %d %s.\n", fatti, fatti == 1 ? "passo" : "passi");
                 }
             }
         } else if (comando == 'S' || comando == 'D') {
@@ -75,6 +78,7 @@ int main(void)
         if (comando != 'Q') {
             printf("  Robot in (%d, %d) verso %s\n", robot.x, robot.y, nome(robot.verso));
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -127,4 +131,15 @@ const char *nome(Direzione d)
                                        [OVEST] = "ovest"};
 
     return nomi[d];
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

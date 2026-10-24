@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define TRENI 6
 
@@ -46,6 +47,7 @@ void stampa_tabellone(const Partenza t[], int n);
 const Partenza *prossima(const Partenza t[], int n, int ora, const char *dest);
 int registra_ritardo(Partenza t[], int n, const char *numero, int minuti);
 void stampa_ora(int minuti);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -67,12 +69,13 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (R numero min, S numero, P hh:mm destinazione, T, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'R' || comando == 'S') {
             minuti = -1;
             if (scanf("%7s", numero) != 1 || (comando == 'R' && scanf("%d", &minuti) != 1)) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else if (comando == 'R' && minuti < 0) {
                 printf("  Ritardo non valido.\n");
             } else if (registra_ritardo(tabellone, TRENI, numero, minuti)) {
@@ -81,8 +84,9 @@ int main(void)
                 printf("  Treno %s non in tabellone.\n", numero);
             }
         } else if (comando == 'P') {
-            if (scanf("%d:%d %15s", &ore, &minuti, destinazione) != 3) {
-                comando = 'Q';
+            if (scanf("%d:%d %15s", &ore, &minuti, destinazione) != 3 || ore < 0 || ore > 23 ||
+                minuti < 0 || minuti > 59) {
+                printf("  Dati non validi.\n");
             } else {
                 treno = prossima(tabellone, TRENI, ore * 60 + minuti, destinazione);
                 if (treno == NULL) {
@@ -99,6 +103,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -157,4 +162,15 @@ int registra_ritardo(Partenza t[], int n, const char *numero, int minuti)
 void stampa_ora(int minuti)
 {
     printf("%02d:%02d", minuti / 60, minuti % 60);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -2,64 +2,90 @@
 
 ## 1. Problema
 
-In laboratorio due studenti devono scambiarsi la postazione. Il programma mostra che scambiare le intere struct (nome compreso) non sposta nessuno, mentre lo scambio corretto riguarda solo i campi fila e pc. Due studenti con la stessa postazione sono segnalati.
+In laboratorio due studenti devono scambiarsi la postazione. Il programma
+mostra che scambiare le intere struct (nome compreso) non sposta nessuno,
+mentre lo scambio corretto riguarda solo i campi `fila` e `pc`. Due
+studenti che risultano già nella stessa postazione vengono segnalati.
+Ogni studente è una struct `Postazione`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Postazione` | `nome, fila, pc` | studente e postazione assegnata |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `primo`, `secondo` | `Postazione` | — | Schede lette |
-| `sbagliato_primo`, `sbagliato_secondo`, `temp` | `Postazione` | — | Scambio delle schede intere |
-| `appoggio` | `int` | — | Scambio dei singoli campi |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `primo`, `secondo` | `Postazione` | Nome, fila e numero del pc di ciascuno studente |
 
-| Funzione | Compito |
-|----------|---------|
-| `main` | Scambio con variabile di appoggio |
+### Output
 
-## 3. Casi d'uso e funzionalità
+- `Scambio delle schede intere (sbagliato):` con le due schede dopo lo
+  scambio delle struct e la nota che nessuno si è spostato.
+- `Scambio di fila e pc (corretto):` con le due schede dopo lo scambio dei
+  soli campi.
+- `I due studenti hanno gia' la stessa postazione: controllare il
+  registro.` oppure `Dati non validi.`
 
-### Caso d'uso 1 – Scambio
+### Vincoli
 
-**a) Input** – `Sofia 2 5`, `Luca 3 1`
+- L'assegnamento tra struct (`temp = sbagliato_primo;`) copia tutti i
+  campi, nome compreso.
+- Lo scambio corretto usa una variabile `int` di appoggio per ogni campo.
+- Fila e pc devono essere positivi.
 
-**b) Output** – scambio sbagliato: ognuno al suo posto; corretto: Sofia fila 3 pc 1, Luca fila 2 pc 5
+### Assunzioni
 
-**c) Variabili di supporto** – `appoggio`
+- Il nome è una sola parola di al massimo 19 caratteri.
 
-**d) Vincoli** – il nome non si scambia
+### Variabili di supporto
 
-**e) Assunzioni** – nessuna
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Postazione` | `typedef struct { char nome[20]; int fila; int pc; } Postazione;` | Uno studente con la sua postazione |
 
-**f) Algoritmo in linguaggio naturale** – scambiare fila e pc con una variabile int di appoggio.
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `sbagliato_primo`, `sbagliato_secondo` | `Postazione` | Copie su cui si mostra lo scambio sbagliato |
+| `temp` | `Postazione` | Appoggio per lo scambio di struct |
+| `appoggio` | `int` | Appoggio per lo scambio dei campi |
 
-### Caso d'uso 2 – Stessa postazione
+### Algoritmo in linguaggio naturale
 
-**a) Input** – due studenti con `2 5`
+1. Leggere i due studenti; se la lettura fallisce rendere non valida la
+   fila.
+2. Se fila o pc non sono positivi, stampare `Dati non validi.`
+3. Se le due postazioni coincidono, segnalarlo.
+4. Altrimenti:
+   1. copiare le schede, scambiarle intere con `temp` e stamparle;
+   2. scambiare fila e pc delle schede originali e stamparle.
 
-**b) Output** – "I due studenti hanno gia' la stessa postazione"
+## 3. Casi di test
 
-**c) Variabili di supporto** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**d) Vincoli** – —
+### Test 1 – Scambio
 
-**e) Assunzioni** – nessuna
+- **Cosa si verifica:** la differenza tra i due scambi.
+- **Input:** `Anna 2 5`, `Luca 3 1`
+- **Output atteso:**
+  ```
+  Scambio delle schede intere (sbagliato):
+    Luca     fila 3 pc 1
+    Anna     fila 2 pc 5
+    ogni nome ha ancora la sua postazione: nessuno si e' spostato
 
-**f) Algoritmo in linguaggio naturale** – confrontare i campi fila e pc.
+  Scambio di fila e pc (corretto):
+    Anna     fila 3 pc 1
+    Luca     fila 2 pc 5
+  ```
 
-### Caso d'uso 3 – Dati errati
+### Test 2 – Stessa postazione
 
-**a) Input** – fila non positiva
+- **Input:** `Anna 2 5`, `Luca 2 5`
+- **Output atteso:** `I due studenti hanno gia' la stessa postazione:
+  controllare il registro.`
 
-**b) Output** – "Dati non validi."
+### Test 3 – Dati non validi
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – fila > 0
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuno scambio.
+- **Input:** `Anna 0 5` `Luca 3 1`; poi `Anna 2 -1` `Luca 3 1`; poi
+  `Anna x` `Luca 3 1`
+- **Output atteso:** `Dati non validi.` in tutti e tre i casi.

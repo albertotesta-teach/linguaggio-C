@@ -2,62 +2,87 @@
 
 ## 1. Problema
 
-Il server del laboratorio scrive messaggi di livello diverso. Il livello è un enum ordinato dal meno al più grave, quindi due livelli si confrontano con >=. Il programma legge la soglia, stampa i messaggi con livello almeno pari alla soglia e conta i messaggi di ogni livello.
+Il server del laboratorio scrive messaggi di livello diverso. Il livello è
+un `enum` ordinato dal meno al più grave, quindi due livelli si
+confrontano con `>=`. Il programma legge la soglia, stampa i messaggi con
+livello almeno pari alla soglia e conta i messaggi di ogni livello.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Livello` | `DEBUG, INFO, AVVISO, ERRORE, NUM_LIVELLI` | gravità del messaggio |
-| `Messaggio` | `ora, livello, testo` | riga del registro |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `registro` | `Messaggio[]` | 8 | Messaggi della mattina |
-| `nomi` | `const char *[]` | NUM_LIVELLI | Etichette dei livelli |
-| `conteggi` | `int[]` | NUM_LIVELLI | Messaggi per livello |
-| `soglia`, `mostrati` | `int` | — | Soglia letta e messaggi stampati |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `soglia` | `int` | 0 DEBUG, 1 INFO, 2 AVVISO, 3 ERRORE |
+| `registro` | `Messaggio[8]` | Messaggi della mattina (nel sorgente) |
 
-## 3. Casi d'uso e funzionalità
+### Output
 
-### Caso d'uso 1 – Filtro
+- I messaggi con livello ≥ soglia: `ora [LIVELLO] testo`.
+- `Mostrati N messaggi su 8`.
+- Il conteggio dei messaggi per ogni livello (su tutto il registro).
+- `Soglia non valida.`
 
-**a) Input** – `2`
+### Vincoli
 
-**b) Output** – i 4 messaggi AVVISO ed ERRORE; "Mostrati 4 messaggi su 8"
+- `typedef enum { DEBUG, INFO, AVVISO, ERRORE, NUM_LIVELLI } Livello;`:
+  l'ordine delle costanti è l'ordine di gravità.
+- La soglia si controlla prima di convertirla in `Livello`.
+- I conteggi usano il livello come indice.
 
-**c) Variabili di supporto** – `mostrati`
+### Assunzioni
 
-**d) Vincoli** – livello >= soglia
+- I messaggi sono in ordine di orario.
 
-**e) Assunzioni** – le costanti sono in ordine di gravità
+### Variabili di supporto
 
-**f) Algoritmo in linguaggio naturale** – per ogni messaggio aggiornare il conteggio e stamparlo se registro[i].livello >= soglia.
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Livello` | `typedef enum { DEBUG, INFO, AVVISO, ERRORE, NUM_LIVELLI } Livello;` | Gravità del messaggio |
+| `Messaggio` | `typedef struct { char ora[6]; Livello livello; char testo[40]; } Messaggio;` | Una riga del registro |
 
-### Caso d'uso 2 – Conteggi
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `nomi` | `const char *[4]` | Nomi indicizzati dal livello |
+| `conteggi` | `int[4]` | Messaggi per livello |
+| `mostrati` | `int` | Messaggi stampati |
+| `l` | `Livello` | Indice del ciclo sui livelli |
 
-**a) Input** – stesso input
+### Algoritmo in linguaggio naturale
 
-**b) Output** – DEBUG 1, INFO 3, AVVISO 2, ERRORE 2
+1. Leggere la soglia; se non è tra 0 e 3 segnalarlo.
+2. Per ogni messaggio: contarlo nel suo livello; se il livello è ≥ soglia
+   stamparlo e contarlo tra i mostrati.
+3. Stampare il totale mostrato e i conteggi per livello.
 
-**c) Variabili di supporto** – `conteggi`
+## 3. Casi di test
 
-**d) Vincoli** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – nessuna
+### Test 1 – Soglia AVVISO
 
-**f) Algoritmo in linguaggio naturale** – conteggi[registro[i].livello]++: il livello è l'indice.
+- **Input:** `2`
+- **Output atteso:**
+  ```
+  Soglia (0 DEBUG, 1 INFO, 2 AVVISO, 3 ERRORE):   09:02 [AVVISO] disco al 85%
+    10:12 [ERRORE] stampante lab non risponde
+    10:13 [AVVISO] nuovo tentativo di stampa
+    11:30 [ERRORE] backup notturno non trovato
+  Mostrati 4 messaggi su 8
+    DEBUG  1
+    INFO   3
+    AVVISO 2
+    ERRORE 2
+  ```
 
-### Caso d'uso 3 – Soglia non valida
+### Test 2 – Soglia minima e massima
 
-**a) Input** – `7`
+- **Input:** `0`; poi `3`
+- **Output atteso:** con 0 tutti gli 8 messaggi (`Mostrati 8 messaggi su
+  8`); con 3 solo i due `ERRORE` (`Mostrati 2 messaggi su 8`); i conteggi
+  per livello non cambiano.
 
-**b) Output** – "Soglia non valida."
+### Test 3 – Soglia non valida
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – da DEBUG a ERRORE
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – controllo prima di ogni confronto.
+- **Input:** `4` (poi `-1`, `abc`)
+- **Output atteso:** `Soglia non valida.`

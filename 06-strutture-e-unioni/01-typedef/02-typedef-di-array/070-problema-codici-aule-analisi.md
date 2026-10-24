@@ -2,66 +2,102 @@
 
 ## 1. Problema
 
-Ogni aula ha un codice di 5 caratteri nel formato E P-NN (edificio, piano, trattino, numero su due cifre). Il programma compone i codici a partire dai dati della segreteria, li stampa e poi, per ogni codice letto, indica edificio, piano, numero e capienza, oppure segnala un codice non valido o un'aula inesistente.
+Ogni aula ha un codice di 5 caratteri nel formato EP-NN (edificio, piano,
+trattino, numero su due cifre). Il programma compone i codici a partire
+dai dati della segreteria e li stampa; poi, per ogni codice letto, indica
+edificio, piano, numero e capienza, oppure segnala un codice non valido o
+un'aula inesistente. I codici hanno il tipo `Codice`, un array di 6
+caratteri con nome.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[40]` | Codice da cercare, letto con `fgets`; `FINE` termina |
+| `edifici`, `piani`, `numeri`, `capienza` | array paralleli di 6 elementi | Dati delle aule (nel sorgente) |
+
+### Output
+
+- L'elenco dei codici composti con i posti di ogni aula.
+- Per ogni codice cercato: `Edificio E, piano P, aula N: C posti.`,
+  `Edificio E, piano P, aula N: aula inesistente.` oppure
+  `Codice non valido.`
+
+### Vincoli
+
+- `typedef char Codice[6];`: 5 caratteri più il terminatore.
+- Formato: lettera maiuscola, cifra, `-`, due cifre; il numero ha sempre
+  due cifre (zero iniziale).
+- La riga si copia nel `Codice` solo se è lunga esattamente 5 caratteri.
+- Una riga più lunga del buffer viene scartata per intero.
+
+### Assunzioni
+
+- Piano da 0 a 9, numero da 0 a 99.
+- A fine input il programma si comporta come con `FINE`.
+
+### Variabili di supporto
 
 | Tipo definito | Definizione | Significato |
 |---------------|-------------|-------------|
-| `Codice` | `typedef char Codice[6];` | 5 caratteri più il terminatore |
+| `Codice` | `typedef char Codice[6];` | Codice di un'aula come stringa |
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `edifici`, `piani`, `numeri`, `capienza` | array paralleli | 6 | Dati delle aule |
-| `codici` | `Codice[]` | 6 | Codici composti |
-| `richiesto` | `Codice` | 6 | Codice letto |
-| `edificio`, `piano`, `numero` | `char`, `int`, `int` | — | Parti del codice letto |
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `codici` | `Codice[6]` | Codici composti |
+| `richiesto` | `Codice` | Codice letto e validato in lunghezza |
+| `edificio`, `piano`, `numero` | `char`, `int`, `int` | Parti del codice letto |
+| `a_capo`, `resto` | `char *`, `int` | Gestione del `'\n'` e delle righe lunghe |
+| `a` | `int` | Indice di ricerca |
 
 | Funzione | Compito |
 |----------|---------|
-| `componi(c, edificio, piano, numero)` | Scrive il codice nella Codice del chiamante |
+| `componi(c, edificio, piano, numero)` | Scrive il codice nel `Codice` del chiamante |
 | `scomponi(c, &edificio, &piano, &numero)` | 1 se il formato è valido, con le parti nei parametri di uscita |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Elenco dei codici
+1. Comporre e stampare i codici delle sei aule.
+2. Finché non si termina:
+   1. leggere una riga, togliere il `'\n'` o scartare il resto della riga;
+   2. con `FINE` (o a fine input) terminare;
+   3. se la lunghezza non è 5 o il formato è errato, segnalare il codice
+      non valido;
+   4. altrimenti cercare il codice tra quelli composti e stampare le parti
+      con la capienza o `aula inesistente`.
 
-**a) Input** – dati nel programma
+## 3. Casi di test
 
-**b) Output** – A0-03, A1-12, A1-14, B2-07, B2-09, C0-01
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `codici`
+### Test 1 – Elenco e ricerche
 
-**d) Vincoli** – numero su due cifre con lo zero iniziale
+- **Cosa si verifica:** composizione dei codici, ricerca riuscita, codici
+  errati, aula assente, riga troppo lunga.
+- **Input:** `B2-07`, `B2_07`, `C0-1`, `A1-15`, `b2-07`, `A0-03` seguito da
+  50 `X`, `C0-01`, `FINE`
+- **Output atteso:**
+  ```
+  Codici delle aule:
+    A0-03  (28 posti)
+    A1-12  (30 posti)
+    A1-14  (24 posti)
+    B2-07  (26 posti)
+    B2-09  (32 posti)
+    C0-01  (60 posti)
+    Edificio B, piano 2, aula 7: 26 posti.
+    Codice non valido.
+    Codice non valido.
+    Edificio A, piano 1, aula 15: aula inesistente.
+    Codice non valido.
+    Codice non valido.
+    Edificio C, piano 0, aula 1: 60 posti.
+  ```
+  (`b2-07` non è valido: l'edificio è una lettera maiuscola).
 
-**e) Assunzioni** – piano da 0 a 9, numero da 0 a 99
+### Test 2 – Solo l'elenco
 
-**f) Algoritmo in linguaggio naturale** – componi scrive carattere per carattere e chiude con '\0'.
-
-### Caso d'uso 2 – Ricerca riuscita
-
-**a) Input** – `B2-07`
-
-**b) Output** – "Edificio B, piano 2, aula 7: 26 posti."
-
-**c) Variabili di supporto** – `edificio`, `piano`, `numero`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – scomponi valida il formato; la ricerca con strcmp tra i codici trova la capienza.
-
-### Caso d'uso 3 – Codice errato o assente
-
-**a) Input** – `B2_07`, `C0-1`; `A1-15`
-
-**b) Output** – "Codice non valido."; "aula inesistente."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – righe di lunghezza diversa da 5 non sono copiate nella Codice
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – un formato valido ma non presente nell'elenco dà comunque le sue parti.
+- **Input:** `FINE`
+- **Output atteso:** l'elenco dei sei codici e nessuna ricerca.

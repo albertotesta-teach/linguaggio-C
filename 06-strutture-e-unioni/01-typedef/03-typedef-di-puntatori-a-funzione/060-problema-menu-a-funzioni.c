@@ -36,6 +36,7 @@ void paga_pasto(int *credito);
 void paga_merenda(int *credito);
 void mostra_saldo(int *credito);
 void paga(int *credito, int importo, const char *cosa);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -44,6 +45,7 @@ int main(void)
     int credito = 830;
     int scelta = 1;
     int v;
+    int letti;
 
     while (scelta != 0) {
         printf("\n");
@@ -51,8 +53,12 @@ int main(void)
             printf("  %d  %s\n", v + 1, voci[v]);
         }
         printf("  0  esci\nScelta: ");
-        if (scanf("%d", &scelta) != 1) {
-            scelta = 0;
+        letti = scanf("%d", &scelta);
+        if (letti == EOF) {
+            scelta = 0;                 /* input terminato: come esci */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            scelta = -1;                /* voce inesistente */
         }
         if (scelta >= 1 && scelta <= VOCI) {
             azioni[scelta - 1](&credito);
@@ -68,9 +74,14 @@ int main(void)
 void ricarica(int *credito)
 {
     int euro;
+    int letti;
 
     printf("  Importo in euro (5-50): ");
-    if (scanf("%d", &euro) == 1 && euro >= 5 && euro <= 50) {
+    letti = scanf("%d", &euro);
+    if (letti == 0) {
+        svuota_riga();                  /* non e' un numero */
+    }
+    if (letti == 1 && euro >= 5 && euro <= 50) {
         *credito = *credito + euro * 100;
         printf("  Ricarica di %d euro eseguita.\n", euro);
     } else {
@@ -103,5 +114,16 @@ void paga(int *credito, int importo, const char *cosa)
     } else {
         printf("  Credito insufficiente per %s: servono %d.%02d euro.\n", cosa,
                importo / 100, importo % 100);
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

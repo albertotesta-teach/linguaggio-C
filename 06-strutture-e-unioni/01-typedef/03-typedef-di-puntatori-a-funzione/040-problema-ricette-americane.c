@@ -36,6 +36,7 @@ double da_cucchiai(double cucchiai);
 double da_once(double once);
 double da_libbre(double libbre);
 double da_fahrenheit(double gradi_f);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -45,17 +46,23 @@ int main(void)
     char sigla[LUNG_SIGLA];
     double quantita = 1;
     int k;
+    int letti;
 
     printf("Unita' riconosciute: cup tbsp oz lb F\n");
     while (quantita != 0) {
         printf("Quantita' e unita' (0 per finire): ");
-        if (scanf("%lf", &quantita) != 1) {
-            quantita = 0;
-        }
-        if (quantita != 0) {
+        letti = scanf("%lf", &quantita);
+        if (letti == EOF) {
+            quantita = 0;               /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* la quantita' non e' un numero */
+            printf("  Quantita' non valida.\n");
+            quantita = 1;               /* si continua */
+        } else if (quantita != 0) {
             if (scanf("%9s", sigla) != 1) {
                 quantita = 0;
             } else {
+                svuota_riga();          /* scarta il resto della riga */
                 k = 0;
                 while (k < UNITA && strcmp(sigla, sigle[k]) != 0) {
                     k++;
@@ -100,4 +107,15 @@ double da_libbre(double libbre)
 double da_fahrenheit(double gradi_f)
 {
     return (gradi_f - 32) * 5 / 9;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

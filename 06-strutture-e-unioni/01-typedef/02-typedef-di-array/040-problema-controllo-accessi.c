@@ -42,6 +42,7 @@ int main(void)
     const Targa elenco[AUTORIZZATE] = {"EK301TZ", "DM774PA", "FH052LC", "GB918RN", "CX640MD"};
     char riga[LUNG_RIGA];
     char *a_capo;
+    int resto;
     Targa targa;
     int fine = 0;
     int consentiti = 0;
@@ -55,6 +56,11 @@ int main(void)
             a_capo = strchr(riga, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
             }
             if (strcmp(riga, "FINE") == 0) {
                 fine = 1;

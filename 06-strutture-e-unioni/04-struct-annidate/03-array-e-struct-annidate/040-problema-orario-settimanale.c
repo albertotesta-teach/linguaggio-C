@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define CLASSI 2
 #define GIORNI 5
@@ -51,6 +52,7 @@ void stampa_orario(const Classe *c);
 int lezioni_docente(const Classe c[], int n, const char *docente);
 int conflitti(const Classe *a, const Classe *b);
 const char *nome_giorno(int g);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -89,11 +91,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (O classe, D docente, C, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'O' || comando == 'D') {
             if (scanf("%9s", nome) != 1) {
-                comando = 'Q';
+                printf("  Manca il nome.\n");
             } else if (comando == 'O') {
                 classe = cerca_classe(prime, CLASSI, nome);
                 if (classe == NULL) {
@@ -111,6 +114,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -201,4 +205,15 @@ const char *nome_giorno(int g)
     const char *nomi[GIORNI] = {"Lun", "Mar", "Mer", "Gio", "Ven"};
 
     return nomi[g];
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -32,6 +32,7 @@ typedef struct {
 } Orario;
 
 int valido(int ore, int minuti);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -43,17 +44,26 @@ int main(void)
     int durata;
     int totale = 0;
     int lezione = 1;
+    int letti;
 
     while (!(inizio.ore == 0 && inizio.minuti == 0)) {
         printf("Lezione %d - inizio (ore minuti, 0 0 per finire): ", lezione);
-        if (scanf("%d %d", &inizio.ore, &inizio.minuti) != 2) {
-            inizio.ore = 0;
+        letti = scanf("%d %d", &inizio.ore, &inizio.minuti);
+        if (letti == EOF) {
+            inizio.ore = 0;             /* input terminato: come 0 0 */
             inizio.minuti = 0;
-        }
-        if (!(inizio.ore == 0 && inizio.minuti == 0)) {
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            printf("  Orario non valido.\n");
+            inizio.ore = -1;            /* non e' la richiesta di fine */
+        } else if (!(inizio.ore == 0 && inizio.minuti == 0)) {
             printf("Lezione %d - fine   (ore minuti): ", lezione);
-            if (scanf("%d %d", &fine.ore, &fine.minuti) != 2) {
-                fine.ore = -1;
+            letti = scanf("%d %d", &fine.ore, &fine.minuti);
+            if (letti != 2) {
+                if (letti != EOF) {
+                    svuota_riga();      /* non sono due numeri */
+                }
+                fine.ore = -1;          /* orario non valido */
             }
             da_mezzanotte_inizio = inizio.ore * 60 + inizio.minuti;
             da_mezzanotte_fine = fine.ore * 60 + fine.minuti;
@@ -89,4 +99,15 @@ int main(void)
 int valido(int ore, int minuti)
 {
     return ore >= 0 && ore <= 23 && minuti >= 0 && minuti <= 59;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -33,6 +33,8 @@ typedef enum {
     INVERNO, PRIMAVERA, ESTATE, AUTUNNO, NUM_STAGIONI
 } Stagione;
 
+void svuota_riga(void);
+
 int main(void)
 {
     const char *nomi_mesi[12] = {"gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno",
@@ -45,14 +47,24 @@ int main(void)
     int giorni;
     Mese mese;
     Stagione stagione;
+    int letti;
 
     while (numero != 0) {
         printf("Mese e anno (0 per finire): ");
-        if (scanf("%d", &numero) != 1) {
-            numero = 0;
+        letti = scanf("%d", &numero);
+        if (letti == EOF) {
+            numero = 0;                 /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* il mese non e' un numero */
+            printf("  Dati non validi.\n");
+            numero = -1;                /* si continua */
         } else if (numero != 0) {
-            if (scanf("%d", &anno) != 1) {
-                numero = 0;
+            letti = scanf("%d", &anno);
+            if (letti == EOF) {
+                numero = 0;             /* input terminato */
+            } else if (letti == 0) {
+                svuota_riga();          /* l'anno non e' un numero */
+                printf("  Dati non validi.\n");
             } else if (numero < GENNAIO || numero > DICEMBRE) {
                 printf("  %d non e' un mese.\n", numero);
             } else {
@@ -80,4 +92,15 @@ int main(void)
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

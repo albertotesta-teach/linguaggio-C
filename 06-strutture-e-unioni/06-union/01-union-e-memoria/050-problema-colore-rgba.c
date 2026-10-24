@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <ctype.h>
 
 typedef enum {
     ALFA, BLU, VERDE, ROSSO, NUM_CANALI
@@ -43,6 +44,7 @@ Colore schiarisci(Colore c, int percento);
 Colore scurisci(Colore c, int percento);
 Colore grigio(Colore c);
 void stampa(const char *nome, Colore c);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -54,13 +56,14 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (S RRGGBB p, D RRGGBB p, G RRGGBB, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'S' || comando == 'D' || comando == 'G') {
             if (scanf("%6lx", &rgb) != 1 ||
-                (comando != 'G' && (scanf("%d", &percento) != 1 || percento < 0 || percento > 100))) {
+                (comando != 'G' &&
+                 (scanf("%d", &percento) != 1 || percento < 0 || percento > 100))) {
                 printf("  Dati non validi.\n");
-                comando = 'Q';
             } else {
                 c.codice = (uint32_t) ((rgb << 8) | 0xFF);
                 stampa("originale", c);
@@ -75,6 +78,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -116,4 +120,15 @@ void stampa(const char *nome, Colore c)
 {
     printf("  %-10s #%08lX   R %3d  G %3d  B %3d  A %3d\n", nome, (unsigned long) c.codice,
            c.canale[ROSSO], c.canale[VERDE], c.canale[BLU], c.canale[ALFA]);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

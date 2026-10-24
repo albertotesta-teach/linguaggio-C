@@ -2,65 +2,96 @@
 
 ## 1. Problema
 
-Due studenti chiedono di passare l'uno nella sezione dell'altro. scambia_studenti riceve gli indirizzi delle due schede e scambia i nomi, lasciando ogni scheda nella sua sezione; lo scambio si fa solo se la seconda lingua è la stessa. Una versione per valore mostra che scambiare le copie non cambia nulla.
+Due studenti chiedono di passare l'uno nella sezione dell'altro.
+`scambia_studenti` riceve gli indirizzi delle due schede e scambia i nomi,
+lasciando ogni scheda nella sua sezione; lo scambio si fa solo se la
+seconda lingua è la stessa. Una versione che riceve le struct per valore
+mostra che scambiare le copie non cambia nulla.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Scheda` | `nome, sezione, lingua` | studente e sezione |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `prima`, `seconda`, `terza` | `Scheda` | — | Schede degli studenti |
-| `nome` | `char[]` | 24 | Appoggio per lo scambio (nella funzione) |
+Nessun input da tastiera: le schede sono nel sorgente.
+
+| Scheda | Nome | Sezione | Seconda lingua |
+|--------|------|---------|----------------|
+| `prima` | Lorenzo Fabbri | 1A | 2 (tedesco) |
+| `seconda` | Aurora Neri | 1B | 2 (tedesco) |
+| `terza` | Mattia Conte | 1B | 1 (francese) |
+
+### Output
+
+- Le schede prima dello scambio, dopo `scambia_copie` (invariate, con la
+  riga stampata dentro la funzione) e dopo `scambia_studenti`.
+- `Scambio con Mattia Conte rifiutato: seconda lingua diversa.`
+
+### Vincoli
+
+- `scambia_studenti(Scheda *a, Scheda *b)` modifica le schede del
+  chiamante; restituisce 1 se lo scambio è possibile.
+- Le stringhe si scambiano con `strcpy` e un array di appoggio.
+- `scambia_copie(Scheda a, Scheda b)` lavora su copie locali: le schede
+  del chiamante non cambiano.
+- Lingua 1 = francese, altrimenti tedesco.
+
+### Assunzioni
+
+- I nomi stanno in 23 caratteri.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Scheda` | `typedef struct { char nome[24]; char sezione[4]; int lingua; } Scheda;` | Uno studente nella sua sezione |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `prima`, `seconda`, `terza` | `Scheda` | Le schede |
+| `nome` (in `scambia_studenti`) | `char[24]` | Appoggio per lo scambio |
+| `temp` (in `scambia_copie`) | `Scheda` | Appoggio per lo scambio delle copie |
 
 | Funzione | Compito |
 |----------|---------|
-| `scambia_studenti(a, b)` | Scambia i nomi; 0 se la lingua è diversa |
+| `scambia_studenti(a, b)` | Scambia i nomi se la lingua coincide |
 | `scambia_copie(a, b)` | Versione sbagliata per valore |
-| `stampa(s)` | Riceve const Scheda * |
+| `stampa(s)` | Stampa sezione, nome e lingua |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Scambio per valore
+1. Stampare `prima` e `seconda`.
+2. Chiamare `scambia_copie` e ristampare: nessun cambiamento.
+3. Chiamare `scambia_studenti(&prima, &seconda)`: se riesce, ristampare.
+4. Chiamare `scambia_studenti(&prima, &terza)`: se non riesce, stampare
+   il rifiuto.
 
-**a) Input** – `scambia_copie(prima, seconda)`
+## 3. Casi di test
 
-**b) Output** – nessun cambiamento nelle schede
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – —
+- **Cosa si verifica:** differenza tra passaggio per valore e per
+  indirizzo, rifiuto per lingua diversa.
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+  Prima dello scambio:
+    1A: Lorenzo Fabbri   tedesco
+    1B: Aurora Neri      tedesco
+    (dentro scambia_copie la copia a contiene Aurora Neri)
 
-**d) Vincoli** – —
+  Dopo scambia_copie (per valore): nessun cambiamento
+    1A: Lorenzo Fabbri   tedesco
+    1B: Aurora Neri      tedesco
 
-**e) Assunzioni** – nessuna
+  Dopo scambia_studenti(&prima, &seconda):
+    1A: Aurora Neri      tedesco
+    1B: Lorenzo Fabbri   tedesco
 
-**f) Algoritmo in linguaggio naturale** – la funzione lavora su due copie.
+  Scambio con Mattia Conte rifiutato: seconda lingua diversa.
+  ```
 
-### Caso d'uso 2 – Scambio riuscito
+### Test 2 – Stessa lingua anche per la terza scheda
 
-**a) Input** – Lorenzo (1A, tedesco) e Aurora (1B, tedesco)
-
-**b) Output** – 1A: Aurora Neri; 1B: Lorenzo Fabbri
-
-**c) Variabili di supporto** – `a->nome`, `b->nome`
-
-**d) Vincoli** – stessa seconda lingua
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – tre strcpy con un array di appoggio.
-
-### Caso d'uso 3 – Scambio rifiutato
-
-**a) Input** – con Mattia (francese)
-
-**b) Output** – "Scambio con Mattia Conte rifiutato"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la funzione restituisce 0 senza modificare nulla.
+- **Procedura:** dare a Mattia Conte la lingua 2.
+- **Output atteso:** l'ultima riga non compare (lo scambio riesce senza
+  messaggi).

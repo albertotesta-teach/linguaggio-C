@@ -2,68 +2,103 @@
 
 ## 1. Problema
 
-Il totem della mensa gestisce il credito della tessera di uno studente, in centesimi. Il menu ha quattro voci (ricarica, paga il pasto, paga la merenda, mostra il saldo) e 0 per uscire. Ogni voce è una funzione con lo stesso prototipo, chiamata attraverso una tabella.
+Il distributore della mensa gestisce il credito della tessera di uno
+studente con un menu: ricarica, pagamento del pasto, pagamento della
+merenda, saldo. Ogni voce è una funzione con lo stesso prototipo, di tipo
+`Azione`; la voce scelta è l'indice della funzione da chiamare nella
+tabella `azioni`. Il credito iniziale è 8.30 euro.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `scelta` | `int` | Voce del menu (1-4); 0 esce |
+| `euro` | `int` | Importo della ricarica, da 5 a 50 euro |
+
+### Output
+
+- Il menu prima di ogni scelta.
+- Per ogni voce: `Ricarica di N euro eseguita.` / `Importo non valido.`,
+  `Pagato: pasto 5.20 euro.` / `Credito insufficiente per pasto: servono
+  5.20 euro.` (lo stesso per la merenda, 1.50 euro), `Saldo: E.CC euro`.
+- `Voce inesistente.` per una scelta non valida.
+- All'uscita: `Arrivederci. Credito residuo: E.CC euro`.
+
+### Vincoli
+
+- `typedef void (*Azione)(int *credito);`: tutte le voci ricevono il
+  puntatore al credito, anche `mostra_saldo` che lo legge soltanto.
+- Il credito è in centesimi (`int`), così non ci sono errori di
+  arrotondamento; si stampa come euro e centesimi.
+- Un pagamento si esegue solo se il credito basta.
+- Una scelta o un importo non numerici vengono scartati (resto della riga)
+  e trattati come non validi; a fine input si esce.
+
+### Assunzioni
+
+- La ricarica è in euro interi.
+
+### Variabili di supporto
 
 | Tipo definito | Definizione | Significato |
 |---------------|-------------|-------------|
-| `Azione` | `typedef void (*Azione)(int *credito);` | funzione di una voce del menu |
+| `Azione` | `typedef void (*Azione)(int *credito);` | Funzione di una voce del menu |
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `voci` | `const char *[]` | 4 | Testo delle voci |
-| `azioni` | `Azione[]` | 4 | Funzioni del menu |
-| `credito` | `int` | — | Credito in centesimi |
-| `scelta` | `int` | — | Voce scelta |
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `voci` | `const char *[4]` | Testi del menu |
+| `azioni` | `Azione[4]` | Funzioni delle voci, nello stesso ordine |
+| `credito` | `int` | Credito in centesimi, iniziale 830 |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `PASTO`, `MERENDA` | `#define` | 520 e 150 centesimi |
 
 | Funzione | Compito |
 |----------|---------|
-| `ricarica(credito)` | Legge un importo da 5 a 50 euro e lo aggiunge |
-| `paga_pasto, paga_merenda` | Pagano 5.20 e 1.50 euro tramite paga |
-| `mostra_saldo(credito)` | Stampa il credito |
+| `ricarica`, `paga_pasto`, `paga_merenda`, `mostra_saldo` | Le quattro voci |
 | `paga(credito, importo, cosa)` | Scala l'importo se il credito basta |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Voce del menu
+1. Finché la scelta non è 0:
+   1. stampare il menu e leggere la scelta (fine input → 0; testo → voce
+      inesistente);
+   2. se è tra 1 e 4 chiamare `azioni[scelta - 1](&credito)`;
+   3. altrimenti, se non è 0, segnalare la voce inesistente.
+2. Stampare il credito residuo.
 
-**a) Input** – `4`
+## 3. Casi di test
 
-**b) Output** – "Saldo: 8.30 euro"
+Nell'output i dati inseriti non compaiono (input da pipe); il menu, che si
+ripete a ogni scelta, è omesso.
 
-**c) Variabili di supporto** – `credito`
+### Test 1 – Sessione completa
 
-**d) Vincoli** – voce tra 1 e 4
+- **Cosa si verifica:** tutte le voci, il credito insufficiente, gli
+  importi e le scelte non validi.
+- **Input:** `4`, `2`, `2`, `1` `60`, `1` `abc`, `1` `20`, `3`, `7`, `xyz`,
+  `4`, `0`
+- **Valori intermedi attesi:** 830 − 520 = 310; 310 < 520 → rifiuto;
+  310 + 2000 = 2310; 2310 − 150 = 2160.
+- **Output atteso:**
+  ```
+    Saldo: 8.30 euro
+    Pagato: pasto 5.20 euro.
+    Credito insufficiente per pasto: servono 5.20 euro.
+    Importo in euro (5-50):   Importo non valido.
+    Importo in euro (5-50):   Importo non valido.
+    Importo in euro (5-50):   Ricarica di 20 euro eseguita.
+    Pagato: merenda 1.50 euro.
+    Voce inesistente.
+    Voce inesistente.
+    Saldo: 21.60 euro
+  Arrivederci. Credito residuo: 21.60 euro
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Fine input
 
-**f) Algoritmo in linguaggio naturale** – chiamare azioni[scelta - 1](&credito).
-
-### Caso d'uso 2 – Credito insufficiente
-
-**a) Input** – `2` con 3.10 euro
-
-**b) Output** – "Credito insufficiente per pasto: servono 5.20 euro."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – il credito non diventa mai negativo
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – paga confronta credito e importo prima di scalare.
-
-### Caso d'uso 3 – Ricarica
-
-**a) Input** – `1`, poi `20`; `1`, poi `100`
-
-**b) Output** – "Ricarica di 20 euro eseguita."; "Importo non valido."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – importo da 5 a 50 euro
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la funzione legge l'importo e modifica *credito.
+- **Cosa si verifica:** la fine dell'input equivale a `0`.
+- **Input:** `2`, poi fine input.
+- **Output atteso:** `Arrivederci. Credito residuo: 3.10 euro`.

@@ -37,6 +37,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define VERIFICHE 5
 
@@ -64,6 +65,7 @@ int stessa_data(const Data *a, const Data *b);
 int conflitto(const Verifica v[], int n, int escluso, const char *classe, const Data *giorno);
 void sposta(Verifica *v, const Data *giorno, const Orario *ora);
 void stampa(const Verifica *v);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -85,8 +87,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (E, S n gg/mm/aaaa hh:mm, C classe, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'E') {
             for (i = 0; i < VERIFICHE; i++) {
                 printf("  %d  ", i);
@@ -95,7 +98,7 @@ int main(void)
         } else if (comando == 'S') {
             if (scanf("%d %d/%d/%d %d:%d", &n, &giorno.giorno, &giorno.mese, &giorno.anno, &ora.ore,
                       &ora.minuti) != 6) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else if (n < 0 || n >= VERIFICHE) {
                 printf("  Verifica %d inesistente.\n", n);
             } else if (!data_valida(&giorno)) {
@@ -127,6 +130,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -183,4 +187,15 @@ void stampa(const Verifica *v)
 {
     printf("%-3s %-11s %02d/%02d/%d  %02d:%02d\n", v->classe, v->materia, v->giorno.giorno,
            v->giorno.mese, v->giorno.anno, v->ora.ore, v->ora.minuti);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

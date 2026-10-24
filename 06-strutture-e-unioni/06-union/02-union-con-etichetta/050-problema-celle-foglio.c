@@ -33,6 +33,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define RIGHE 6
 #define COLONNE 3
@@ -53,6 +54,7 @@ typedef struct {
 void scrivi(Cella *c, const char *contenuto);
 void stampa_foglio(Cella foglio[RIGHE][COLONNE]);
 int leggi_cella(int *riga, int *colonna);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -80,14 +82,14 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P, M cella contenuto, V cella, S colonna, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P') {
             stampa_foglio(foglio);
         } else if (comando == 'M' || comando == 'V') {
             if (!leggi_cella(&riga, &colonna)) {
                 printf("  Cella non valida.\n");
-                scanf("%*[^\n]");
             } else if (comando == 'V') {
                 foglio[riga][colonna].tipo = VUOTA;
             } else if (scanf(" %31[^\n]", contenuto) == 1) {
@@ -96,7 +98,11 @@ int main(void)
                        foglio[riga][colonna].tipo == NUMERO ? "numero" : "testo");
             }
         } else if (comando == 'S') {
-            if (scanf(" %c", &lettera) != 1 || lettera < 'A' || lettera >= 'A' + COLONNE) {
+            lettera = ' ';
+            if (scanf(" %c", &lettera) == 1) {
+                lettera = (char) toupper((unsigned char) lettera);
+            }
+            if (lettera < 'A' || lettera >= 'A' + COLONNE) {
                 printf("  Colonna non valida.\n");
             } else {
                 somma = 0;
@@ -119,6 +125,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -143,10 +150,13 @@ void scrivi(Cella *c, const char *contenuto)
 /* Legge una cella come B3; restituisce 0 se è fuori dal foglio. */
 int leggi_cella(int *riga, int *colonna)
 {
-    char lettera;
-    int numero;
-    int valida = scanf(" %c%d", &lettera, &numero) == 2 && lettera >= 'A' &&
-                 lettera < 'A' + COLONNE && numero >= 1 && numero <= RIGHE;
+    char lettera = ' ';
+    int numero = 0;
+    int valida = scanf(" %c%d", &lettera, &numero) == 2;
+
+    lettera = (char) toupper((unsigned char) lettera);
+    valida = valida && lettera >= 'A' && lettera < 'A' + COLONNE && numero >= 1 &&
+             numero <= RIGHE;
 
     if (valida) {
         *colonna = lettera - 'A';
@@ -177,5 +187,16 @@ void stampa_foglio(Cella foglio[RIGHE][COLONNE])
             }
         }
         printf("\n");
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

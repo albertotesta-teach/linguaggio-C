@@ -35,6 +35,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define MAX_TICKET 8
 
@@ -56,6 +57,7 @@ typedef struct {
 int cambia_stato(Ticket *t, Stato nuovo);
 const char *nome_stato(Stato s);
 const char *nome_priorita(Priorita p);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -75,26 +77,28 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (N pc B/M/A, L n, C n, R n, E, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'N') {
             if (n_ticket == MAX_TICKET) {
                 printf("  Troppi ticket.\n");
-                scanf("%*s %*s");
             } else if (scanf("%7s %c", ticket[n_ticket].pc, &lettera) != 2) {
-                comando = 'Q';
-            } else if (lettera != 'B' && lettera != 'M' && lettera != 'A') {
+                printf("  Dati incompleti.\n");
+            } else if ((lettera = (char) toupper((unsigned char) lettera)) != 'B' &&
+                       lettera != 'M' && lettera != 'A') {
                 printf("  Priorita' non valida.\n");
             } else {
                 ticket[n_ticket].numero = n_ticket + 1;
-                ticket[n_ticket].priorita = lettera == 'A' ? ALTA : (lettera == 'M' ? MEDIA : BASSA);
+                ticket[n_ticket].priorita =
+                    lettera == 'A' ? ALTA : (lettera == 'M' ? MEDIA : BASSA);
                 ticket[n_ticket].stato = APERTO;
                 printf("  Ticket %d aperto.\n", ticket[n_ticket].numero);
                 n_ticket++;
             }
         } else if (comando == 'L' || comando == 'C' || comando == 'R') {
             if (scanf("%d", &numero) != 1) {
-                comando = 'Q';
+                printf("  Numero non valido.\n");
             } else if (numero < 1 || numero > n_ticket) {
                 printf("  Ticket %d inesistente.\n", numero);
             } else {
@@ -128,6 +132,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -163,4 +168,15 @@ const char *nome_priorita(Priorita p)
     const char *nomi[NUM_PRIORITA] = {[BASSA] = "bassa", [MEDIA] = "media", [ALTA] = "ALTA"};
 
     return nomi[p];
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

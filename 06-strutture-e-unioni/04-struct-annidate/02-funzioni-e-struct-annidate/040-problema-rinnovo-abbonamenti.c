@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define ABBONAMENTI 4
 #define PREAVVISO 15
@@ -58,6 +59,7 @@ int giorni_tra(const Data *da, const Data *a);
 void aggiungi_mesi(Data *d, int mesi);
 int rinnova(Abbonamento *ab, int mesi, const Data *oggi);
 void stampa(const Abbonamento *ab, const Data *oggi);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -76,17 +78,23 @@ int main(void)
     int i;
 
     printf("Data di oggi (gg/mm/aaaa): ");
-    if (scanf("%d/%d/%d", &oggi.giorno, &oggi.mese, &oggi.anno) != 3) {
+    if (scanf("%d/%d/%d", &oggi.giorno, &oggi.mese, &oggi.anno) != 3 || oggi.anno < 2000 ||
+        oggi.mese < 1 || oggi.mese > 12 || oggi.giorno < 1 ||
+        oggi.giorno > giorni_nel_mese(oggi.mese, oggi.anno)) {
+        printf("Data non valida.\n");
         comando = 'Q';
+    } else {
+        svuota_riga();
     }
     while (comando != 'Q') {
         printf("Comando (R numero mesi, A, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'R') {
             if (scanf("%7s %d", numero, &mesi) != 2) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else {
                 trovato = -1;
                 for (i = 0; i < ABBONAMENTI; i++) {
@@ -112,6 +120,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -195,5 +204,16 @@ void stampa(const Abbonamento *ab, const Data *oggi)
         printf("in scadenza tra %d %s\n", giorni, giorni == 1 ? "giorno" : "giorni");
     } else {
         printf("valido\n");
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

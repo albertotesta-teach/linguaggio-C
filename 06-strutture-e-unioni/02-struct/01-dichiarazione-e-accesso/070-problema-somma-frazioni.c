@@ -32,6 +32,7 @@ typedef struct {
 } Frazione;
 
 int mcd(int a, int b);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -39,18 +40,27 @@ int main(void)
     Frazione seconda;
     Frazione somma;
     int divisore;
+    int letti;
 
     while (!(prima.num == 0 && prima.den == 0)) {
         printf("Due frazioni (a/b c/d, 0/0 per finire): ");
-        if (scanf("%d/%d", &prima.num, &prima.den) != 2) {
-            prima.num = 0;
+        letti = scanf("%d/%d", &prima.num, &prima.den);
+        if (letti == EOF) {
+            prima.num = 0;              /* input terminato: come 0/0 */
             prima.den = 0;
-        }
-        if (!(prima.num == 0 && prima.den == 0)) {
-            if (scanf("%d/%d", &seconda.num, &seconda.den) != 2) {
+        } else if (letti != 2) {
+            svuota_riga();              /* non e' nella forma a/b */
+            printf("  Frazioni non valide.\n");
+            prima.num = -1;             /* non e' la richiesta di fine */
+        } else if (!(prima.num == 0 && prima.den == 0)) {
+            letti = scanf("%d/%d", &seconda.num, &seconda.den);
+            if (letti == EOF) {
                 printf("  Seconda frazione mancante.\n");
-                prima.num = 0;
+                prima.num = 0;          /* input terminato */
                 prima.den = 0;
+            } else if (letti != 2) {
+                svuota_riga();          /* non e' nella forma c/d */
+                printf("  Frazioni non valide.\n");
             } else if (prima.den <= 0 || seconda.den <= 0 || prima.num < 0 || seconda.num < 0) {
                 printf("  Frazioni non valide.\n");
             } else {
@@ -85,4 +95,15 @@ int mcd(int a, int b)
         b = resto;
     }
     return a;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

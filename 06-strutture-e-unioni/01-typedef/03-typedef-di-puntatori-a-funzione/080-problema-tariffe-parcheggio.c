@@ -36,6 +36,7 @@ double prima_ora_gratis(int minuti);
 double giornaliera(int minuti);
 int ore_iniziate(int minuti);
 Tariffa piu_conveniente(int minuti, const Tariffa tariffe[], int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -44,11 +45,16 @@ int main(void)
     Tariffa migliore;
     int minuti = 1;
     int t;
+    int letti;
 
     while (minuti != 0) {
         printf("Durata della sosta in minuti (0 per finire): ");
-        if (scanf("%d", &minuti) != 1) {
-            minuti = 0;
+        letti = scanf("%d", &minuti);
+        if (letti == EOF) {
+            minuti = 0;                 /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            minuti = -1;                /* durata non valida */
         }
         if (minuti > 0) {
             for (t = 0; t < TARIFFE; t++) {
@@ -109,4 +115,15 @@ Tariffa piu_conveniente(int minuti, const Tariffa tariffe[], int n)
         }
     }
     return scelta;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

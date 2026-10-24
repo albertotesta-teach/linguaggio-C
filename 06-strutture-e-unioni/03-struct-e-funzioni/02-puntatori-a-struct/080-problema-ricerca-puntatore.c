@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define PC 5
 
@@ -48,6 +49,7 @@ typedef struct {
 
 Computer *cerca(Computer elenco[], int n, const char *inventario);
 void stampa(const Computer *c);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -67,8 +69,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (G codice, R codice, U codice n, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'G' || comando == 'R' || comando == 'U') {
             if (scanf("%7s", codice) != 1) {
                 comando = 'Q';
@@ -97,6 +100,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -121,4 +125,15 @@ void stampa(const Computer *c)
 {
     printf("  postazione %d  %s  %2d GB  guasti %d  %s\n", c->postazione, c->inventario, c->ram_gb,
            c->guasti, c->funzionante ? "ok" : "FUORI SERVIZIO");
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

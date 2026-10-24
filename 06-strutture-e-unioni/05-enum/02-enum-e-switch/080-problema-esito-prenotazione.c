@@ -39,6 +39,7 @@ typedef enum {
 
 Esito prenota(char aula[GIORNI][ORE][4], const char *classe, int studenti, int giorno, int ora);
 const char *messaggio(Esito e);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -56,13 +57,15 @@ int main(void)
         printf("Prenotazione (classe studenti giorno ora, FINE): ");
         if (scanf("%7s", classe) != 1 || strcmp(classe, "FINE") == 0) {
             finito = 1;
-        } else if (scanf("%d %d %d", &studenti, &giorno, &ora) != 3) {
+        } else if (scanf("%d %d %d", &studenti, &giorno, &ora) != 3 || studenti < 1) {
             printf("  Richiesta non valida.\n");
-            finito = 1;
         } else if (strlen(classe) > 3) {
             printf("  Classe %s non valida.\n", classe);
         } else {
             printf("  %s\n", messaggio(prenota(aula, classe, studenti, giorno, ora)));
+        }
+        if (!finito) {
+            svuota_riga();              /* una prenotazione per riga */
         }
     }
 
@@ -137,4 +140,15 @@ const char *messaggio(Esito e)
         break;
     }
     return testo;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

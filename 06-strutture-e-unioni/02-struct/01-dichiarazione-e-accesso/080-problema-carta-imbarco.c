@@ -39,6 +39,8 @@ typedef struct {
     char posto[4];
 } CartaImbarco;
 
+void svuota_riga(void);
+
 int main(void)
 {
     Volo classe = {"FR1452", 14, 9, 35};
@@ -47,18 +49,28 @@ int main(void)
     int minuti;
     int passati = 0;
     int fine = 0;
+    int letti;
 
     printf("Volo %s, gate %d, chiusura imbarco %02d:%02d\n", classe.codice, classe.gate,
            classe.chiusura_ore, classe.chiusura_minuti);
     while (!fine) {
         printf("Cognome (FINE per terminare): ");
-        if (scanf("%19s", carta.cognome) != 1 || strcmp(carta.cognome, "FINE") == 0) {
+        if (scanf("%19s", carta.cognome) != 1) {
+            fine = 1;                   /* input terminato: come FINE */
+        } else if (strcmp(carta.cognome, "FINE") == 0) {
             fine = 1;
         } else {
+            svuota_riga();              /* un cognome per riga */
             printf("Ora attuale, volo e posto (hh mm volo posto): ");
-            if (scanf("%d %d %7s %3s", &ore, &minuti, carta.volo, carta.posto) != 4) {
-                printf("  Dati incompleti.\n");
+            letti = scanf("%d %d %7s %3s", &ore, &minuti, carta.volo, carta.posto);
+            if (letti != EOF) {
+                svuota_riga();          /* scarta il resto della riga */
+            }
+            if (letti == EOF) {
+                printf("\n  Dati incompleti.\n");
                 fine = 1;
+            } else if (letti != 4) {
+                printf("  %s: dati non validi, ripetere.\n", carta.cognome);
             } else if (strcmp(carta.volo, classe.codice) != 0) {
                 printf("  %s: volo sbagliato (%s invece di %s).\n", carta.cognome, carta.volo,
                        classe.codice);
@@ -73,4 +85,15 @@ int main(void)
     printf("Studenti imbarcati: %d\n", passati);
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

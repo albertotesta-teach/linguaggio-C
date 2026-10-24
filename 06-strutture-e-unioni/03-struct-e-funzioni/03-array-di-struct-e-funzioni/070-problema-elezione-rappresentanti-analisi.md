@@ -2,66 +2,114 @@
 
 ## 1. Problema
 
-Lo spoglio delle schede per i rappresentanti d'istituto conta le schede valide, bianche e nulle. Ogni voto valido incrementa il campo voti del candidato trovato con un puntatore. Una funzione trova i due più votati senza ordinare l'array; se il secondo posto è conteso serve il ballottaggio.
+Lo spoglio delle schede per i rappresentanti d'istituto conta le schede
+valide, bianche e nulle. Ogni voto valido incrementa il campo `voti` del
+candidato trovato con un puntatore. Una funzione trova i due più votati
+senza ordinare l'array di struct `Candidato`; se il secondo posto è
+conteso serve il ballottaggio.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Candidato` | `numero, nome, classe, voti` | candidato in lista |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `lista` | `Candidato[]` | 5 | Candidati |
-| `votato` | `Candidato *` | — | Candidato della scheda |
-| `bianche`, `nulle`, `valide` | `int` | — | Conteggi |
-| `primo`, `secondo` | `int` | — | Indici dei più votati |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `scheda` | `int` | Numero del candidato votato; 0 scheda bianca; −1 fine dello spoglio |
+| lista | nel sorgente | 1 Rossi Elena 4A, 2 Marchetti Luca 5B, 3 Sanna Giulia 3C, 4 Ferri Omar 4B, 5 Leone Chiara 5A |
+
+### Output
+
+- `Inserimento non valido, ripetere.` per una scheda non numerica.
+- `Schede valide V, bianche B, nulle N` e la lista con i voti.
+- `Primo eletto: ...` e `Secondo eletto: ...`, oppure
+  `Secondo posto: X e un altro / altri K a pari voti (V): serve il
+  ballottaggio`.
+- Senza voti validi: `Nessun voto valido: nessun eletto.`
+
+### Vincoli
+
+- Un numero che non corrisponde a un candidato rende la scheda nulla.
+- `cerca` restituisce l'indirizzo del candidato: il voto si registra con
+  `votato->voti++`.
+- `classifica_primi` restituisce i due indici nei parametri di uscita; a
+  parità vale l'ordine di lista.
+- Pari merito: altri candidati (oltre a primo e secondo) con gli stessi
+  voti del secondo.
+- A fine input lo spoglio termina come con −1.
+
+### Assunzioni
+
+- I candidati sono almeno due.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Candidato` | `typedef struct { int numero; char nome[20]; char classe[4]; int voti; } Candidato;` | Un candidato con i suoi voti |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `lista` | `Candidato[5]` | Array di struct |
+| `votato` | `Candidato *` | Candidato trovato |
+| `valide`, `bianche`, `nulle` | `int` | Contatori delle schede |
+| `primo`, `secondo` | `int` | Indici dei più votati |
+| `pari_merito` | `int` | Candidati a pari voti con il secondo |
+| `letti` | `int` | Valore restituito da `scanf` |
 
 | Funzione | Compito |
 |----------|---------|
-| `cerca(c, n, numero)` | Puntatore al candidato, NULL se il numero non esiste |
-| `classifica_primi(c, n, &primo, &secondo)` | I due più votati in una passata |
+| `cerca(c, n, numero)` | Puntatore al candidato, `NULL` se il numero non esiste |
+| `classifica_primi(c, n, &primo, &secondo)` | Indici dei due più votati |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Spoglio
+1. Finché la scheda non è −1:
+   1. leggere la scheda (fine input → −1; testo → ripetere);
+   2. 0: bianca; altrimenti cercare il candidato: se non esiste nulla,
+      altrimenti un voto in più e una valida.
+2. Stampare i conteggi e la lista.
+3. Se non ci sono voti validi, nessun eletto; altrimenti trovare primo e
+   secondo, contare i pari merito con il secondo e stampare gli eletti o
+   il ballottaggio.
 
-**a) Input** – 13 schede di prova
+## 3. Casi di test
 
-**b) Output** – valide 10, bianche 1, nulle 1
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `votato->voti`
+### Test 1 – Spoglio regolare
 
-**d) Vincoli** – 0 bianca, numero inesistente nulla
+- **Cosa si verifica:** schede bianche, nulle, non numeriche e due eletti.
+- **Input:** `1`, `2`, `1`, `3`, `0`, `7`, `1`, `abc`, `4`, `2`, `-1`
+- **Output atteso:**
+  ```
+    Inserimento non valido, ripetere.
 
-**e) Assunzioni** – nessuna
+  Schede valide 7, bianche 1, nulle 1
+    1. Rossi Elena     4A  voti  3
+    2. Marchetti Luca  5B  voti  2
+    3. Sanna Giulia    3C  voti  1
+    4. Ferri Omar      4B  voti  1
+    5. Leone Chiara    5A  voti  0
 
-**f) Algoritmo in linguaggio naturale** – cerca e incremento tramite il puntatore.
+  Primo eletto:   Rossi Elena (voti 3)
+  Secondo eletto: Marchetti Luca (voti 2)
+  ```
 
-### Caso d'uso 2 – Ballottaggio
+### Test 2 – Ballottaggio con un altro candidato
 
-**a) Input** – Marchetti, Sanna e Ferri a 2 voti
+- **Input:** `1`, `2`, `3`, `1`, `2`, `3`, poi fine input
+- **Output atteso:** `Secondo posto: Marchetti Luca e un altro a pari voti
+  (2): serve il ballottaggio`.
 
-**b) Output** – "serve il ballottaggio"
+### Test 3 – Ballottaggio con più candidati
 
-**c) Variabili di supporto** – `pari_merito`
+- **Input:** `1`, `1`, `2`, `3`, `4`, poi fine input
+- **Output atteso:** `Secondo posto: Marchetti Luca e altri 2 a pari voti
+  (1): serve il ballottaggio`.
 
-**d) Vincoli** – eletti i primi due
+### Test 4 – Nessun voto valido
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – contare gli altri candidati con gli stessi voti del secondo.
-
-### Caso d'uso 3 – Eletti
-
-**a) Input** – secondo posto non conteso
-
-**b) Output** – "Secondo eletto: ..."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – stampa diretta dei due indici.
+- **Input:** `0`, `9`, `-1`
+- **Output atteso:** `Schede valide 0, bianche 1, nulle 1` e
+  `Nessun voto valido: nessun eletto.`

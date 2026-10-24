@@ -52,6 +52,7 @@ Risultato controlla(const Partita *p);
 int tris(Casella a, Casella b, Casella c);
 void stampa(const Partita *p);
 char simbolo(Casella c);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -59,12 +60,17 @@ int main(void)
     Risultato risultato = IN_CORSO;
     int riga;
     int colonna;
+    int letti;
 
     while (risultato == IN_CORSO) {
         printf("Mossa di %c (riga colonna): ", simbolo(partita.turno));
-        if (scanf("%d %d", &riga, &colonna) != 2) {
-            risultato = PAREGGIO;
-            printf("Partita interrotta.\n");
+        letti = scanf("%d %d", &riga, &colonna);
+        if (letti == EOF) {
+            risultato = PAREGGIO;       /* esce dal ciclo */
+            printf("\nPartita interrotta.\n");
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            printf("  Mossa non valida.\n");
         } else if (!gioca(&partita, riga, colonna)) {
             printf("  Casella non valida o gia' occupata.\n");
         } else {
@@ -167,4 +173,15 @@ char simbolo(Casella c)
         break;
     }
     return s;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

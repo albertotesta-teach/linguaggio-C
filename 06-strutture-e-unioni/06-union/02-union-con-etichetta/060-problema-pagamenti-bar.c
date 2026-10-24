@@ -51,6 +51,7 @@ typedef struct {
 int leggi_pagamento(Pagamento *p);
 int valido(const Pagamento *p);
 void ricevuta(const Pagamento *p);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -65,8 +66,13 @@ int main(void)
     while (esito != 0) {
         printf("Pagamento (C importo consegnato, K importo cifre, B importo codice, FINE): ");
         esito = leggi_pagamento(&p);
+        if (esito != 0) {
+            svuota_riga();              /* un pagamento per riga */
+        }
         if (esito == -1) {
             printf("  Pagamento non riconosciuto.\n");
+        } else if (esito == -2) {
+            printf("  Dati mancanti.\n");
         } else if (esito == 1 && !valido(&p)) {
             printf("  Pagamento rifiutato.\n");
         } else if (esito == 1) {
@@ -84,7 +90,7 @@ int main(void)
     return 0;
 }
 
-/* 1 letto, 0 FINE o dati mancanti, -1 metodo sconosciuto. */
+/* 1 letto, 0 FINE o fine input, -1 metodo sconosciuto, -2 dati mancanti. */
 int leggi_pagamento(Pagamento *p)
 {
     char lettera[8];
@@ -95,17 +101,17 @@ int leggi_pagamento(Pagamento *p)
         esito = 0;
     } else if (strcmp(lettera, "C") == 0) {
         p->metodo = CONTANTI;
-        esito = scanf("%lf %lf", &p->importo, &p->dati.consegnato) == 2;
+        esito = scanf("%lf %lf", &p->importo, &p->dati.consegnato) == 2 ? 1 : -2;
     } else if (strcmp(lettera, "K") == 0) {
         p->metodo = CARTA;
-        esito = scanf("%lf %7s", &p->importo, cifre) == 2;
-        if (esito) {
+        esito = scanf("%lf %7s", &p->importo, cifre) == 2 ? 1 : -2;
+        if (esito == 1) {
             /* più di 4 caratteri: campo vuoto, il controllo lo rifiuterà */
             strcpy(p->dati.ultime_cifre, strlen(cifre) <= 4 ? cifre : "");
         }
     } else if (strcmp(lettera, "B") == 0) {
         p->metodo = BUONO;
-        esito = scanf("%lf %7s", &p->importo, p->dati.codice_buono) == 2;
+        esito = scanf("%lf %7s", &p->importo, p->dati.codice_buono) == 2 ? 1 : -2;
     }
     return esito;
 }
@@ -150,5 +156,16 @@ void ricevuta(const Pagamento *p)
         break;
     case NUM_METODI:
         break;
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

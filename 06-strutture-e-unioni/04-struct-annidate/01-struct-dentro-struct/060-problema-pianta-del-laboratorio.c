@@ -44,6 +44,8 @@ typedef struct {
     Punto alto_destra;
 } Banco;
 
+void svuota_riga(void);
+
 int main(void)
 {
     Banco banchi[BANCHI] = {
@@ -61,6 +63,7 @@ int main(void)
     int vicino = 0;
     int trovato;
     int i;
+    int letti;
 
     printf("Banco  Area (cm2)  Centro       Distanza dalla porta\n");
     for (i = 0; i < BANCHI; i++) {
@@ -81,9 +84,14 @@ int main(void)
 
     while (postazione.x != -1 || postazione.y != -1) {
         printf("Postazione (x y, -1 -1 per finire): ");
-        if (scanf("%d %d", &postazione.x, &postazione.y) != 2) {
-            postazione.x = -1;
+        letti = scanf("%d %d", &postazione.x, &postazione.y);
+        if (letti == EOF) {
+            postazione.x = -1;          /* input terminato: come -1 -1 */
             postazione.y = -1;
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            printf("  Postazione non valida.\n");
+            postazione.x = 0;           /* non e' la richiesta di fine */
         } else if (postazione.x != -1 || postazione.y != -1) {
             trovato = -1;
             i = 0;
@@ -105,4 +113,15 @@ int main(void)
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

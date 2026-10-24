@@ -2,76 +2,90 @@
 
 ## 1. Problema
 
-Per il calendario delle attività all'aperto il programma legge mese e anno e stampa il nome del mese, i giorni (con febbraio bisestile) e la stagione meteorologica. Mese parte da GENNAIO = 1 come il numero scritto dall'utente; il numero si controlla prima di assegnarlo a una variabile Mese.
+Per il calendario delle attività all'aperto il programma legge mese e
+anno e stampa il nome del mese, i giorni (con febbraio bisestile) e la
+stagione meteorologica. L'enum `Mese` parte da `GENNAIO = 1` come il
+numero scritto dall'utente; il numero si controlla prima di assegnarlo a
+una variabile `Mese`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Mese` | `GENNAIO = 1 ... DICEMBRE` | mese dell'anno |
-| `Stagione` | `INVERNO, PRIMAVERA, ESTATE, AUTUNNO, NUM_STAGIONI` | stagione |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `numero`, `anno` | `int` | — | Valori letti |
-| `mese` | `Mese` | — | Mese valido |
-| `stagione` | `Stagione` | — | Stagione calcolata |
-| `nomi_mesi`, `nomi_stagioni` | `const char *[]` | 12, NUM_STAGIONI | Nomi da stampare |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `numero` | `int` | Mese da 1 a 12; 0 termina |
+| `anno` | `int` | Anno (serve per febbraio) |
 
-## 3. Casi d'uso e funzionalità
+### Output
 
-### Caso d'uso 1 – Febbraio bisestile
+- `nome anno: N giorni, stagione` per ogni coppia valida.
+- `X non e' un mese.` oppure `Dati non validi.`
 
-**a) Input** – `2 2028`
+### Vincoli
 
-**b) Output** – "febbraio 2028: 29 giorni, inverno"
+- `GENNAIO = 1`: le costanti successive valgono 2, 3, ...; l'indice nei
+  nomi è `mese - GENNAIO`.
+- Bisestile: divisibile per 4 ma non per 100, oppure divisibile per 400.
+- 30 giorni ad aprile, giugno, settembre, novembre; 31 negli altri mesi.
+- Stagioni meteorologiche: inverno dicembre-febbraio, primavera
+  marzo-maggio, estate giugno-agosto, autunno settembre-novembre; i
+  confronti `mese <= MAGGIO` sfruttano l'ordine delle costanti.
+- Un dato non numerico viene scartato con il resto della riga; a fine
+  input il programma termina come con 0.
 
-**c) Variabili di supporto** – `giorni`
+### Assunzioni
 
-**d) Vincoli** – anni bisestili
+- Calendario gregoriano.
 
-**e) Assunzioni** – nessuna
+### Variabili di supporto
 
-**f) Algoritmo in linguaggio naturale** – febbraio: 29 se l'anno è bisestile; aprile, giugno, settembre, novembre: 30; gli altri 31.
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Mese` | `typedef enum { GENNAIO = 1, FEBBRAIO, ..., DICEMBRE } Mese;` | Mese dell'anno |
+| `Stagione` | `typedef enum { INVERNO, PRIMAVERA, ESTATE, AUTUNNO, NUM_STAGIONI } Stagione;` | Stagione meteorologica |
 
-### Caso d'uso 2 – Stagioni
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `nomi_mesi`, `nomi_stagioni` | `const char *[]` | Nomi |
+| `numero` | `int` | Valore letto, controllato prima di diventare `Mese` |
+| `mese`, `stagione` | `Mese`, `Stagione` | Valori calcolati |
+| `giorni` | `int` | Giorni del mese |
+| `letti` | `int` | Valore restituito da `scanf` |
 
-**a) Input** – `4 2026`; `12 2025`; `7 2026`
+| Funzione | Compito |
+|----------|---------|
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-**b) Output** – primavera; inverno; estate
+### Algoritmo in linguaggio naturale
 
-**c) Variabili di supporto** – `stagione`
+1. Finché il mese non è 0:
+   1. leggere il mese (fine input → 0; testo → non valido);
+   2. se diverso da 0 leggere l'anno (testo → non valido);
+   3. se il numero non è tra 1 e 12 segnalarlo;
+   4. altrimenti calcolare giorni e stagione e stamparli.
 
-**d) Vincoli** – stagioni meteorologiche
+## 3. Casi di test
 
-**e) Assunzioni** – nessuna
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**f) Algoritmo in linguaggio naturale** – dicembre o fino a febbraio inverno, fino a maggio primavera, fino ad agosto estate, altrimenti autunno.
+### Test 1 – Mesi e anni
 
-### Caso d'uso 3 – Mese non valido
-
-**a) Input** – `13 2026`
-
-**b) Output** – "13 non e' un mese."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – da GENNAIO a DICEMBRE
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il controllo avviene prima di assegnare il valore all'enum.
-
-### Caso d'uso 4 – Indice della tabella
-
-**a) Input** – —
-
-**b) Output** – —
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nomi_mesi[mese - GENNAIO]: la tabella parte da 0, il mese da 1.
+- **Cosa si verifica:** le regole dei bisestili, i mesi da 30 giorni, le
+  quattro stagioni, gli errori.
+- **Input:** `2 2024`, `2 2025`, `2 1900`, `2 2000`, `4 2026`, `12 2026`,
+  `6 2026`, `10 2026`, `13 2026`, `abc`, `3 x`, `0`
+- **Output atteso:**
+  ```
+    febbraio 2024: 29 giorni, inverno
+    febbraio 2025: 28 giorni, inverno
+    febbraio 1900: 28 giorni, inverno
+    febbraio 2000: 29 giorni, inverno
+    aprile 2026: 30 giorni, primavera
+    dicembre 2026: 31 giorni, inverno
+    giugno 2026: 30 giorni, estate
+    ottobre 2026: 31 giorni, autunno
+    13 non e' un mese.
+    Dati non validi.
+    Dati non validi.
+  ```

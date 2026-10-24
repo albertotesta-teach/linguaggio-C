@@ -39,6 +39,7 @@ Orario crea_orario(int ore, int minuti);
 Orario aggiungi_minuti(Orario o, int minuti);
 int differenza(Orario da, Orario a);
 void stampa(Orario o);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -50,6 +51,7 @@ int main(void)
     Orario a_scuola;
     int ritardo = 0;
     int t = 0;
+    int letti;
 
     partenze[0] = crea_orario(7, 2);
     partenze[1] = crea_orario(7, 10);
@@ -58,10 +60,13 @@ int main(void)
 
     while (t < TRENI && ritardo >= 0) {
         printf("Ritardo del treno da %s (minuti, negativo per finire): ", stazioni[t]);
-        if (scanf("%d", &ritardo) != 1) {
-            ritardo = -1;
-        }
-        if (ritardo >= 0) {
+        letti = scanf("%d", &ritardo);
+        if (letti == EOF) {
+            ritardo = -1;               /* input terminato: come un negativo */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            printf("  Ritardo non valido, ripetere.\n");
+        } else if (ritardo >= 0) {
             arrivo = aggiungi_minuti(partenze[t], durate[t] + ritardo);
             a_scuola = aggiungi_minuti(arrivo, CAMMINO);
             printf("  partenza ");
@@ -108,4 +113,15 @@ int differenza(Orario da, Orario a)
 void stampa(Orario o)
 {
     printf("%02d:%02d", o.ore, o.minuti);
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

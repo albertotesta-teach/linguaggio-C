@@ -28,6 +28,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct {
     int luminosita;
@@ -35,6 +36,8 @@ typedef struct {
     char ingresso[8];
     int spegnimento;
 } Impostazioni;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -49,8 +52,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (L n, V n, I nome, B, R, F, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'L' || comando == 'V') {
             if (scanf("%d", &valore) == 1 && valore >= 0 && valore <= 100) {
                 if (comando == 'L') {
@@ -86,6 +90,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     uguali = corrente.luminosita == salvate.luminosita && corrente.volume == salvate.volume &&
@@ -98,4 +103,15 @@ int main(void)
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

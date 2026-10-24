@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MATERIALI 6
 
@@ -69,6 +70,7 @@ typedef struct {
 } Media;
 
 void stampa(int n, const Media *m);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -89,15 +91,16 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (E, C parola, P n, R n, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'E') {
             for (i = 0; i < MATERIALI; i++) {
                 stampa(i + 1, &catalogo[i]);
             }
         } else if (comando == 'C') {
             if (scanf("%19s", parola) != 1) {
-                comando = 'Q';
+                printf("  Manca la parola.\n");
             } else {
                 trovati = 0;
                 for (i = 0; i < MATERIALI; i++) {
@@ -110,7 +113,7 @@ int main(void)
             }
         } else if (comando == 'P' || comando == 'R') {
             if (scanf("%d", &n) != 1) {
-                comando = 'Q';
+                printf("  Numero non valido.\n");
             } else if (n < 1 || n > MATERIALI) {
                 printf("  Materiale %d inesistente.\n", n);
             } else if (catalogo[n - 1].tipo == RIVISTA) {
@@ -127,6 +130,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -147,4 +151,15 @@ void stampa(int n, const Media *m)
         break;
     }
     printf("%s\n", m->disponibile ? "" : "  (in prestito)");
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -2,65 +2,122 @@
 
 ## 1. Problema
 
-Il tecnico del laboratorio di elettronica registra carichi e prelievi di componenti identificati da un codice e stampa gli articoli sotto la scorta minima con la quantità da ordinare per tornare al doppio della scorta.
+Il tecnico del laboratorio di elettronica registra carichi e prelievi di
+componenti identificati da un codice e stampa gli articoli sotto la
+scorta minima con la quantità da ordinare per tornare al doppio della
+scorta. Il magazzino è un array di 6 struct `Articolo`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Articolo` | `codice, descrizione, quantita, scorta_minima` | componente del magazzino |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `magazzino` | `Articolo[]` | 6 | Articoli |
-| `codice`, `pezzi` | `char[]`, `int` | 8, — | Dati del comando |
-| `a` | `int` | — | Indice dell'articolo trovato |
-| `sottoscorta` | `int` | — | Conteggio |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `P codice n` prelievo, `C codice n` carico, `S` sottoscorta, `Q` fine (anche minuscoli) |
+| `codice` | `char[8]` | Codice dell'articolo |
+| `pezzi` | `int` | Quantità, positiva |
+| `magazzino` | `Articolo[6]` | Situazione iniziale (nel sorgente) |
+
+Situazione iniziale:
+
+| Codice | Descrizione | Quantità | Scorta minima |
+|--------|-------------|----------|---------------|
+| R220 | Resistenza 220 ohm | 180 | 50 |
+| LED-R | LED rosso 5 mm | 64 | 40 |
+| LED-V | LED verde 5 mm | 35 | 40 |
+| C100U | Condensatore 100 uF | 22 | 20 |
+| BB400 | Breadboard 400 punti | 9 | 10 |
+| ARDU | Scheda Arduino Uno | 12 | 8 |
+
+### Output
+
+- Per carichi e prelievi: `<descrizione>: ora N pezzi.` con l'eventuale
+  `Attenzione: sotto la scorta minima (M).`, oppure
+  `<descrizione>: disponibili solo N pezzi.`, `Codice X sconosciuto.`,
+  `Dati non validi.`
+- Per `S`: gli articoli sottoscorta con la quantità da ordinare e
+  `Articoli sottoscorta: N`.
+- `Comando sconosciuto.`
+
+### Vincoli
+
+- Un prelievo non può superare la quantità disponibile.
+- Sottoscorta: quantità strettamente minore della scorta minima; da
+  ordinare `2 * scorta_minima - quantita`.
+- Il codice si cerca con `strcmp` (ricerca lineare).
+- Dati non validi (codice o quantità mancanti, quantità non positiva o non
+  numerica) non interrompono il programma.
+- Un comando per riga: il resto della riga viene scartato. A fine input il
+  programma termina come con `Q`.
+
+### Assunzioni
+
+- Il carico non ha un limite massimo.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Articolo` | `typedef struct { char codice[8]; char descrizione[28]; int quantita; int scorta_minima; } Articolo;` | Un componente del magazzino |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `magazzino` | `Articolo[6]` | Array di struct |
+| `a` | `int` | Indice dell'articolo trovato (6 = non trovato) |
+| `sottoscorta` | `int` | Contatore del rapporto |
 
 | Funzione | Compito |
 |----------|---------|
-| `main` | Ricerca del codice e aggiornamento della quantità |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Prelievo
+1. Finché il comando non è `Q`:
+   1. leggere il comando (fine input → `Q`) e convertirlo in maiuscolo;
+   2. `P`/`C`: leggere codice e pezzi; se non validi segnalarlo; cercare il
+      codice; con `C` aggiungere i pezzi; con `P` toglierli se bastano e
+      avvisare se si scende sotto la scorta;
+   3. `S`: stampare gli articoli sottoscorta e contarli;
+   4. altro diverso da `Q`: comando sconosciuto;
+   5. scartare il resto della riga.
 
-**a) Input** – `P LED-R 30`
+## 3. Casi di test
 
-**b) Output** – "LED rosso 5 mm: ora 34 pezzi." e avviso di scorta
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `magazzino[a].quantita`
+### Test 1 – Movimenti e rapporto
 
-**d) Vincoli** – non si preleva più del presente
+- **Cosa si verifica:** rapporto iniziale, prelievi con avviso, prelievo
+  eccessivo, carico, dati non validi e rapporto finale.
+- **Input:** `S`, `P LED-V 10`, `p BB400 2`, `P ARDU 20`, `C LED-V 50`,
+  `P XXX 3`, `P R220 abc`, `P R220 -5`, `P R220 140`, `S`, `Q`
+- **Valori intermedi attesi:** LED-V 35 − 10 + 50 = 75; R220 180 − 140 =
+  40, da ordinare 100 − 40 = 60.
+- **Output atteso:**
+  ```
+    LED-V  LED verde 5 mm          35 (minimo 40): ordinare 45
+    BB400  Breadboard 400 punti     9 (minimo 10): ordinare 11
+    Articoli sottoscorta: 2
+    LED verde 5 mm: ora 25 pezzi.
+    Attenzione: sotto la scorta minima (40).
+    Breadboard 400 punti: ora 7 pezzi.
+    Attenzione: sotto la scorta minima (10).
+    Scheda Arduino Uno: disponibili solo 12 pezzi.
+    LED verde 5 mm: ora 75 pezzi.
+    Codice XXX sconosciuto.
+    Dati non validi.
+    Dati non validi.
+    Resistenza 220 ohm: ora 40 pezzi.
+    Attenzione: sotto la scorta minima (50).
+    R220   Resistenza 220 ohm      40 (minimo 50): ordinare 60
+    BB400  Breadboard 400 punti     7 (minimo 10): ordinare 13
+    Articoli sottoscorta: 2
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Prelievo di tutto
 
-**f) Algoritmo in linguaggio naturale** – cercare il codice con strcmp e sottrarre.
-
-### Caso d'uso 2 – Prelievo impossibile o codice errato
-
-**a) Input** – `P BB400 12`; `P ABC 3`
-
-**b) Output** – "disponibili solo 9 pezzi"; "Codice ABC sconosciuto."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la quantità non cambia.
-
-### Caso d'uso 3 – Sottoscorta
-
-**a) Input** – `S`
-
-**b) Output** – LED-R ordinare 46, LED-V ordinare 45
-
-**c) Variabili di supporto** – `sottoscorta`
-
-**d) Vincoli** – da ordinare = 2 × scorta minima - quantità
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – scorrere l'array e stampare gli articoli sotto la scorta.
+- **Cosa si verifica:** si può prelevare esattamente la quantità
+  disponibile.
+- **Input:** `P ARDU 12`, `Q`
+- **Output atteso:** `Scheda Arduino Uno: ora 0 pezzi.` e
+  `Attenzione: sotto la scorta minima (8).`

@@ -2,84 +2,101 @@
 
 ## 1. Problema
 
-Il coordinatore tiene l'agenda delle verifiche scritte: una classe non può avere due verifiche nello stesso giorno e le verifiche si fanno tra le 8:00 e le 13:00. Il comando S sposta una verifica: sposta modifica solo v->giorno e v->ora, lasciando classe e materia.
+Il coordinatore tiene l'agenda delle verifiche scritte: una classe non può
+avere due verifiche nello stesso giorno e le verifiche si fanno tra le
+8:00 e le 13:00. Il comando S sposta una verifica: `sposta` modifica solo
+`v->giorno` e `v->ora`, lasciando classe e materia. La struct `Verifica`
+contiene una `Data` e un `Orario`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Data` | `giorno, mese, anno` | data del calendario |
-| `Orario` | `ore, minuti` | ora del giorno |
-| `Verifica` | `classe, materia, giorno, ora` | verifica scritta |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `agenda` | `Verifica[]` | 5 | Verifiche |
-| `giorno`, `ora` | `Data`, `Orario` | — | Nuova data e ora lette |
-| `n`, `altra` | `int` | — | Verifica da spostare e verifica in conflitto |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `E` elenco, `S n gg/mm/aaaa hh:mm` sposta, `C classe` verifiche di una classe, `Q` fine (anche minuscoli) |
+| agenda | nel sorgente | 0: 3B Matematica 10/2; 1: 3B Inglese 12/2; 2: 3B Storia 13/2; 3: 4A Matematica 12/2; 4: 4A Fisica 16/2 (2026) |
+
+### Output
+
+- `E`: le verifiche numerate; `C`: le verifiche della classe.
+- `S`: `Spostata: ...` oppure `La X ha gia' <materia> quel giorno.`,
+  `Le verifiche si fanno tra le 8:00 e le 13:00.`, `Data non valida.`,
+  `Verifica N inesistente.`, `Dati non validi.`
+- `Comando sconosciuto.`
+
+### Vincoli
+
+- Ordine dei controlli: numero della verifica, data, orario, conflitto.
+- Data valida: anno dal 2025, mese 1-12, giorno compatibile (bisestili
+  compresi).
+- Orario da 8:00 a 13:00 compresi, minuti 0-59.
+- Conflitto: un'altra verifica (esclusa quella da spostare) della stessa
+  classe nello stesso giorno.
+- `sposta` assegna intere struct annidate (`v->giorno = *giorno`).
+- Un comando per riga; i dati non validi non interrompono il programma. A
+  fine input termina come con `Q`.
+
+### Assunzioni
+
+- I numeri delle verifiche partono da 0.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Data` | `typedef struct { int giorno; int mese; int anno; } Data;` | Una data |
+| `Orario` | `typedef struct { int ore; int minuti; } Orario;` | Un orario |
+| `Verifica` | `typedef struct { char classe[4]; char materia[12]; Data giorno; Orario ora; } Verifica;` | Una verifica |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `agenda` | `Verifica[5]` | L'agenda |
+| `giorno`, `ora` | `Data`, `Orario` | Nuova collocazione |
+| `n`, `altra` | `int` | Verifica da spostare, verifica in conflitto |
 
 | Funzione | Compito |
 |----------|---------|
-| `data_valida(d)` | Data esistente, anno dal 2025 |
-| `orario_valido(o)` | Tra le 8:00 e le 13:00 |
+| `data_valida(d)`, `orario_valido(o)` | Controlli |
 | `stessa_data(a, b)` | Confronto campo per campo |
-| `conflitto(v, n, escluso, classe, giorno)` | Altra verifica della classe in quel giorno, o -1 |
-| `sposta(v, giorno, ora)` | Assegna solo le due parti |
+| `conflitto(v, n, escluso, classe, giorno)` | Indice della verifica in conflitto, o −1 |
+| `sposta(v, giorno, ora)` | Aggiorna data e ora |
+| `stampa(v)` | Riga della verifica |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Conflitto
+1. Finché il comando non è `Q`:
+   1. leggere il comando in maiuscolo;
+   2. `E`: stampare l'agenda numerata;
+   3. `S`: leggere i dati e fare i controlli nell'ordine; se non c'è
+      conflitto spostare e stampare;
+   4. `C`: leggere la classe e stamparne le verifiche;
+   5. scartare il resto della riga.
 
-**a) Input** – `S 0 12/02/2026 09:00`
+## 3. Casi di test
 
-**b) Output** – "La 3B ha gia' Inglese quel giorno."
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `altra`
+### Test 1 – Spostamenti
 
-**d) Vincoli** – una verifica al giorno per classe
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – cercare un'altra verifica, diversa dalla n, della stessa classe e nello stesso giorno.
-
-### Caso d'uso 2 – Spostamento
-
-**a) Input** – `S 0 11/02/2026 09:00`
-
-**b) Output** – "Spostata: 3B Matematica 11/02/2026 09:00"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sposta(&agenda[n], &giorno, &ora).
-
-### Caso d'uso 3 – Controlli
-
-**a) Input** – `S 4 30/02/2026 08:00`; `S 4 17/02/2026 14:00`; `S 9 ...`
-
-**b) Output** – "Data non valida."; orario fuori; "Verifica 9 inesistente."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – prima il numero, poi la data, poi l'orario, infine il conflitto.
-
-### Caso d'uso 4 – Elenco per classe
-
-**a) Input** – `C 3B`
-
-**b) Output** – le tre verifiche della 3B
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – confronto con strcmp sul campo classe.
+- **Cosa si verifica:** conflitto, spostamento riuscito, orario, data e
+  numero non validi, ricerca per classe.
+- **Input:** `E`, `S 0 12/2/2026 9:00`, `s 0 11/2/2026 9:00`,
+  `S 4 10/2/2026 13:30`, `S 4 30/2/2026 10:00`, `S 7 10/2/2026 10:00`,
+  `S 4 abc`, `C 3B`, `c 4A`, `X`, `Q`
+- **Output atteso** (dopo l'elenco):
+  ```
+    La 3B ha gia' Inglese quel giorno.
+    Spostata: 3B  Matematica  11/02/2026  09:00
+    Le verifiche si fanno tra le 8:00 e le 13:00.
+    Data non valida.
+    Verifica 7 inesistente.
+    Dati non validi.
+    3B  Matematica  11/02/2026  09:00
+    3B  Inglese     12/02/2026  10:00
+    3B  Storia      13/02/2026  11:00
+    4A  Matematica  12/02/2026  09:00
+    4A  Fisica      16/02/2026  08:00
+    Comando sconosciuto.
+  ```

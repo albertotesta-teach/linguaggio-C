@@ -59,6 +59,7 @@ int main(void)
     int n = 0;
     int numero_riga = 0;
     int finito = 0;
+    int resto;
     int x = 0;
     int y = 0;
     int direzione = 0;
@@ -69,6 +70,12 @@ int main(void)
         if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
             numero_riga++;
             if (strcmp(riga, "FINE") == 0) {

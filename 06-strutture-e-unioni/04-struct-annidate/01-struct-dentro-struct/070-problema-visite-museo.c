@@ -54,6 +54,8 @@ typedef struct {
     int durata;
 } Visita;
 
+void svuota_riga(void);
+
 int main(void)
 {
     Visita visite[MAX_VISITE] = {
@@ -77,9 +79,10 @@ int main(void)
             finito = 1;
         } else if (scanf("%15s %d/%d/%d %d:%d %d", nuova.docente, &nuova.giorno.giorno,
                          &nuova.giorno.mese, &nuova.giorno.anno, &nuova.inizio.ore,
-                         &nuova.inizio.minuti, &nuova.durata) != 7) {
+                         &nuova.inizio.minuti, &nuova.durata) != 7 ||
+                   nuova.giorno.mese < 1 || nuova.giorno.mese > 12 || nuova.giorno.giorno < 1 ||
+                   nuova.giorno.giorno > 31 || nuova.inizio.minuti < 0 || nuova.inizio.minuti > 59) {
             printf("  Richiesta non valida.\n");
-            finito = 1;
         } else if (strlen(parola) >= sizeof(nuova.classe)) {
             printf("  Classe %s non valida.\n", parola);
         } else {
@@ -114,6 +117,9 @@ int main(void)
                        nuova.docente, fine / 60, fine % 60);
             }
         }
+        if (!finito) {
+            svuota_riga();              /* una richiesta per riga */
+        }
     }
 
     printf("\nCalendario delle visite\n");
@@ -124,4 +130,15 @@ int main(void)
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

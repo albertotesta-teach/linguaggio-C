@@ -2,83 +2,103 @@
 
 ## 1. Problema
 
-L'orario di ogni classe prima è una matrice di Lezione (5 giorni × 4 ore) dentro la struct Classe. Il programma stampa la griglia di una classe, le lezioni settimanali di un docente in tutte le classi e i conflitti tra le due classi: stesso docente o stessa aula nella stessa ora.
+L'orario di ogni classe prima è una matrice di `Lezione` (5 giorni × 4
+ore) dentro la struct `Classe`. Il programma stampa la griglia di una
+classe, le lezioni settimanali di un docente in tutte le classi e i
+conflitti tra le due classi: stesso docente o stessa aula nella stessa
+ora.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Lezione` | `materia, docente, aula` | un'ora di lezione |
-| `Classe` | `nome, orario[GIORNI][ORE]` | classe con una matrice di Lezione |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `prime` | `Classe[]` | 2 | Classi con il loro orario |
-| `nome` | `char[]` | 10 | Classe o docente letto |
-| `classe` | `const Classe *` | — | Classe trovata |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `O classe` orario, `D docente` lezioni di un docente, `C` conflitti, `Q` fine (anche minuscoli) |
+| `nome` | `char[10]` | Nome della classe o del docente |
+| `prime` | `Classe[2]` | Orari di 1A e 1B (nel sorgente) |
+
+### Output
+
+- `O`: la griglia ore × giorni con le materie, oppure
+  `Classe X inesistente.`
+- `D`: una riga per lezione (giorno, ora, classe, aula, materia) e
+  `<docente>: N ore settimanali`.
+- `C`: una riga per conflitto e `Conflitti: N`.
+- `Comando sconosciuto.`
+
+### Vincoli
+
+- Si accede a un campo con tre livelli: `c[k].orario[g][h].docente`.
+- La griglia si stampa con una riga per ora e una colonna per giorno
+  (l'inverso dell'ordine degli indici).
+- Un conflitto è una cella con lo stesso docente o la stessa aula nelle
+  due classi; se coincidono entrambi si contano due conflitti.
+- I nomi si confrontano con `strcmp` (maiuscole e minuscole contano).
+- Un comando per riga: il resto viene scartato. A fine input il programma
+  termina come con `Q`.
+
+### Assunzioni
+
+- Comando e argomento stanno sulla stessa riga (`scanf` cercherebbe un
+  argomento mancante nella riga successiva).
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Lezione` | `typedef struct { char materia[12]; char docente[10]; char aula[8]; } Lezione;` | Una cella dell'orario |
+| `Classe` | `typedef struct { char nome[4]; Lezione orario[5][4]; } Classe;` | Classe con la matrice dell'orario |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `prime` | `Classe[2]` | Le due classi |
+| `classe` | `const Classe *` | Classe trovata |
+| `ore`, `trovati` | `int` | Risultati di `D` e `C` |
 
 | Funzione | Compito |
 |----------|---------|
-| `cerca_classe(c, n, nome)` | Puntatore alla classe o NULL |
-| `stampa_orario(c)` | Una riga per ora, una colonna per giorno |
-| `lezioni_docente(c, n, docente)` | Stampa le lezioni e restituisce le ore |
-| `conflitti(a, b)` | Stampa e conta i conflitti |
-| `nome_giorno(g)` | Lun ... Ven |
+| `cerca_classe(c, n, nome)` | Puntatore alla classe, `NULL` se assente |
+| `stampa_orario(c)` | Griglia della classe |
+| `lezioni_docente(c, n, docente)` | Stampa e conta le lezioni del docente |
+| `conflitti(a, b)` | Stampa e conta i conflitti tra due classi |
+| `nome_giorno(g)` | Abbreviazione del giorno |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Griglia
+1. Finché il comando non è `Q`:
+   1. leggere il comando in maiuscolo;
+   2. `O`: cercare la classe e stamparne la griglia;
+   3. `D`: scorrere giorni, ore e classi stampando le lezioni del
+      docente, poi il totale;
+   4. `C`: confrontare cella per cella le due classi;
+   5. scartare il resto della riga.
 
-**a) Input** – `O 1A`
+## 3. Casi di test
 
-**b) Output** – la tabella con le materie della 1A
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – —
+### Test 1 – Orario, docente e conflitti
 
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni ora h e ogni giorno g stampare c->orario[g][h].materia.
-
-### Caso d'uso 2 – Ore di un docente
-
-**a) Input** – `D Rossi`
-
-**b) Output** – otto lezioni, "Rossi: 8 ore settimanali"
-
-**c) Variabili di supporto** – `ore`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – tre cicli: giorno, ora, classe; confronto con strcmp sul docente.
-
-### Caso d'uso 3 – Conflitti
-
-**a) Input** – `C`
-
-**b) Output** – "Mar 2a ora: Rossi in 1A e in 1B"; "Ven 2a ora: aula LabFis occupata da 1A e 1B"
-
-**c) Variabili di supporto** – `trovati`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – solo due classi
-
-**f) Algoritmo in linguaggio naturale** – confrontare cella per cella docente e aula delle due classi.
-
-### Caso d'uso 4 – Classe inesistente
-
-**a) Input** – `O 3C`
-
-**b) Output** – "Classe 3C inesistente."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – cerca_classe restituisce NULL.
+- **Input:** `O 1A`, `o 1C`, `D Neri`, `d Preside`, `C`, `X`, `Q`
+- **Output atteso:**
+  ```
+    1A   Lun         Mar         Mer         Gio         Ven        
+    1a   Matematica  Fisica      Informatica Italiano    Inglese    
+    2a   Italiano    Matematica  Informatica Ed. fisica  Fisica     
+    3a   Inglese     Storia      Matematica  Ed. fisica  Italiano   
+    4a   Informatica Italiano    Inglese     Matematica  Storia     
+    Classe 1C inesistente.
+    Lun 4a ora  1A  LabInf   Informatica
+    Mer 1a ora  1A  LabInf   Informatica
+    Mer 2a ora  1A  LabInf   Informatica
+    Mer 3a ora  1B  LabInf   Informatica
+    Mer 4a ora  1B  LabInf   Informatica
+    Neri: 5 ore settimanali
+    Preside: 0 ore settimanali
+    Mar 2a ora: Rossi in 1A e in 1B
+    Ven 2a ora: aula LabFis occupata da 1A e 1B
+    Conflitti: 2
+    Comando sconosciuto.
+  ```

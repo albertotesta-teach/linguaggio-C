@@ -44,6 +44,7 @@ int main(void)
     Codice richiesto;
     char riga[LUNG_RIGA];
     char *a_capo;
+    int resto;
     char edificio;
     int piano;
     int numero;
@@ -64,6 +65,11 @@ int main(void)
             a_capo = strchr(riga, '\n');
             if (a_capo != NULL) {
                 *a_capo = '\0';
+            } else {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
             }
             if (strcmp(riga, "FINE") == 0) {
                 fine = 1;

@@ -35,6 +35,7 @@ typedef enum {
 
 Operazione da_testo(const char *parola);
 int calcola(Operazione op, int a, int b, int *risultato);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -51,7 +52,6 @@ int main(void)
             finito = 1;
         } else if (scanf("%d %d", &a, &b) != 2) {
             printf("  Servono due numeri interi.\n");
-            finito = 1;
         } else {
             op = da_testo(parola);
             if (op == NON_VALIDA) {
@@ -61,6 +61,9 @@ int main(void)
             } else {
                 printf("  %s di %d e %d = %d\n", parola, a, b, risultato);
             }
+        }
+        if (!finito) {
+            svuota_riga();              /* un'operazione per riga */
         }
     }
 
@@ -120,4 +123,15 @@ int calcola(Operazione op, int a, int b, int *risultato)
         break;
     }
     return possibile;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

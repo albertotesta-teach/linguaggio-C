@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 typedef enum {
     CAFFE, CAPPUCCINO, TE, CIOCCOLATA, NUM_BEVANDE
@@ -39,6 +40,7 @@ const char *nome(Bevanda b);
 Esito eroga(Bevanda b, int *credito, int scorte[]);
 const char *messaggio(Esito e);
 int moneta_valida(int centesimi);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -53,11 +55,12 @@ int main(void)
         printf("Credito %d.%02d euro. Comando (M centesimi, B 1-4, R, Q): ", credito / 100,
                credito % 100);
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'M' || comando == 'B') {
             if (scanf("%d", &valore) != 1) {
-                comando = 'Q';
+                printf("  Valore non valido.\n");
             } else if (comando == 'M') {
                 if (moneta_valida(valore)) {
                     credito = credito + valore;
@@ -78,6 +81,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -167,4 +171,15 @@ int moneta_valida(int centesimi)
 {
     return centesimi == 5 || centesimi == 10 || centesimi == 20 || centesimi == 50 ||
            centesimi == 100 || centesimi == 200;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

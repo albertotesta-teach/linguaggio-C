@@ -31,6 +31,7 @@ typedef int Peso;
 
 Voto media_pesata(const Voto *voti, const Peso *pesi, int n);
 Voto media_semplice(const Voto *voti, int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -40,13 +41,18 @@ int main(void)
     Peso peso = 1;
     Voto finale;
     int n = 0;
+    int letti;
 
     while (n < MAX_VOTI && !(voto == 0 && peso == 0)) {
         printf("Voto e peso (0 0 per finire): ");
         /* Voto è double: in scanf serve %lf, il formato del tipo originale */
-        if (scanf("%lf %d", &voto, &peso) != 2) {
-            voto = 0;
+        letti = scanf("%lf %d", &voto, &peso);
+        if (letti == EOF) {
+            voto = 0;                   /* input terminato: come 0 0 */
             peso = 0;
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            voto = -1;                  /* coppia non valida */
         }
         if (voto >= 1 && voto <= 10 && peso >= 1 && peso <= 100) {
             voti[n] = voto;
@@ -92,4 +98,15 @@ Voto media_semplice(const Voto *voti, int n)
         somma = somma + voti[i];
     }
     return somma / n;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

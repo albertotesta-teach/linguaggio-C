@@ -32,6 +32,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define STUDENTI 7
 #define LUNG 40
@@ -69,14 +70,21 @@ int main(void)
     int trovati;
     int i;
     int p;
+    int resto;
 
     while (comando != 'Q') {
         printf("Comando (C comune, Z cap, P, Q): ");
         if (fgets(riga, LUNG, stdin) == NULL) {
             comando = 'Q';
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
-            comando = riga[0];
+            comando = (char) toupper((unsigned char) riga[0]);
             argomento = riga + 2;
             if ((comando == 'C' || comando == 'Z') && strlen(riga) < 3) {
                 printf("  Manca il comune o il CAP.\n");

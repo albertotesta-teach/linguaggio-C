@@ -36,6 +36,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_ROSA 5
 #define MAX_SQUADRE 4
@@ -61,6 +62,7 @@ Giocatore *cerca_giocatore(Squadra *s, const char *nome);
 int gol_squadra(const Squadra *s);
 void stampa_rosa(const Squadra *s);
 void capocannonieri(const Torneo *t);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -82,12 +84,13 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (G squadra giocatore, R squadra, C, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'G' || comando == 'R') {
             if (scanf("%11s", nome_squadra) != 1 ||
                 (comando == 'G' && scanf("%11s", nome_giocatore) != 1)) {
-                comando = 'Q';
+                printf("  Dati incompleti.\n");
             } else {
                 squadra = cerca_squadra(&torneo, nome_squadra);
                 if (squadra == NULL) {
@@ -111,6 +114,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -189,4 +193,15 @@ void capocannonieri(const Torneo *t)
         }
     }
     printf("\n");
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

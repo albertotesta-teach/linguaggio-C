@@ -48,6 +48,8 @@ int per_genere(const Libro *l, const char *valore);
 int dopo_anno(const Libro *l, const char *valore);
 int disponibile(const Libro *l, const char *valore);
 int mostra(const Libro catalogo[], int n, Filtro f, const char *valore);
+void leggi_valore(char *valore, int dimensione);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -65,23 +67,28 @@ int main(void)
     char valore[LUNG];
     int scelta = 1;
     int f;
+    int letti;
 
     for (f = 0; f < FILTRI; f++) {
         printf("  %d  %s\n", f + 1, descrizioni[f]);
     }
     while (scelta != 0) {
         printf("Filtro e valore (0 per finire): ");
-        if (scanf("%d", &scelta) != 1) {
-            scelta = 0;
-        }
-        if (scelta >= 1 && scelta <= FILTRI) {
-            if (scanf("%19s", valore) != 1) {
-                scelta = 0;
-            } else {
-                printf("  Trovati: %d\n", mostra(catalogo, LIBRI, filtri[scelta - 1], valore));
-            }
-        } else if (scelta != 0) {
+        letti = scanf("%d", &scelta);
+        if (letti == EOF) {
+            scelta = 0;                 /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
             printf("  Filtro inesistente.\n");
+            scelta = -1;                /* si continua */
+        } else if (scelta >= 1 && scelta <= FILTRI) {
+            leggi_valore(valore, LUNG); /* il resto della riga */
+            printf("  Trovati: %d\n", mostra(catalogo, LIBRI, filtri[scelta - 1], valore));
+        } else {
+            svuota_riga();
+            if (scelta != 0) {
+                printf("  Filtro inesistente.\n");
+            }
         }
     }
 
@@ -123,4 +130,36 @@ int mostra(const Libro catalogo[], int n, Filtro f, const char *valore)
         }
     }
     return trovati;
+}
+
+/* Copia in valore il resto della riga, senza gli spazi iniziali; i
+ * caratteri che non stanno nell'array vengono scartati. */
+void leggi_valore(char *valore, int dimensione)
+{
+    int c;
+    int i = 0;
+
+    c = getchar();
+    while (c == ' ' || c == '\t') {
+        c = getchar();
+    }
+    while (c != '\n' && c != EOF) {
+        if (i < dimensione - 1) {
+            valore[i] = (char) c;
+            i++;
+        }
+        c = getchar();
+    }
+    valore[i] = '\0';
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

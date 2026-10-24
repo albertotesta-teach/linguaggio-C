@@ -67,6 +67,7 @@ typedef struct {
 int cerca(const Voce tabella[], const char *sigla);
 double in_celsius(double valore, UnitaTemperatura u);
 double da_celsius(double valore, UnitaTemperatura u);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -100,7 +101,6 @@ int main(void)
             finito = 1;
         } else if (sscanf(parola, "%lf", &valore) != 1 || scanf("%7s in %7s", da, a) != 2) {
             printf("  Richiesta non valida.\n");
-            finito = 1;
         } else {
             i = cerca(tabella, da);
             j = cerca(tabella, a);
@@ -123,6 +123,9 @@ int main(void)
                 }
                 printf("  %g %s = %.6g %s\n", valore, da, risultato, a);
             }
+        }
+        if (!finito) {
+            svuota_riga();              /* una conversione per riga */
         }
     }
 
@@ -175,4 +178,15 @@ double da_celsius(double valore, UnitaTemperatura u)
         break;
     }
     return risultato;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

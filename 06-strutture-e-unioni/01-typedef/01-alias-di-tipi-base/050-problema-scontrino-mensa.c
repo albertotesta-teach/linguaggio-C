@@ -30,6 +30,7 @@ typedef int Quantita;
 
 Euro subtotale(Euro prezzo, Quantita pezzi);
 Euro sconto(Euro totale, int percentuale);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -41,6 +42,7 @@ int main(void)
     Quantita pezzi;
     int codice = 1;
     char tessera;
+    int letti;
     int k;
 
     printf("Listino:\n");
@@ -50,12 +52,20 @@ int main(void)
 
     while (codice != 0) {
         printf("Codice prodotto (0 per chiudere): ");
-        if (scanf("%d", &codice) != 1) {
-            codice = 0;
+        letti = scanf("%d", &codice);
+        if (letti == EOF) {
+            codice = 0;                 /* input terminato: si chiude lo scontrino */
+        } else if (letti == 0) {
+            svuota_riga();              /* non è un numero */
+            codice = -1;                /* codice inesistente */
         }
         if (codice >= 1 && codice <= PRODOTTI) {
             printf("Quantita': ");
-            if (scanf("%d", &pezzi) == 1 && pezzi > 0) {
+            letti = scanf("%d", &pezzi);
+            if (letti == 0) {
+                svuota_riga();          /* non è un numero */
+            }
+            if (letti == 1 && pezzi > 0) {
                 totale = totale + subtotale(listino[codice - 1], pezzi);
                 printf("  %2d x %-15s %6.2f\n", pezzi, nomi[codice - 1],
                        subtotale(listino[codice - 1], pezzi));
@@ -68,13 +78,14 @@ int main(void)
     }
 
     printf("Tessera studenti? (S/N): ");
-    if (scanf(" %c", &tessera) == 1 && tessera == 'S' && totale > SOGLIA_SCONTO) {
+    if (scanf(" %c", &tessera) == 1 && (tessera == 'S' || tessera == 's') &&
+        totale > SOGLIA_SCONTO) {
         riduzione = sconto(totale, PERCENTUALE);
     }
 
     printf("\n  Totale            %6.2f\n", totale);
     if (riduzione > 0) {
-        printf("  Sconto %d%%         -%5.2f\n", PERCENTUALE, riduzione);
+        printf("  Sconto %d%%        %6.2f\n", PERCENTUALE, -riduzione);
     }
     printf("  Da pagare         %6.2f euro\n", totale - riduzione);
 
@@ -92,4 +103,15 @@ Euro sconto(Euro totale, int percentuale)
     int centesimi = (int) (totale * percentuale + 0.5);
 
     return centesimi / 100.0;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

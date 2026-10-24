@@ -2,64 +2,99 @@
 
 ## 1. Problema
 
-Il modulo online dei corsi pomeridiani a volte invia due volte la stessa iscrizione. Ogni iscrizione si confronta con la precedente: se è identica è un doppione, se cambia solo il giorno è una correzione, altrimenti è nuova. FINE termina e il programma stampa i conteggi.
+Il modulo online dei corsi pomeridiani a volte invia due volte la stessa
+iscrizione. Ogni iscrizione si confronta con la precedente: se è identica
+è un doppione, se cambia solo il giorno è una correzione, altrimenti è una
+nuova iscrizione. `FINE` termina e il programma stampa i conteggi. Le
+iscrizioni sono struct `Iscrizione`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Iscrizione` | `cognome, corso, giorno` | una richiesta del modulo |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `precedente`, `corrente` | `Iscrizione` | — | Ultima accettata e appena letta |
-| `giorni` | `const char *[]` | 6 | Nomi brevi dei giorni |
-| `nuove`, `doppioni`, `correzioni` | `int` | — | Conteggi |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `corrente` | `Iscrizione` | Cognome, corso e giorno (1-5) sulla stessa riga; `FINE` termina |
+
+### Output
+
+- Per ogni riga: `Nuova iscrizione: cognome, corso, giorno.`,
+  `Doppione scartato.`, `Correzione: cognome passa da g1 a g2.` oppure
+  `Iscrizione non valida.`
+- Alla fine: `Iscrizioni valide: N, doppioni scartati: D, correzioni: C`.
+
+### Vincoli
+
+- Le struct non si confrontano con `==`: si confrontano i campi
+  (`strcmp` per le stringhe).
+- Doppione: cognome, corso e giorno uguali alla precedente; correzione:
+  cognome e corso uguali, giorno diverso.
+- Solo le iscrizioni nuove e le correzioni diventano la nuova
+  "precedente" (assegnamento tra struct).
+- Il giorno si stampa con l'abbreviazione (`lun` ... `ven`).
+- Un'iscrizione per riga: il resto della riga viene scartato; una riga non
+  valida non interrompe l'inserimento. A fine input il programma termina.
+
+### Assunzioni
+
+- Il confronto è solo con l'iscrizione immediatamente precedente: un
+  doppione non consecutivo viene contato come nuova iscrizione.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Iscrizione` | `typedef struct { char cognome[20]; char corso[16]; int giorno; } Iscrizione;` | Un'iscrizione inviata dal modulo |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `precedente` | `Iscrizione` | Ultima iscrizione accettata, inizialmente vuota |
+| `giorni` | `const char *[6]` | Abbreviazioni, indice 1-5 |
+| `stessa_persona_corso` | `int` | Cognome e corso coincidono |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `nuove`, `doppioni`, `correzioni` | `int` | Contatori |
 
 | Funzione | Compito |
 |----------|---------|
-| `main` | Confronto tra iscrizioni consecutive |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Doppione
+1. Finché non si termina:
+   1. leggere il cognome; con `FINE` o a fine input terminare;
+   2. leggere corso e giorno e scartare il resto della riga;
+   3. se mancano o il giorno non è tra 1 e 5, segnalare l'iscrizione non
+      valida;
+   4. altrimenti confrontare con la precedente: doppione, correzione o
+      nuova; nei due ultimi casi `precedente = corrente`.
+2. Stampare i conteggi.
 
-**a) Input** – `Rossi robotica 2` due volte
+## 3. Casi di test
 
-**b) Output** – "Doppione scartato."
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `doppioni`
+### Test 1 – Sequenza completa
 
-**d) Vincoli** – tutti i campi uguali
+- **Cosa si verifica:** i tre esiti, le righe non valide e il doppione non
+  consecutivo.
+- **Input:** `Rossi corsoA 2`, `Rossi teatro 2`, `Rossi teatro 2`,
+  `Rossi teatro 4`, `Bianchi coro 9`, `Bianchi coro x`, `Bianchi coro 1`,
+  `Rossi teatro 4`, `FINE`
+- **Output atteso:**
+  ```
+    Nuova iscrizione: Rossi, corsoA, mar.
+    Nuova iscrizione: Rossi, teatro, mar.
+    Doppione scartato.
+    Correzione: Rossi passa da mar a gio.
+    Iscrizione non valida.
+    Iscrizione non valida.
+    Nuova iscrizione: Bianchi, coro, lun.
+    Nuova iscrizione: Rossi, teatro, gio.
+  Iscrizioni valide: 4, doppioni scartati: 1, correzioni: 1
+  ```
 
-**e) Assunzioni** – i doppioni sono consecutivi
+### Test 2 – Riga incompleta a fine input
 
-**f) Algoritmo in linguaggio naturale** – confrontare cognome e corso con strcmp e il giorno con ==.
-
-### Caso d'uso 2 – Correzione
-
-**a) Input** – `Bianchi teatro 4`, poi `Bianchi teatro 3`
-
-**b) Output** – "Correzione: Bianchi passa da gio a mer."
-
-**c) Variabili di supporto** – `correzioni`
-
-**d) Vincoli** – stesso cognome e corso
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – precedente = corrente aggiorna l'ultima accettata.
-
-### Caso d'uso 3 – Nuova iscrizione
-
-**a) Input** – `Verdi coro 1`
-
-**b) Output** – "Nuova iscrizione: Verdi, coro, lun."
-
-**c) Variabili di supporto** – `nuove`
-
-**d) Vincoli** – giorno 1-5
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – si conta e diventa la precedente.
+- **Input:** `Rossi teatro`, poi fine input.
+- **Output atteso:** `Iscrizione non valida.` e
+  `Iscrizioni valide: 0, doppioni scartati: 0, correzioni: 0`.

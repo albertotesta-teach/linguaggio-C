@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define CONTATTI 8
 #define LUNG 20
@@ -35,6 +36,8 @@ typedef struct {
     char telefono[16];
     char ruolo[10];
 } Contatto;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -56,8 +59,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (C cognome, R ruolo, E, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'C' || comando == 'R') {
             if (scanf("%19s", testo) != 1) {
                 comando = 'Q';
@@ -81,7 +85,19 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -28,6 +28,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 typedef struct {
     char intestatario[20];
@@ -41,6 +42,7 @@ int ricarica(Borsellino *b, double euro);
 int acquista(Borsellino *b, double prezzo);
 void nuovo_giorno(Borsellino *b);
 void stampa(const Borsellino *b);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -54,17 +56,20 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (R euro, A prezzo, G, B, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'R' || comando == 'A') {
             if (scanf("%lf", &importo) != 1) {
-                comando = 'Q';
+                printf("  Importo non valido.\n");
             } else if (comando == 'R') {
                 if (ricarica(&tessera, importo)) {
                     printf("  Ricarica di %.2f euro.\n", importo);
                 } else {
                     printf("  Importo non valido (da 1 a 50 euro).\n");
                 }
+            } else if (importo <= 0) {
+                printf("  Prezzo non valido.\n");
             } else {
                 printf("  %s\n", esiti[acquista(&tessera, importo)]);
             }
@@ -79,6 +84,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -121,4 +127,15 @@ void stampa(const Borsellino *b)
 {
     printf("  %s: credito %.2f, speso oggi %.2f su %.2f%s\n", b->intestatario, b->credito,
            b->speso_oggi, b->limite_giornaliero, b->bloccata ? " (BLOCCATA)" : "");
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

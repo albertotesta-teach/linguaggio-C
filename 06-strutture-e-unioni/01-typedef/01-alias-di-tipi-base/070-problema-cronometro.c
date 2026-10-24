@@ -24,6 +24,7 @@ typedef int Decimi;
 
 Decimi in_decimi(int minuti, int secondi, int decimi);
 void stampa_tempo(Decimi t);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -39,9 +40,12 @@ int main(void)
     while (a < ATLETI) {
         printf("Tempo di %-8s (minuti secondi decimi): ", nomi[a]);
         letti = scanf("%d %d %d", &minuti, &secondi, &decimi);
-        if (letti != 3) {
-            printf("  Inserimento interrotto.\n");
+        if (letti == EOF) {
+            printf("\n  Inserimento interrotto.\n");
             a = ATLETI + 1;
+        } else if (letti != 3) {
+            svuota_riga();              /* non sono tre numeri */
+            printf("  Tempo non valido, ripetere.\n");
         } else if (minuti < 0 || secondi < 0 || secondi > 59 || decimi < 0 || decimi > 9) {
             printf("  Tempo non valido, ripetere.\n");
         } else {
@@ -78,4 +82,15 @@ Decimi in_decimi(int minuti, int secondi, int decimi)
 void stampa_tempo(Decimi t)
 {
     printf("%d'%02d\"%d", t / 600, t / 10 % 60, t % 10);
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

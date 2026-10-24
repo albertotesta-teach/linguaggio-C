@@ -34,6 +34,8 @@ typedef struct {
     int voti[MATERIE];
 } Pagella;
 
+void svuota_riga(void);
+
 int main(void)
 {
     const char *materie[MATERIE] = {"italiano", "storia", "inglese", "matematica", "informatica"};
@@ -41,6 +43,7 @@ int main(void)
     Pagella secondo;
     int m;
     int voto;
+    int letti;
     int migliorate = 0;
     int peggiorate = 0;
     int recuperate = 0;
@@ -53,7 +56,11 @@ int main(void)
     printf("Voti del secondo quadrimestre di %s\n", secondo.nome);
     for (m = 0; m < MATERIE; m++) {
         printf("  %-12s (primo: %d): ", materie[m], primo.voti[m]);
-        if (scanf("%d", &voto) == 1 && voto >= 1 && voto <= 10) {
+        letti = scanf("%d", &voto);
+        if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+        }
+        if (letti == 1 && voto >= 1 && voto <= 10) {
             secondo.voti[m] = voto;
         } else {
             printf("  voto non valido, resta %d\n", secondo.voti[m]);
@@ -84,4 +91,15 @@ int main(void)
     printf("Insufficienze recuperate: %d\n", recuperate);
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

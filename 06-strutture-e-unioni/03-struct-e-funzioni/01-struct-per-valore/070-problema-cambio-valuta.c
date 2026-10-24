@@ -36,6 +36,7 @@ typedef struct {
 Importo crea_importo(double valore, const char *valuta);
 Importo converti(Importo i, const char *verso, int *ok);
 double cambio(const char *valuta, int *ok);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -45,16 +46,22 @@ int main(void)
     double valore = 1;
     char valuta[8];
     int ok;
+    int letti;
 
     while (valore != 0) {
         printf("Spesa (importo valuta, 0 per finire): ");
-        if (scanf("%lf", &valore) != 1) {
-            valore = 0;
-        }
-        if (valore != 0) {
-            if (scanf("%7s", valuta) != 1 || strlen(valuta) != 3) {
+        letti = scanf("%lf", &valore);
+        if (letti == EOF) {
+            valore = 0;                 /* input terminato: come 0 */
+        } else if (letti == 0) {
+            svuota_riga();              /* l'importo non e' un numero */
+            printf("  Importo non valido.\n");
+            valore = 1;                 /* si continua */
+        } else if (valore != 0) {
+            letti = scanf("%7s", valuta);
+            svuota_riga();              /* una spesa per riga */
+            if (letti != 1 || strlen(valuta) != 3) {
                 printf("  Valuta non valida.\n");
-                valore = 0;
             } else {
                 spesa = crea_importo(valore, valuta);
                 in_euro = converti(spesa, "EUR", &ok);
@@ -111,4 +118,15 @@ double cambio(const char *valuta, int *ok)
         risultato = per_euro[v];
     }
     return risultato;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

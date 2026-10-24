@@ -65,6 +65,8 @@ int main(void)
                    segno ? "negativo" : "positivo", (unsigned long) esponente);
             if (esponente == 0 && mantissa == 0) {
                 printf(" (zero)");
+            } else if (esponente == 0xFF) {
+                printf(" (infinito o NaN)");
             } else {
                 printf(" - 127 = %ld", (long) esponente - 127);
             }

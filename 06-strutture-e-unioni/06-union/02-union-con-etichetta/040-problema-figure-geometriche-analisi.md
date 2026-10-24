@@ -2,81 +2,97 @@
 
 ## 1. Problema
 
-Per la verifica di geometria il programma legge cerchi, rettangoli e triangoli, li controlla e ne calcola area e perimetro; alla fine indica la figura con l'area maggiore. Una Figura contiene un'etichetta e una union delle tre alternative; area, perimetro e valida sono switch sull'etichetta.
+Per la verifica di geometria il programma legge cerchi, rettangoli e
+triangoli, li controlla e ne calcola area e perimetro; alla fine indica la
+figura con l'area maggiore. Una `Figura` contiene un'etichetta (`enum`) e
+una `union` delle tre alternative; `area`, `perimetro` e `valida` sono
+`switch` sull'etichetta.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Figura` | `tipo, union dati {cerchio, rettangolo, triangolo}` | figura geometrica |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `figure` | `Figura[]` | 8 | Figure valide |
-| `n`, `massima` | `int` | — | Figure lette e indice della più grande |
-| `esito` | `int` | — | Risultato della lettura |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| figura | una riga | `C r`, `R b h`, `T a b c`; `FINE` termina |
+
+### Output
+
+- Per ogni figura valida: `nome: area A, perimetro P` (due decimali).
+- `Misure non valide per un <figura>.`, `Figura non riconosciuta.`,
+  `Misure mancanti.`
+- Alla fine, se ci sono figure: `Area maggiore: figura N (nome), A`.
+
+### Vincoli
+
+- L'etichetta dice quale membro della union è valido: ogni funzione legge
+  solo quello.
+- Cerchio e rettangolo con misure positive; triangolo con la
+  disuguaglianza triangolare stretta (ogni lato minore della somma degli
+  altri due).
+- Area del triangolo con la formula di Erone; π = 3.14159265358979.
+- Al massimo 8 figure; le figure non valide non sono memorizzate.
+- A parità di area vale la prima figura.
+- Una figura per riga: il resto viene scartato. A fine input il programma
+  termina come con `FINE`.
+
+### Assunzioni
+
+- Lettera e misure stanno sulla stessa riga (`scanf` cercherebbe le misure
+  mancanti nella riga successiva).
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `TipoFigura` | `typedef enum { CERCHIO, RETTANGOLO, TRIANGOLO } TipoFigura;` | Etichetta |
+| `Cerchio`, `Rettangolo`, `Triangolo` | struct | Misure di ogni figura |
+| `Figura` | `typedef struct { TipoFigura tipo; union { Cerchio cerchio; Rettangolo rettangolo; Triangolo triangolo; } dati; } Figura;` | Union etichettata |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `figure`, `n` | `Figura[8]`, `int` | Figure valide |
+| `esito` | `int` | 1 letta, 0 fine, −1 lettera sconosciuta, −2 misure mancanti |
+| `massima` | `int` | Indice dell'area maggiore |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_figura(&f)` | 1 letta, 0 FINE o numeri mancanti, -1 lettera sconosciuta |
-| `valida(&f)` | Misure positive; disuguaglianza triangolare |
-| `area(&f), perimetro(&f)` | Switch sull'etichetta; Erone per il triangolo |
-| `nome(&f)` | Nome della figura |
+| `leggi_figura(f)` | Legge lettera e misure |
+| `valida(f)`, `area(f)`, `perimetro(f)`, `nome(f)` | `switch` sull'etichetta |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Figure valide
+1. Finché non si termina e c'è posto:
+   1. leggere la figura e scartare il resto della riga;
+   2. segnalare lettera sconosciuta, misure mancanti o non valide;
+   3. altrimenti stampare area e perimetro e memorizzarla.
+2. Se ci sono figure, trovare e stampare quella con l'area maggiore.
 
-**a) Input** – `C 2`; `R 3 4`; `T 3 4 5`
+## 3. Casi di test
 
-**b) Output** – area 12.57, 12.00, 6.00
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `figure`
+### Test 1 – Figure miste
 
-**d) Vincoli** – misure positive
+- **Input:** `C 2`, `R 3 4`, `T 3 4 5`, `T 1 2 5`, `C -1`, `Q 3`, `C abc`,
+  `R 10 10`, `FINE`
+- **Valori intermedi attesi:** cerchio π·4 = 12.57; triangolo 3-4-5:
+  p = 6, √(6·3·2·1) = 6.
+- **Output atteso:**
+  ```
+    cerchio: area 12.57, perimetro 12.57
+    rettangolo: area 12.00, perimetro 14.00
+    triangolo: area 6.00, perimetro 12.00
+    Misure non valide per un triangolo.
+    Misure non valide per un cerchio.
+    Figura non riconosciuta.
+    Misure mancanti.
+    rettangolo: area 100.00, perimetro 40.00
+  Area maggiore: figura 4 (rettangolo), 100.00
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna figura
 
-**f) Algoritmo in linguaggio naturale** – leggere la lettera, impostare l'etichetta e leggere i campi della sua alternativa.
-
-### Caso d'uso 2 – Triangolo impossibile
-
-**a) Input** – `T 1 1 5`
-
-**b) Output** – "Misure non valide per un triangolo."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – ogni lato minore della somma degli altri
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – valida controlla i tre lati.
-
-### Caso d'uso 3 – Figura sconosciuta
-
-**a) Input** – `X`
-
-**b) Output** – "Figura non riconosciuta."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – leggi_figura restituisce -1.
-
-### Caso d'uso 4 – Area maggiore
-
-**a) Input** – `FINE`
-
-**b) Output** – "Area maggiore: figura 1 (cerchio), 12.57"
-
-**c) Variabili di supporto** – `massima`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – a parità vince la prima
-
-**f) Algoritmo in linguaggio naturale** – confronto delle aree con la funzione area.
+- **Input:** `FINE`
+- **Output atteso:** nessuna riga oltre la richiesta.

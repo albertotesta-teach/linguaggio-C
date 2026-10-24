@@ -58,6 +58,7 @@ int main(void)
     char riga[LUNG];
     Pacchetto p;
     int finito = 0;
+    int resto;
 
     if (sizeof(p.campi) != BYTE) {
         printf("I campi occupano %zu byte invece di %d: il programma non puo' funzionare.\n",
@@ -66,17 +67,27 @@ int main(void)
     }
     while (!finito) {
         printf("Pacchetto (8 byte esadecimali, FINE): ");
-        if (fgets(riga, LUNG, stdin) == NULL || strncmp(riga, "FINE", 4) == 0) {
+        if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
-        } else if (!leggi_pacchetto(riga, &p)) {
-            printf("  Servono 8 byte.\n");
-        } else if (!controllo_corretto(&p)) {
-            printf("  Pacchetto corrotto: controllo errato.\n");
         } else {
-            printf("  sensore %d: %.1f gradi, umidita' %.1f%%, batteria %d mV%s\n",
-                   p.campi.sensore, p.campi.temperatura / 10.0, p.campi.umidita / 10.0,
-                   p.campi.batteria,
-                   p.campi.batteria < BATTERIA_MINIMA ? "  CAMBIARE LE PILE" : "");
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
+            if (strncmp(riga, "FINE", 4) == 0) {
+                finito = 1;
+            } else if (!leggi_pacchetto(riga, &p)) {
+                printf("  Servono 8 byte.\n");
+            } else if (!controllo_corretto(&p)) {
+                printf("  Pacchetto corrotto: controllo errato.\n");
+            } else {
+                printf("  sensore %d: %.1f gradi, umidita' %.1f%%, batteria %d mV%s\n",
+                       p.campi.sensore, p.campi.temperatura / 10.0, p.campi.umidita / 10.0,
+                       p.campi.batteria,
+                       p.campi.batteria < BATTERIA_MINIMA ? "  CAMBIARE LE PILE" : "");
+            }
         }
     }
 
@@ -92,6 +103,11 @@ int leggi_pacchetto(const char *riga, Pacchetto *p)
 
     letti = sscanf(riga, "%x %x %x %x %x %x %x %x", &b[0], &b[1], &b[2], &b[3], &b[4], &b[5],
                    &b[6], &b[7]);
+    for (i = 0; i < letti && letti == BYTE; i++) {
+        if (b[i] > 0xFF) {
+            letti = 0;                  /* non e' un byte */
+        }
+    }
     if (letti == BYTE) {
         for (i = 0; i < BYTE; i++) {
             p->grezzi[i] = (uint8_t) b[i];

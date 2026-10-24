@@ -2,65 +2,107 @@
 
 ## 1. Problema
 
-La segreteria aggiorna telefono, email e anno di corso di uno studente. Le modifiche si fanno su una copia della scheda; premendo solo Invio un campo resta invariato. Il programma elenca i campi cambiati e, con la conferma, copia la scheda modificata su quella ufficiale.
+La segreteria aggiorna telefono, email e classe di uno studente. Le
+modifiche si fanno su una copia della scheda (`modificata = originale`);
+premendo solo Invio un campo resta invariato. Il programma elenca i campi
+cambiati e, con la conferma, copia la scheda modificata su quella
+ufficiale con un solo assegnamento. La scheda è una struct `Anagrafica`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Anagrafica` | `cognome, nome, telefono, email, classe` | recapiti di uno studente |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `originale` | `Anagrafica` | — | Scheda ufficiale |
-| `modificata` | `Anagrafica` | — | Copia di lavoro |
-| `riga` | `char[]` | 80 | Riga letta |
-| `cambiati` | `int` | — | Campi modificati |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| telefono, email | righe di testo | Nuovo valore; riga vuota = invariato |
+| classe | riga di testo | Una cifra da 1 a 5; riga vuota = invariata |
+| conferma | riga di testo | `S`/`s` per confermare |
+| `originale` | `Anagrafica` | Scheda iniziale (nel sorgente): Marino Chiara, 0131 555 1234, famiglia.marino@posta.it, classe 3 |
+
+### Output
+
+- Le richieste con il valore attuale tra parentesi quadre.
+- `Modifiche:` con l'elenco `campo: vecchio -> nuovo` oppure `nessuna`.
+- Se ci sono modifiche: `Confermi N modifiche? (S/N):` (`modifica` al
+  singolare) e `Scheda aggiornata.` o `Modifiche scartate.`
+- La scheda ufficiale finale.
+
+### Vincoli
+
+- Le stringhe si confrontano con `strcmp`, la classe con `!=`.
+- Un valore troppo lungo per il campo (telefono oltre 15 caratteri, email
+  oltre 39) viene ignorato: il campo resta invariato.
+- Una classe non valida (non una sola cifra da 1 a 5) lascia la classe
+  invariata.
+- Le righe si leggono con `fgets`; di una riga più lunga del buffer si
+  scarta il resto. A fine input una riga vale come vuota.
+
+### Assunzioni
+
+- Cognome e nome non si modificano.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Anagrafica` | `typedef struct { char cognome[20]; char nome[20]; char telefono[16]; char email[40]; int classe; } Anagrafica;` | Scheda dello studente |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `modificata` | `Anagrafica` | Copia su cui si lavora |
+| `riga` | `char[80]` | Riga letta |
+| `cambiati` | `int` | Numero di campi modificati |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_riga(riga, lunghezza)` | Legge una riga con fgets e toglie l'a capo |
+| `leggi_riga(riga, lunghezza)` | Legge una riga, toglie l'a capo, scarta il resto di una riga troppo lunga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Modifica
+1. Copiare la scheda ufficiale in `modificata`.
+2. Per telefono, email e classe: leggere una riga e, se non vuota e
+   valida, aggiornare il campo di `modificata`.
+3. Confrontare i campi delle due schede, stampare quelli cambiati e
+   contarli.
+4. Se non ce ne sono stampare `nessuna`; altrimenti chiedere conferma e,
+   con `S`, eseguire `originale = modificata`.
+5. Stampare la scheda ufficiale.
 
-**a) Input** – Invio, `fam.marino@scuola.it`, `4`
+## 3. Casi di test
 
-**b) Output** – email e classe cambiate, telefono invariato
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `modificata`
+### Test 1 – Due modifiche confermate
 
-**d) Vincoli** – il testo deve stare nel campo
+- **Input:** `333 1234567`, riga vuota, `4`, `S`
+- **Output atteso:**
+  ```
+  Scheda di Marino Chiara (Invio per lasciare invariato)
+  Telefono [0131 555 1234]: Email [famiglia.marino@posta.it]: Classe [3]: 
+  Modifiche:
+    telefono: 0131 555 1234 -> 333 1234567
+    classe:   3 -> 4
+  Confermi 2 modifiche? (S/N): Scheda aggiornata.
+  Scheda ufficiale: Marino Chiara, 333 1234567, famiglia.marino@posta.it, classe 4
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna modifica
 
-**f) Algoritmo in linguaggio naturale** – copiare nella scheda di lavoro solo le righe non vuote e valide.
+- **Input:** tre righe vuote
+- **Output atteso:** `Modifiche:`, `nessuna` e la scheda invariata.
 
-### Caso d'uso 2 – Conferma
+### Test 3 – Modifica scartata e classe non valida
 
-**a) Input** – `S`
+- **Input:** riga vuota, `nuova@mail.it`, `7`, `n`
+- **Output atteso:**
+  ```
+  Modifiche:
+    email:    famiglia.marino@posta.it -> nuova@mail.it
+  Confermi 1 modifica? (S/N): Modifiche scartate.
+  Scheda ufficiale: Marino Chiara, 0131 555 1234, famiglia.marino@posta.it, classe 3
+  ```
 
-**b) Output** – "Scheda aggiornata."
+### Test 4 – Valore troppo lungo
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – originale = modificata copia tutti i campi.
-
-### Caso d'uso 3 – Nessuna modifica o annullamento
-
-**a) Input** – tre Invio; oppure `N`
-
-**b) Output** – "nessuna"; "Modifiche scartate."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il confronto campo per campo decide; con N la copia si ignora.
+- **Input:** un telefono di 61 cifre, due righe vuote
+- **Output atteso:** `nessuna`: il telefono resta invariato.

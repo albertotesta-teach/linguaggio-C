@@ -68,6 +68,7 @@ int valida(const Figura *f);
 double area(const Figura *f);
 double perimetro(const Figura *f);
 const char *nome(const Figura *f);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -80,8 +81,13 @@ int main(void)
     while (esito != 0 && n < MAX_FIGURE) {
         printf("Figura (C r, R b h, T a b c, FINE): ");
         esito = leggi_figura(&figure[n]);
+        if (esito != 0) {
+            svuota_riga();              /* una figura per riga */
+        }
         if (esito == -1) {
             printf("  Figura non riconosciuta.\n");
+        } else if (esito == -2) {
+            printf("  Misure mancanti.\n");
         } else if (esito == 1 && !valida(&figure[n])) {
             printf("  Misure non valide per un %s.\n", nome(&figure[n]));
         } else if (esito == 1) {
@@ -104,7 +110,7 @@ int main(void)
     return 0;
 }
 
-/* 1 letta, 0 FINE o numeri mancanti, -1 lettera sconosciuta. */
+/* 1 letta, 0 FINE o fine input, -1 lettera sconosciuta, -2 misure mancanti. */
 int leggi_figura(Figura *f)
 {
     char lettera[8];
@@ -114,14 +120,15 @@ int leggi_figura(Figura *f)
         esito = 0;
     } else if (strcmp(lettera, "C") == 0) {
         f->tipo = CERCHIO;
-        esito = scanf("%lf", &f->dati.cerchio.raggio) == 1;
+        esito = scanf("%lf", &f->dati.cerchio.raggio) == 1 ? 1 : -2;
     } else if (strcmp(lettera, "R") == 0) {
         f->tipo = RETTANGOLO;
-        esito = scanf("%lf %lf", &f->dati.rettangolo.base, &f->dati.rettangolo.altezza) == 2;
+        esito = scanf("%lf %lf", &f->dati.rettangolo.base, &f->dati.rettangolo.altezza) == 2
+                    ? 1 : -2;
     } else if (strcmp(lettera, "T") == 0) {
         f->tipo = TRIANGOLO;
         esito = scanf("%lf %lf %lf", &f->dati.triangolo.a, &f->dati.triangolo.b,
-                      &f->dati.triangolo.c) == 3;
+                      &f->dati.triangolo.c) == 3 ? 1 : -2;
     }
     return esito;
 }
@@ -201,4 +208,15 @@ const char *nome(const Figura *f)
         break;
     }
     return testo;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

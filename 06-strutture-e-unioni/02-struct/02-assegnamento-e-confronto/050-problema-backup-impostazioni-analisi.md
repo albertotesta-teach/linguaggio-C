@@ -2,65 +2,109 @@
 
 ## 1. Problema
 
-La LIM dell'aula ha luminosità, volume, ingresso e tempo di spegnimento. Il programma permette di modificarli, salvarne un backup, ripristinarlo o tornare ai valori di fabbrica con un solo assegnamento tra struct. All'uscita confronta le impostazioni in uso con il backup e avvisa delle modifiche non salvate.
+La LIM dell'aula ha luminosità, volume, ingresso video e tempo di
+spegnimento. Il programma permette di modificarli, salvarne un backup,
+ripristinarlo o tornare ai valori di fabbrica, ognuno con un solo
+assegnamento tra struct. All'uscita confronta campo per campo le
+impostazioni in uso con il backup e avvisa delle modifiche non salvate.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Impostazioni` | `luminosita, volume, ingresso, spegnimento` | configurazione della LIM |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `predefinite` | `const Impostazioni` | — | Valori di fabbrica |
-| `corrente` | `Impostazioni` | — | Valori in uso |
-| `salvate` | `Impostazioni` | — | Ultimo backup |
-| `uguali` | `int` | — | Esito del confronto finale |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `L n` luminosità, `V n` volume, `I nome` ingresso, `B` backup, `R` ripristino, `F` fabbrica, `S` stato, `Q` fine (anche minuscoli) |
+| `valore` | `int` | Luminosità o volume, da 0 a 100 |
+| `nome` | `char[8]` | Ingresso: `HDMI1`, `HDMI2` o `PC` |
+
+### Output
+
+- Per ogni comando una conferma (`Luminosita' 85.`, `Impostazioni
+  salvate.`, ...), lo stato completo con `S`, oppure `Valore tra 0 e
+  100.`, `Ingressi: HDMI1, HDMI2, PC.`, `Comando sconosciuto.`
+- All'uscita: `Nessuna modifica da salvare.` oppure
+  `Attenzione: ci sono modifiche non salvate.`
+
+### Vincoli
+
+- Valori di fabbrica: luminosità 70, volume 40, ingresso HDMI1,
+  spegnimento 30 minuti (`const Impostazioni predefinite`).
+- Backup, ripristino e fabbrica sono assegnamenti tra struct.
+- Le struct non si confrontano con `==`: si confrontano i campi, la
+  stringa con `strcmp`.
+- Un comando per riga: il resto della riga viene scartato, così un
+  valore non numerico non viene letto come altri comandi.
+- A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Il tempo di spegnimento non si modifica da questo menu.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Impostazioni` | `typedef struct { int luminosita; int volume; char ingresso[8]; int spegnimento; } Impostazioni;` | Le impostazioni della LIM |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `predefinite` | `const Impostazioni` | Valori di fabbrica |
+| `corrente`, `salvate` | `Impostazioni` | In uso e backup |
+| `uguali` | `int` | Esito del confronto campo per campo |
 
 | Funzione | Compito |
 |----------|---------|
-| `main` | Comandi L, V, I, B, R, F, S, Q |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Backup e ripristino
+1. Partire con impostazioni in uso e backup uguali ai valori di fabbrica.
+2. Finché il comando non è `Q`:
+   1. leggere il comando (fine input → `Q`) e convertirlo in maiuscolo;
+   2. `L`/`V`: leggere il valore e, se tra 0 e 100, impostarlo;
+   3. `I`: leggere il nome e, se è un ingresso ammesso, copiarlo;
+   4. `B`: `salvate = corrente`; `R`: `corrente = salvate`;
+      `F`: `corrente = predefinite`; `S`: stampare lo stato;
+   5. altrimenti comando sconosciuto;
+   6. scartare il resto della riga.
+3. Confrontare i campi di `corrente` e `salvate` e stampare l'avviso.
 
-**a) Input** – `L 90`, `I PC`, `B`, `V 10`, `R`
+## 3. Casi di test
 
-**b) Output** – dopo R il volume torna a 40, luminosità 90 e ingresso PC restano
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `salvate`
+### Test 1 – Sessione completa
 
-**d) Vincoli** – —
+- **Cosa si verifica:** modifiche, valori non validi, backup, ripristino,
+  fabbrica e avviso finale.
+- **Input:** `S`, `L 85`, `v 120`, `V abc`, `I PC`, `I VGA`, `B`, `V 10`,
+  `S`, `R`, `S`, `X`, `F`, `S`, `Q`
+- **Output atteso:**
+  ```
+    luminosita' 70, volume 40, ingresso HDMI1, spegnimento dopo 30 min
+    Luminosita' 85.
+    Valore tra 0 e 100.
+    Valore tra 0 e 100.
+    Ingresso PC.
+    Ingressi: HDMI1, HDMI2, PC.
+    Impostazioni salvate.
+    Volume 10.
+    luminosita' 85, volume 10, ingresso PC, spegnimento dopo 30 min
+    Backup ripristinato.
+    luminosita' 85, volume 40, ingresso PC, spegnimento dopo 30 min
+    Comando sconosciuto.
+    Valori di fabbrica.
+    luminosita' 70, volume 40, ingresso HDMI1, spegnimento dopo 30 min
+  Attenzione: ci sono modifiche non salvate.
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna modifica
 
-**f) Algoritmo in linguaggio naturale** – B: salvate = corrente; R: corrente = salvate.
+- **Input:** `L 50`, `B`, `Q`
+- **Output atteso:** `Nessuna modifica da salvare.`
 
-### Caso d'uso 2 – Valori non ammessi
+### Test 3 – Fine input con modifiche
 
-**a) Input** – `V 120`, `I VGA`
-
-**b) Output** – "Valore tra 0 e 100."; "Ingressi: HDMI1, HDMI2, PC."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – volume e luminosità 0-100
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il campo non cambia.
-
-### Caso d'uso 3 – Uscita
-
-**a) Input** – `Q` dopo modifiche non salvate
-
-**b) Output** – "Attenzione: ci sono modifiche non salvate."
-
-**c) Variabili di supporto** – `uguali`
-
-**d) Vincoli** – il confronto è campo per campo, ingresso con strcmp
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – non si può scrivere corrente == salvate.
+- **Input:** `B`, `L 50`, poi fine input.
+- **Output atteso:** `Attenzione: ci sono modifiche non salvate.`

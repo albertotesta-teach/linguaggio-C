@@ -2,80 +2,100 @@
 
 ## 1. Problema
 
-Il voltmetro del laboratorio restituisce un valore grezzo; misura lo trasforma in un Risultato con tre esiti, ognuno con i suoi dati: valore e incertezza, fondo scala superato, codice di guasto. Il programma legge il fondo scala e le letture e alla fine stampa la media delle sole misure riuscite.
+Il voltmetro del laboratorio restituisce un valore grezzo; `misura` lo
+trasforma in un `Risultato` con tre esiti, ognuno con i suoi dati in una
+`union`: valore e incertezza, fondo scala superato, codice di guasto. Il
+programma legge il fondo scala e le letture e alla fine stampa la media
+delle sole misure riuscite.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Risultato` | `esito, union dati {ok {valore, incertezza}, fondo_scala, codice}` | risultato di una misura |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `r` | `Risultato` | — | Esito di una lettura |
-| `conteggi` | `int[]` | NUM_ESITI | Letture per esito |
-| `somma` | `double` | — | Somma dei valori riusciti |
-| `fondo_scala`, `letto` | `double` | — | Dati letti |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `fondo_scala` | `double` | Portata in volt, positiva |
+| `parola` | `char[16]` | Lettura grezza; `FINE` termina |
+
+### Output
+
+- Per ogni lettura: `(V +/- I) V`, `Fuori scala: oltre F V, ...`,
+  `Guasto: <descrizione> (codice C)`, oppure `Non e' un numero.`
+- `Media delle misure riuscite: M V` (se ce ne sono).
+- `Riuscite R, fuori scala F, guasti G`.
+- `Fondo scala non valido.`
+
+### Vincoli
+
+- Lettura negativa = guasto con codice intero (−1 cavo staccato, −2
+  batteria scarica, altri: errore sconosciuto).
+- Lettura oltre il fondo scala = fuori scala; altrimenti misura riuscita
+  con incertezza 1% + 0.01 V.
+- `stampa` usa uno `switch` sull'esito e legge solo il membro della union
+  corrispondente.
+- I conteggi sono indicizzati dall'esito.
+- A fine input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- Il valore 0 è una misura valida.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Esito` | `typedef enum { MISURA_OK, FUORI_SCALA, GUASTO, NUM_ESITI } Esito;` | Etichetta |
+| `Risultato` | struct con `esito` e `union { struct { double valore; double incertezza; } ok; double fondo_scala; int codice; } dati` | Risultato della misura |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `conteggi` | `int[3]` | Risultati per esito |
+| `somma` | `double` | Somma delle misure riuscite |
+| `r` | `Risultato` | Ultima misura |
 
 | Funzione | Compito |
 |----------|---------|
-| `misura(letto, fondo_scala)` | Costruisce il Risultato con l'etichetta giusta |
-| `stampa(&r)` | Switch sull'esito |
+| `misura(letto, fondo_scala)` | Costruisce il risultato |
+| `stampa(r)` | Stampa con `switch` sull'esito |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Misure riuscite
+1. Leggere il fondo scala; se non valido segnalarlo e non leggere misure.
+2. Finché non si termina: leggere una parola; se non è un numero
+   segnalarlo; altrimenti costruire il risultato, stamparlo, contarlo e,
+   se riuscito, sommarlo.
+3. Stampare la media (se ci sono misure riuscite) e i conteggi.
 
-**a) Input** – fondo scala `20`, letture `3.27`, `12.5`, `0.85`
+## 3. Casi di test
 
-**b) Output** – "(3.270 +/- 0.043) V", ...; media 5.540 V
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `somma`
+### Test 1 – Serie di letture
 
-**d) Vincoli** – incertezza 1% + 0.01 V
+- **Input:** `20`, `12.5`, `3`, `25`, `-1`, `-2`, `-7`, `volt`, `0`, `FINE`
+- **Valori intermedi attesi:** incertezza di 12.5: 0.125 + 0.01 = 0.135;
+  media (12.5 + 3 + 0) / 3 = 5.167.
+- **Output atteso:**
+  ```
+    (12.500 +/- 0.135) V
+    (3.000 +/- 0.040) V
+    Fuori scala: oltre 20.0 V, scegliere una portata piu' alta.
+    Guasto: cavo staccato (codice -1)
+    Guasto: batteria scarica (codice -2)
+    Guasto: errore sconosciuto (codice -7)
+    Non e' un numero.
+    (0.000 +/- 0.010) V
+  Media delle misure riuscite: 5.167 V
+  Riuscite 3, fuori scala 1, guasti 3
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna misura riuscita
 
-**f) Algoritmo in linguaggio naturale** – solo le misure MISURA_OK entrano nella media.
+- **Input:** `20`, `30`, poi fine input
+- **Output atteso:** nessuna media; `Riuscite 0, fuori scala 1, guasti 0`.
 
-### Caso d'uso 2 – Fuori scala
+### Test 3 – Fondo scala non valido
 
-**a) Input** – `21.4`
-
-**b) Output** – "Fuori scala: oltre 20.0 V..."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – lettura ≤ fondo scala
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il risultato conserva il fondo scala superato.
-
-### Caso d'uso 3 – Guasti
-
-**a) Input** – `-1`; `-2`
-
-**b) Output** – "cavo staccato"; "batteria scarica"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – letture negative = codici
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il codice è la parte intera della lettura.
-
-### Caso d'uso 4 – Testo
-
-**a) Input** – `abc`
-
-**b) Output** – "Non e' un numero."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la lettura si scarta.
+- **Input:** `0`
+- **Output atteso:** `Fondo scala non valido.` e
+  `Riuscite 0, fuori scala 0, guasti 0`.

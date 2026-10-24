@@ -2,64 +2,92 @@
 
 ## 1. Problema
 
-Ogni aula ha un termostato che riceve una misura ogni 15 minuti e accende o spegne il termosifone con un'isteresi di mezzo grado. La stessa funzione aggiorna lavora sui termostati di due aule ricevendone l'indirizzo; riepilogo li legge con const Termostato *.
+Ogni aula ha un termostato che riceve una misura ogni 15 minuti e accende
+o spegne il termosifone con un'isteresi di mezzo grado. La stessa funzione
+`aggiorna` lavora sui termostati di due aule ricevendone l'indirizzo;
+`riepilogo` li legge tramite `const Termostato *`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Termostato` | `aula, obiettivo, ultima, minima, massima, acceso, accensioni` | stato del termostato di un'aula |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `a12`, `lab` | `Termostato` | — | Termostati delle due aule |
-| `misure_a12`, `misure_lab` | `double[]` | 8 | Misure della mattina |
+Nessun input da tastiera: i dati sono nel sorgente.
+
+| Termostato | Obiettivo | Misure dalle 8:00 alle 9:45 |
+|------------|-----------|------------------------------|
+| A1-12 | 20.0 | 17.8, 18.6, 19.4, 20.1, 20.6, 20.2, 19.6, 19.3 |
+| Lab-B | 19.0 | 18.9, 18.7, 18.4, 18.8, 19.3, 19.6, 19.1, 18.6 |
+
+### Output
+
+- Una tabella con l'ora e, per ogni aula, la misura e lo stato
+  (`acceso`/`spento`).
+- Per ogni aula: obiettivo, minima, massima e numero di accensioni.
+
+### Vincoli
+
+- Il termosifone si accende se è spento e la misura è sotto
+  obiettivo − 0.5; si spegne se è acceso e la misura è sopra
+  obiettivo + 0.5; altrimenti resta com'è.
+- Minima e massima partono da 100 e −100, così la prima misura le
+  aggiorna.
+- `aggiorna` modifica la struct del chiamante tramite il puntatore;
+  `riepilogo` non può modificarla (`const`).
+
+### Assunzioni
+
+- All'inizio i termosifoni sono spenti.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Termostato` | `typedef struct { char aula[8]; double obiettivo; double ultima; double minima; double massima; int acceso; int accensioni; } Termostato;` | Stato del termostato di un'aula |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `a12`, `lab` | `Termostato` | I due termostati |
+| `misure_a12`, `misure_lab` | `double[8]` | Misure della mattina |
+| `m` | `int` | Indice della misura (ora = 8 + m / 4, minuti = m % 4 × 15) |
+| `ISTERESI` | `#define` | 0.5 gradi |
 
 | Funzione | Compito |
 |----------|---------|
 | `aggiorna(t, misura)` | Registra la misura, aggiorna minima e massima, decide lo stato |
-| `riepilogo(t)` | Obiettivo, minima, massima, accensioni |
+| `riepilogo(t)` | Stampa il riepilogo del termostato |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Accensione
+1. Stampare l'intestazione.
+2. Per ogni misura: chiamare `aggiorna(&a12, ...)` e `aggiorna(&lab, ...)`
+   e stampare l'ora con misure e stati.
+3. Stampare il riepilogo delle due aule.
 
-**a) Input** – 17.8 in A1-12 (obiettivo 20)
+## 3. Casi di test
 
-**b) Output** – acceso
+### Test 1 – Dati del sorgente
 
-**c) Variabili di supporto** – `t->acceso`, `t->accensioni`
+- **Cosa si verifica:** isteresi (A1-12 a 20.1 resta acceso, si spegne a
+  20.6, si riaccende a 19.3), minima, massima, accensioni.
+- **Input:** nessuno.
+- **Output atteso:**
+  ```
+    Ora    A1-12          Lab-B         
+    08:00  17.8 acceso    18.9 spento   
+    08:15  18.6 acceso    18.7 spento   
+    08:30  19.4 acceso    18.4 acceso   
+    08:45  20.1 acceso    18.8 acceso   
+    09:00  20.6 spento    19.3 acceso   
+    09:15  20.2 spento    19.6 spento   
+    09:30  19.6 spento    19.1 spento   
+    09:45  19.3 acceso    18.6 spento   
 
-**d) Vincoli** – si accende sotto obiettivo - 0.5
+    A1-12: obiettivo 20.0, minima 17.8, massima 20.6, accensioni 2
+    Lab-B: obiettivo 19.0, minima 18.4, massima 19.6, accensioni 1
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Termosifone mai acceso
 
-**f) Algoritmo in linguaggio naturale** – se spento e misura < 19.5 accendere e contare.
-
-### Caso d'uso 2 – Isteresi
-
-**a) Input** – 20.2 e 19.6 dopo lo spegnimento
-
-**b) Output** – resta spento
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – tra 19.5 e 20.5 lo stato non cambia
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna delle due condizioni è vera.
-
-### Caso d'uso 3 – Riepilogo
-
-**a) Input** – fine della mattina
-
-**b) Output** – A1-12: minima 17.8, massima 20.6, accensioni 2
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – riepilogo legge i campi con ->.
+- **Procedura:** portare l'obiettivo di Lab-B a 18.0.
+- **Output atteso:** Lab-B sempre `spento` e
+  `Lab-B: obiettivo 18.0, minima 18.4, massima 19.6, accensioni 0`.

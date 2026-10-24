@@ -2,67 +2,120 @@
 
 ## 1. Problema
 
-Il parcheggio multipiano offre tre tariffe: oraria (1.50 euro per ora iniziata), prima ora gratis (poi 2.00 euro per ora iniziata) e giornaliera (9.00 euro fissi). Per ogni durata letta in minuti il programma stampa il costo con ogni tariffa e quella più conveniente; 0 termina.
+Il parcheggio multipiano offre tre tariffe: oraria (1.50 euro per ora
+iniziata), prima ora gratis (poi 2.00 euro per ora iniziata) e giornaliera
+(9.00 euro fissi). Per ogni durata letta in minuti il programma stampa il
+costo con ogni tariffa e quella più conveniente; 0 termina. Le tariffe
+hanno il tipo `Tariffa` e la funzione che sceglie la migliore restituisce
+un puntatore a funzione.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
+
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `minuti` | `int` | Durata della sosta, positiva; 0 termina |
+
+### Output
+
+- Per ogni durata: il costo con le tre tariffe e
+  `Conviene: <tariffa> (C euro)`.
+- `Durata non valida.` per una durata negativa o non numerica.
+
+### Vincoli
+
+- `typedef double (*Tariffa)(int minuti);`: anche `giornaliera` riceve i
+  minuti, pur non usandoli.
+- Ore iniziate = `(minuti + 59) / 60` (arrotondamento per eccesso).
+- Prima ora gratis: fino a 60 minuti costa 0, poi 2.00 euro per ogni ora
+  iniziata oltre la prima.
+- A parità di costo vale la prima tariffa della tabella.
+- Il nome della tariffa migliore si trova confrontando il puntatore
+  restituito con quelli della tabella.
+- Fine input equivale a 0.
+
+### Assunzioni
+
+- Una sosta dura al massimo un giorno (la tariffa giornaliera è fissa).
+
+### Variabili di supporto
 
 | Tipo definito | Definizione | Significato |
 |---------------|-------------|-------------|
-| `Tariffa` | `typedef double (*Tariffa)(int minuti);` | funzione che calcola il costo di una sosta |
+| `Tariffa` | `typedef double (*Tariffa)(int minuti);` | Funzione che calcola il costo di una sosta |
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `nomi` | `const char *[]` | 3 | Nomi delle tariffe |
-| `tariffe` | `const Tariffa[]` | 3 | Funzioni di calcolo |
-| `migliore` | `Tariffa` | — | Tariffa restituita da piu_conveniente |
-| `minuti` | `int` | — | Durata letta |
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `nomi` | `const char *[3]` | Nomi delle tariffe |
+| `tariffe` | `const Tariffa[3]` | Funzioni di calcolo |
+| `migliore` | `Tariffa` | Tariffa restituita da `piu_conveniente` |
+| `letti` | `int` | Valore restituito da `scanf` |
+| `t` | `int` | Indice della tariffa |
 
 | Funzione | Compito |
 |----------|---------|
-| `oraria, prima_ora_gratis, giornaliera` | Costo di una sosta |
+| `oraria`, `prima_ora_gratis`, `giornaliera` | Costo di una sosta |
 | `ore_iniziate(minuti)` | Ore arrotondate per eccesso |
 | `piu_conveniente(minuti, tariffe, n)` | Restituisce la tariffa con il costo più basso |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Sosta breve
+1. Finché la durata non è 0:
+   1. leggere la durata (fine input → 0; testo → non valida);
+   2. se positiva, stampare il costo con ogni tariffa, ottenere la tariffa
+      migliore, cercarne il nome nella tabella e stamparla con il costo;
+   3. se negativa, segnalarla e continuare.
 
-**a) Input** – `45`
+## 3. Casi di test
 
-**b) Output** – conviene "prima ora gratis" (0.00 euro)
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `migliore`
+### Test 1 – Sosta breve
 
-**d) Vincoli** – a parità vale la prima tariffa
+- **Cosa si verifica:** la prima ora gratis.
+- **Input:** `45`, `0`
+- **Output atteso:**
+  ```
+    oraria             1.50 euro
+    prima ora gratis   0.00 euro
+    giornaliera        9.00 euro
+    Conviene: prima ora gratis (0.00 euro)
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Ore iniziate
 
-**f) Algoritmo in linguaggio naturale** – piu_conveniente confronta i costi e restituisce un puntatore a funzione.
+- **Cosa si verifica:** l'arrotondamento per eccesso al confine dell'ora.
+- **Input:** `60`, `61`, `0`
+- **Valori intermedi attesi:** 60 minuti = 1 ora (gratis); 61 minuti =
+  2 ore per l'oraria (3.00) e 1 ora oltre la prima (2.00).
+- **Output atteso:** `Conviene: prima ora gratis (0.00 euro)`, poi
+  `oraria 3.00`, `prima ora gratis 2.00`,
+  `Conviene: prima ora gratis (2.00 euro)`.
 
-### Caso d'uso 2 – Sosta lunga
+### Test 3 – Cambio di tariffa conveniente
 
-**a) Input** – `500`
+- **Cosa si verifica:** al crescere della durata conviene l'oraria e poi la
+  giornaliera.
+- **Input:** `300`, `500`, `0`
+- **Output atteso:**
+  ```
+    oraria             7.50 euro
+    prima ora gratis   8.00 euro
+    giornaliera        9.00 euro
+    Conviene: oraria (7.50 euro)
+    oraria            13.50 euro
+    prima ora gratis  16.00 euro
+    giornaliera        9.00 euro
+    Conviene: giornaliera (9.00 euro)
+  ```
 
-**b) Output** – conviene "giornaliera" (9.00 euro)
+### Test 4 – Durata non valida
 
-**c) Variabili di supporto** – `t`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il nome si trova confrontando migliore con gli elementi della tabella.
-
-### Caso d'uso 3 – Durata non valida
-
-**a) Input** – `-3`
-
-**b) Output** – "Durata non valida."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – durata positiva
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il valore negativo non termina il programma.
+- **Input:** `-3`, `abc`, `0`
+- **Output atteso:**
+  ```
+    Durata non valida.
+    Durata non valida.
+  ```

@@ -2,84 +2,106 @@
 
 ## 1. Problema
 
-Nel torneo di calcetto d'istituto ogni squadra ha la sua rosa. Il programma registra i gol cercando prima la squadra e poi il giocatore (un livello alla volta, con funzioni che restituiscono un puntatore), stampa la rosa di una squadra e il capocannoniere, o tutti quelli a pari gol.
+Nel torneo di calcetto d'istituto ogni squadra ha la sua rosa. Il
+programma registra i gol cercando prima la squadra e poi il giocatore (un
+livello alla volta, con funzioni che restituiscono un puntatore), stampa
+la rosa di una squadra e il capocannoniere, o tutti quelli a pari gol. Il
+`Torneo` contiene un array di `Squadra`, che contiene un array di
+`Giocatore`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Giocatore` | `nome, gol` | giocatore |
-| `Squadra` | `nome, rosa[], n_giocatori` | squadra con la rosa |
-| `Torneo` | `squadre[], n_squadre` | torneo |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `torneo` | `Torneo` | — | Squadre con le rose |
-| `squadra`, `giocatore` | `Squadra *`, `Giocatore *` | — | Elementi trovati |
-| `nome_squadra`, `nome_giocatore` | `char[]` | 12 | Argomenti dei comandi |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `G squadra giocatore` gol, `R squadra` rosa, `C` capocannoniere, `Q` fine (anche minuscoli) |
+| `nome_squadra`, `nome_giocatore` | `char[12]` | Nomi cercati |
+| `torneo` | `Torneo` | Fulmini, Tigri, Squali, Aquile con 4 giocatori ciascuna (nel sorgente) |
+
+### Output
+
+- `G`: `Gol di X (squadra): N in tutto.`, oppure
+  `Squadra X inesistente.`, `X non e' nella rosa della squadra Y.`,
+  `Dati incompleti.`
+- `R`: i giocatori con i gol e `Totale squadra: N gol`.
+- `C`: `Capocannoniere con N gol:` seguito da tutti i giocatori con quel
+  numero di gol.
+- `Comando sconosciuto.`
+
+### Vincoli
+
+- `cerca_squadra` restituisce `&t->squadre[k]`, `cerca_giocatore`
+  `&s->rosa[g]`: il gol si registra con `giocatore->gol++`.
+- Il capocannoniere si trova in due passate: prima il massimo, poi chi lo
+  raggiunge.
+- Un comando per riga: il resto viene scartato. A fine input il programma
+  termina come con `Q`.
+
+### Assunzioni
+
+- Comando e argomenti stanno sulla stessa riga (`scanf` cercherebbe un
+  argomento mancante nella riga successiva).
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Giocatore` | `typedef struct { char nome[12]; int gol; } Giocatore;` | Un giocatore |
+| `Squadra` | `typedef struct { char nome[12]; Giocatore rosa[5]; int n_giocatori; } Squadra;` | Squadra con la rosa |
+| `Torneo` | `typedef struct { Squadra squadre[4]; int n_squadre; } Torneo;` | Tutte le squadre |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `torneo` | `Torneo` | Dati del torneo |
+| `squadra`, `giocatore` | `Squadra *`, `Giocatore *` | Elementi trovati |
 
 | Funzione | Compito |
 |----------|---------|
-| `cerca_squadra(t, nome)` | Puntatore alla squadra o NULL |
-| `cerca_giocatore(s, nome)` | Puntatore al giocatore della rosa o NULL |
+| `cerca_squadra(t, nome)` | Puntatore alla squadra, o `NULL` |
+| `cerca_giocatore(s, nome)` | Puntatore al giocatore, o `NULL` |
 | `gol_squadra(s)` | Somma dei gol della rosa |
-| `stampa_rosa(s)` | Giocatori e totale |
-| `capocannonieri(t)` | Massimo e tutti quelli che lo raggiungono |
+| `stampa_rosa(s)` | Rosa con il totale |
+| `capocannonieri(t)` | Massimo e giocatori che lo raggiungono |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Gol
+1. Finché il comando non è `Q`:
+   1. leggere il comando in maiuscolo;
+   2. `G`/`R`: leggere i nomi, cercare la squadra; con `R` stampare la
+      rosa, con `G` cercare il giocatore e aggiungere il gol;
+   3. `C`: stampare i capocannonieri;
+   4. scartare il resto della riga.
 
-**a) Input** – `G Squali Orsi`
+## 3. Casi di test
 
-**b) Output** – "Gol di Orsi (Squali): 3 in tutto."
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `giocatore`
+### Test 1 – Gol e capocannonieri
 
-**d) Vincoli** – —
+- **Cosa si verifica:** ricerca su due livelli, errori, pari merito.
+- **Input:** `C`, `G Tigri Gallo`, `g Fulmini Bassi`, `G Fulmini Bassi`,
+  `G Fulmini Neri`, `G Orsi Bassi`, `R Fulmini`, `C`, `X`, `Q`
+- **Output atteso:**
+  ```
+    Capocannoniere con 3 gol: Fumo (Tigri)
+    Gol di Gallo (Tigri): 2 in tutto.
+    Gol di Bassi (Fulmini): 3 in tutto.
+    Gol di Bassi (Fulmini): 4 in tutto.
+    Neri non e' nella rosa della squadra Fulmini.
+    Squadra Orsi inesistente.
+    Fulmini
+      Bassi    4 gol
+      Conte    0 gol
+      Dini     1 gol
+      Elia     0 gol
+    Totale squadra: 5 gol
+    Capocannoniere con 4 gol: Bassi (Fulmini)
+    Comando sconosciuto.
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Pari merito
 
-**f) Algoritmo in linguaggio naturale** – cerca_squadra, poi cerca_giocatore nella sua rosa, poi giocatore->gol++.
-
-### Caso d'uso 2 – Errori
-
-**a) Input** – `G Squali Gallo`; `G Delfini Neri`
-
-**b) Output** – "Gallo non e' nella rosa della squadra Squali."; "Squadra Delfini inesistente."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – il giocatore va cercato nella squadra indicata
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – una delle due ricerche restituisce NULL.
-
-### Caso d'uso 3 – Capocannoniere a pari gol
-
-**a) Input** – `C` dopo il secondo gol di Orsi
-
-**b) Output** – "Capocannoniere con 4 gol: Fumo (Tigri) Orsi (Squali)"
-
-**c) Variabili di supporto** – `massimo`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – primo passaggio per il massimo, secondo per stampare chi lo raggiunge.
-
-### Caso d'uso 4 – Rosa
-
-**a) Input** – `R Squali`
-
-**b) Output** – i quattro giocatori e "Totale squadra: 4 gol"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – stampa_rosa usa gol_squadra.
+- **Input:** `g Fulmini Bassi`, `C`, `Q`
+- **Output atteso:** `Capocannoniere con 3 gol: Bassi (Fulmini) Fumo (Tigri)`.

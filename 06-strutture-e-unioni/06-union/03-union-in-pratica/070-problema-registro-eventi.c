@@ -38,6 +38,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define EVENTI 8
 #define APERTURA (7 * 60)
@@ -75,6 +76,7 @@ typedef struct {
 TipoEvento tipo_da_testo(const char *parola);
 int anomalo(const Evento *e);
 void stampa(const Evento *e);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -97,11 +99,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (T tipo, A, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'T') {
             if (scanf("%11s", parola) != 1) {
-                comando = 'Q';
+                printf("  Manca il tipo.\n");
             } else {
                 tipo = tipo_da_testo(parola);
                 if (tipo == TIPO_NON_VALIDO) {
@@ -126,6 +129,7 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
@@ -185,5 +189,16 @@ void stampa(const Evento *e)
     case NUM_TIPI:
     case TIPO_NON_VALIDO:
         break;
+    }
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

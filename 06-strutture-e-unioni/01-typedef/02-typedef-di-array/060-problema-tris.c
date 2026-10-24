@@ -32,6 +32,7 @@ typedef char Griglia[LATO][LATO];
 void stampa(const Griglia g);
 int ha_vinto(const Griglia g, char simbolo);
 int piena(const Griglia g);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -40,13 +41,18 @@ int main(void)
     int riga;
     int colonna;
     int finita = 0;
+    int letti;
 
     stampa(g);
     while (!finita) {
         printf("Giocatore %c, riga e colonna: ", giocatore);
-        if (scanf("%d %d", &riga, &colonna) != 2) {
-            printf("  Partita interrotta.\n");
+        letti = scanf("%d %d", &riga, &colonna);
+        if (letti == EOF) {
+            printf("\n  Partita interrotta.\n");
             finita = 1;
+        } else if (letti != 2) {
+            svuota_riga();              /* non sono due numeri */
+            printf("  Mossa non valida, ripetere.\n");
         } else if (riga < 1 || riga > LATO || colonna < 1 || colonna > LATO) {
             printf("  Fuori dalla griglia, ripetere.\n");
         } else if (g[riga - 1][colonna - 1] != ' ') {
@@ -120,4 +126,15 @@ int piena(const Griglia g)
         }
     }
     return libere == 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

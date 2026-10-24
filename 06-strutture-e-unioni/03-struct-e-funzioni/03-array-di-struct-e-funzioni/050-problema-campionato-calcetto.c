@@ -46,6 +46,7 @@ Squadra *cerca(Squadra s[], int n, const char *nome);
 void registra(Squadra *casa, int gol_casa, Squadra *ospite, int gol_ospite);
 int migliore(const Squadra *a, const Squadra *b);
 void stampa(const Squadra *s);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -66,15 +67,18 @@ int main(void)
     int ultima = 0;
     int i;
     int fine = 0;
+    int letti;
 
     while (!fine) {
         printf("Risultato (casa gol ospite gol, FINE): ");
         if (scanf("%11s", nome_casa) != 1 || strcmp(nome_casa, "FINE") == 0) {
-            fine = 1;
-        } else if (scanf("%d %11s %d", &gol_casa, nome_ospite, &gol_ospite) != 3 ||
+            fine = 1;                   /* FINE o input terminato */
+        } else if ((letti = scanf("%d %11s %d", &gol_casa, nome_ospite, &gol_ospite)) != 3 ||
                    gol_casa < 0 || gol_ospite < 0) {
+            if (letti != EOF) {
+                svuota_riga();          /* scarta il resto della riga */
+            }
             printf("  Risultato non valido.\n");
-            fine = 1;
         } else {
             casa = cerca(torneo, SQUADRE, nome_casa);
             ospite = cerca(torneo, SQUADRE, nome_ospite);
@@ -146,4 +150,15 @@ void stampa(const Squadra *s)
 {
     printf("  %-10s %3d %3d  %3d %3d  %+3d\n", s->nome, s->giocate, s->punti, s->fatti, s->subiti,
            s->fatti - s->subiti);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

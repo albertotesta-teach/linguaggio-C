@@ -68,6 +68,7 @@ int main(void)
     int numero_riga = 0;
     int trovata;
     int finito = 0;
+    int resto;
     int k;
 
     printf("File delle impostazioni (FINE per terminare):\n");
@@ -75,6 +76,12 @@ int main(void)
         if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
             numero_riga++;
             uguale = strchr(riga, '=');

@@ -50,31 +50,42 @@ int main(void)
     Indirizzo broadcast;
     int prefisso;
     int finito = 0;
+    int resto;
 
     while (!finito) {
         printf("Indirizzo/prefisso e altro indirizzo (FINE): ");
-        if (fgets(riga, LUNG, stdin) == NULL || strncmp(riga, "FINE", 4) == 0) {
+        if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
-        } else if (sscanf(riga, "%[0-9.]/%d %s", primo, &prefisso, secondo) != 3 ||
-                   !leggi_ip(primo, &ip) || !leggi_ip(secondo, &altro) || prefisso < 1 ||
-                   prefisso > 30) {
-            printf("  Dati non validi.\n");
         } else {
-            maschera.numero = (uint32_t) (0xFFFFFFFFUL << (32 - prefisso));
-            rete.numero = ip.numero & maschera.numero;
-            broadcast.numero = rete.numero | ~maschera.numero;
-            printf("  maschera  ");
-            stampa_ip(maschera);
-            printf("\n  rete      ");
-            stampa_ip(rete);
-            printf("\n  broadcast ");
-            stampa_ip(broadcast);
-            printf("\n  in memoria: %02X %02X %02X %02X (byte[0] ... byte[3])\n", ip.byte[0],
-                   ip.byte[1], ip.byte[2], ip.byte[3]);
-            printf("  ");
-            stampa_ip(altro);
-            printf(" %s nella stessa rete\n",
-                   (altro.numero & maschera.numero) == rete.numero ? "e'" : "NON e'");
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
+            if (strncmp(riga, "FINE", 4) == 0) {
+                finito = 1;
+            } else if (sscanf(riga, "%[0-9.]/%d %s", primo, &prefisso, secondo) != 3 ||
+                       !leggi_ip(primo, &ip) || !leggi_ip(secondo, &altro) || prefisso < 1 ||
+                       prefisso > 30) {
+                printf("  Dati non validi.\n");
+            } else {
+                maschera.numero = (uint32_t) (0xFFFFFFFFUL << (32 - prefisso));
+                rete.numero = ip.numero & maschera.numero;
+                broadcast.numero = rete.numero | ~maschera.numero;
+                printf("  maschera  ");
+                stampa_ip(maschera);
+                printf("\n  rete      ");
+                stampa_ip(rete);
+                printf("\n  broadcast ");
+                stampa_ip(broadcast);
+                printf("\n  in memoria: %02X %02X %02X %02X (byte[0] ... byte[3])\n", ip.byte[0],
+                       ip.byte[1], ip.byte[2], ip.byte[3]);
+                printf("  ");
+                stampa_ip(altro);
+                printf(" %s nella stessa rete\n",
+                       (altro.numero & maschera.numero) == rete.numero ? "e'" : "NON e'");
+            }
         }
     }
 

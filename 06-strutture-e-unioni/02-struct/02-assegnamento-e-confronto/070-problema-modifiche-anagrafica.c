@@ -80,9 +80,9 @@ int main(void)
     if (cambiati == 0) {
         printf("  nessuna\n");
     } else {
-        printf("Confermi %d modifiche? (S/N): ", cambiati);
+        printf("Confermi %d %s? (S/N): ", cambiati, cambiati == 1 ? "modifica" : "modifiche");
         leggi_riga(riga, LUNG_RIGA);
-        if (riga[0] == 'S') {
+        if (riga[0] == 'S' || riga[0] == 's') {
             originale = modificata;
             printf("Scheda aggiornata.\n");
         } else {
@@ -95,10 +95,12 @@ int main(void)
     return 0;
 }
 
-/* Legge una riga e toglie l'a capo; a fine input la riga è vuota. */
+/* Legge una riga e toglie l'a capo; a fine input la riga è vuota.
+ * Di una riga troppo lunga si tiene l'inizio e si scarta il resto. */
 void leggi_riga(char *riga, int lunghezza)
 {
     char *a_capo;
+    int resto;
 
     if (fgets(riga, lunghezza, stdin) == NULL) {
         riga[0] = '\0';
@@ -106,6 +108,11 @@ void leggi_riga(char *riga, int lunghezza)
         a_capo = strchr(riga, '\n');
         if (a_capo != NULL) {
             *a_capo = '\0';
+        } else {
+            resto = getchar();
+            while (resto != '\n' && resto != EOF) {
+                resto = getchar();
+            }
         }
     }
 }

@@ -54,6 +54,7 @@ typedef struct {
 
 int in_minuti(Orario o);
 int migliore(int arrivo, int partenza, int arrivo_migliore, int partenza_migliore);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -84,9 +85,9 @@ int main(void)
         printf("Viaggio (partenza destinazione hh:mm, FINE): ");
         if (scanf("%15s", da) != 1 || strcmp(da, "FINE") == 0) {
             finito = 1;
-        } else if (scanf("%15s %d:%d", a, &dalle.ore, &dalle.minuti) != 3) {
+        } else if (scanf("%15s %d:%d", a, &dalle.ore, &dalle.minuti) != 3 || dalle.ore < 0 ||
+                   dalle.ore > 23 || dalle.minuti < 0 || dalle.minuti > 59) {
             printf("  Richiesta non valida.\n");
-            finito = 1;
         } else {
             migliore_primo = -1;
             migliore_secondo = -1;
@@ -148,6 +149,9 @@ int main(void)
                        migliore_secondo == -1 ? "diretto" : "con un cambio");
             }
         }
+        if (!finito) {
+            svuota_riga();              /* una richiesta per riga */
+        }
     }
 
     return 0;
@@ -163,4 +167,15 @@ int migliore(int arrivo, int partenza, int arrivo_migliore, int partenza_miglior
 {
     return arrivo < arrivo_migliore ||
            (arrivo == arrivo_migliore && partenza > partenza_migliore);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

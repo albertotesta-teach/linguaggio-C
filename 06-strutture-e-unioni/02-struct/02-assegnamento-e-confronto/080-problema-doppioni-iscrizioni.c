@@ -31,6 +31,8 @@ typedef struct {
     int giorno;
 } Iscrizione;
 
+void svuota_riga(void);
+
 int main(void)
 {
     const char *giorni[6] = {"", "lun", "mar", "mer", "gio", "ven"};
@@ -41,35 +43,56 @@ int main(void)
     int correzioni = 0;
     int fine = 0;
     int stessa_persona_corso;
+    int letti;
 
     while (!fine) {
         printf("Iscrizione (cognome corso giorno 1-5, FINE): ");
-        if (scanf("%19s", corrente.cognome) != 1 || strcmp(corrente.cognome, "FINE") == 0) {
-            fine = 1;
-        } else if (scanf("%15s %d", corrente.corso, &corrente.giorno) != 2 ||
-                   corrente.giorno < 1 || corrente.giorno > 5) {
-            printf("  Iscrizione non valida.\n");
+        if (scanf("%19s", corrente.cognome) != 1) {
+            fine = 1;                   /* input terminato: come FINE */
+        } else if (strcmp(corrente.cognome, "FINE") == 0) {
             fine = 1;
         } else {
-            stessa_persona_corso = strcmp(corrente.cognome, precedente.cognome) == 0 &&
-                                   strcmp(corrente.corso, precedente.corso) == 0;
-            if (stessa_persona_corso && corrente.giorno == precedente.giorno) {
-                printf("  Doppione scartato.\n");
-                doppioni++;
-            } else if (stessa_persona_corso) {
-                printf("  Correzione: %s passa da %s a %s.\n", corrente.cognome,
-                       giorni[precedente.giorno], giorni[corrente.giorno]);
-                correzioni++;
-                precedente = corrente;
+            letti = scanf("%15s %d", corrente.corso, &corrente.giorno);
+            if (letti != EOF) {
+                svuota_riga();          /* un'iscrizione per riga */
+            }
+            if (letti == EOF) {
+                printf("\n  Iscrizione incompleta.\n");
+                fine = 1;
+            } else if (letti != 2 || corrente.giorno < 1 || corrente.giorno > 5) {
+                printf("  Iscrizione non valida.\n");
             } else {
-                printf("  Nuova iscrizione: %s, %s, %s.\n", corrente.cognome, corrente.corso,
-                       giorni[corrente.giorno]);
-                nuove++;
-                precedente = corrente;
+                stessa_persona_corso = strcmp(corrente.cognome, precedente.cognome) == 0 &&
+                                       strcmp(corrente.corso, precedente.corso) == 0;
+                if (stessa_persona_corso && corrente.giorno == precedente.giorno) {
+                    printf("  Doppione scartato.\n");
+                    doppioni++;
+                } else if (stessa_persona_corso) {
+                    printf("  Correzione: %s passa da %s a %s.\n", corrente.cognome,
+                           giorni[precedente.giorno], giorni[corrente.giorno]);
+                    correzioni++;
+                    precedente = corrente;
+                } else {
+                    printf("  Nuova iscrizione: %s, %s, %s.\n", corrente.cognome,
+                           corrente.corso, giorni[corrente.giorno]);
+                    nuove++;
+                    precedente = corrente;
+                }
             }
         }
     }
     printf("Iscrizioni valide: %d, doppioni scartati: %d, correzioni: %d\n", nuove, doppioni, correzioni);
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

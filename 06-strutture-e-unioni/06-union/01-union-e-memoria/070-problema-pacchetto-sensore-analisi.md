@@ -2,79 +2,86 @@
 
 ## 1. Problema
 
-La centralina meteo invia pacchetti di 8 byte. Una union sovrappone l'array dei byte ricevuti e una struct con i campi (temperatura e umidità in decimi, batteria in mV, sensore, controllo). Il programma verifica che la struct sia di 8 byte, controlla il byte di controllo (somma dei primi 7 modulo 256) e stampa i valori.
+La centralina meteo invia pacchetti di 8 byte. Una `union` sovrappone
+l'array dei byte ricevuti e una struct con i campi (temperatura e umidità
+in decimi, batteria in mV, numero del sensore, byte di controllo). Il
+programma verifica che la struct sia di 8 byte, controlla il byte di
+controllo (somma dei primi 7 modulo 256) e stampa i valori.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Pacchetto` | `union: grezzi[8], campi {temperatura, umidita, batteria, sensore, controllo}` | pacchetto della centralina |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `p` | `Pacchetto` | — | Union: grezzi[8] e campi |
-| `riga` | `char[]` | 64 | Riga con 8 numeri esadecimali |
-| `b` | `unsigned int[]` | 8 | Byte letti (in leggi_pacchetto) |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[64]` | Otto byte esadecimali separati da spazi; `FINE` termina |
+
+### Output
+
+- `sensore S: T gradi, umidita' U%, batteria B mV` con
+  `CAMBIARE LE PILE` sotto i 3000 mV.
+- `Pacchetto corrotto: controllo errato.`, `Servono 8 byte.`
+- Se la struct non occupa 8 byte, un messaggio e il programma non legge
+  pacchetti.
+
+### Vincoli
+
+- Si scrivono i byte in `grezzi` e si leggono i campi della struct: i
+  valori a 16 bit sono little-endian (byte basso per primo).
+- Temperatura con segno (`int16_t`), in decimi di grado; umidità e
+  batteria senza segno.
+- Ogni byte deve valere al massimo 0xFF.
+- Controllo: (somma dei primi 7 byte) mod 256 = ottavo byte.
+- Una riga più lunga del buffer viene troncata e il resto scartato. A fine
+  input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- Macchina little-endian, come la centralina.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Pacchetto` | `typedef union { uint8_t grezzi[8]; struct { int16_t temperatura; uint16_t umidita; uint16_t batteria; uint8_t sensore; uint8_t controllo; } campi; } Pacchetto;` | Il pacchetto visto come byte e come campi |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `p` | `Pacchetto` | Pacchetto letto |
+| `riga` | `char[64]` | Testo letto |
+| `resto` | `int` | Caratteri scartati di una riga lunga |
+| `BATTERIA_MINIMA` | `#define` | 3000 mV |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_pacchetto(riga, &p)` | Riempie grezzi; 0 se i byte non sono 8 |
-| `controllo_corretto(&p)` | Somma dei primi 7 byte modulo 256 |
+| `leggi_pacchetto(riga, p)` | Legge 8 byte esadecimali; 0 se non sono 8 byte validi |
+| `controllo_corretto(p)` | Verifica il byte di controllo |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Pacchetto valido
+1. Se `sizeof(p.campi)` non è 8 segnalarlo e non continuare.
+2. Finché non si termina: leggere una riga (fine input → fine), scartare il
+   resto se troppo lunga; con `FINE` terminare; leggere i byte,
+   controllarli e stampare i campi.
 
-**a) Input** – `E1 00 5E 01 E8 0B 03 36`
+## 3. Casi di test
 
-**b) Output** – "sensore 3: 22.5 gradi, umidita' 35.0%, batteria 3048 mV"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `p.campi`
+### Test 1 – Pacchetti
 
-**d) Vincoli** – struct di 8 byte senza padding
-
-**e) Assunzioni** – numeri a 16 bit little-endian
-
-**f) Algoritmo in linguaggio naturale** – i byte E1 00 diventano 0x00E1 = 225 decimi.
-
-### Caso d'uso 2 – Temperatura negativa e pile
-
-**a) Input** – `DD FF 22 03 86 0B 07 99`
-
-**b) Output** – -3.5 gradi, 80.2%, 2950 mV "CAMBIARE LE PILE"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – batteria minima 3000 mV
-
-**e) Assunzioni** – int16_t con segno
-
-**f) Algoritmo in linguaggio naturale** – 0xFFDD in complemento a due vale -35.
-
-### Caso d'uso 3 – Pacchetto corrotto
-
-**a) Input** – ultimo byte `37` invece di `36`
-
-**b) Output** – "Pacchetto corrotto: controllo errato."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la somma non coincide con il byte di controllo.
-
-### Caso d'uso 4 – Pacchetto incompleto
-
-**a) Input** – `E1 00`
-
-**b) Output** – "Servono 8 byte."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sscanf legge meno di 8 numeri.
+- **Input:** `D7 00 E0 01 E4 0C 03 AB`, `D3 FF 84 03 54 0B 07 BF`,
+  `D7 00 E0 01 E4 0C 03 AC`, `D7 00 E0`, `D7 00 E0 01 E4 0C 03 1AB`, una
+  riga di 70 cifre, `FINE`
+- **Valori intermedi attesi:** 0x00D7 = 215 → 21.5 gradi; 0xFFD3 = −45 →
+  −4.5 gradi; 0x0CE4 = 3300 mV; controllo del primo pacchetto
+  683 mod 256 = 171 = 0xAB.
+- **Output atteso:**
+  ```
+    sensore 3: 21.5 gradi, umidita' 48.0%, batteria 3300 mV
+    sensore 7: -4.5 gradi, umidita' 90.0%, batteria 2900 mV  CAMBIARE LE PILE
+    Pacchetto corrotto: controllo errato.
+    Servono 8 byte.
+    Servono 8 byte.
+    Servono 8 byte.
+  ```

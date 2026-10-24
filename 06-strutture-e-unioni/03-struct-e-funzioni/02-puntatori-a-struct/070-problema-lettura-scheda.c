@@ -94,18 +94,25 @@ int leggi_libro(Libro *l)
     return ok;
 }
 
-/* Legge una riga non vuota che stia in dest; restituisce 1 se riuscito. */
+/* Legge una riga non vuota che stia in dest; restituisce 1 se riuscito.
+ * Una riga più lunga del buffer viene scartata per intero. */
 int leggi_testo(const char *domanda, char *dest, int dimensione)
 {
     char riga[LUNG];
     char *a_capo;
     int ok = 0;
+    int resto;
 
     printf("%s", domanda);
     if (fgets(riga, LUNG, stdin) != NULL) {
         a_capo = strchr(riga, '\n');
         if (a_capo != NULL) {
             *a_capo = '\0';
+        } else {
+            resto = getchar();
+            while (resto != '\n' && resto != EOF) {
+                resto = getchar();
+            }
         }
         ok = riga[0] != '\0' && (int) strlen(riga) < dimensione;
         if (ok) {

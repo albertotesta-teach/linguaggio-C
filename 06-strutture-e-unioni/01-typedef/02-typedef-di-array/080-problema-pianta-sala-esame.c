@@ -60,7 +60,8 @@ int main(void)
         stampa(aula);
         printf("Candidati sistemati: %d\n", sistemati);
         if (sistemati < candidati) {
-            printf("Serve una seconda aula per %d candidati.\n", candidati - sistemati);
+            printf("Serve una seconda aula per %d %s.\n", candidati - sistemati,
+                   candidati - sistemati == 1 ? "candidato" : "candidati");
         }
     }
 

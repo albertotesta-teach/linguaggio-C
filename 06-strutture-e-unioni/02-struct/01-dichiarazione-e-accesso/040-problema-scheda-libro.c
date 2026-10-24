@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 typedef struct {
     char titolo[40];
@@ -33,6 +34,8 @@ typedef struct {
     int copie;
     int in_prestito;
 } Libro;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -44,7 +47,10 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P prestito, R restituzione, S scheda, Q fine): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
+        } else {
+            svuota_riga();              /* un comando per riga */
+            comando = (char) toupper((unsigned char) comando);
         }
         if (comando == 'P') {
             if (libro.in_prestito < libro.copie) {
@@ -74,4 +80,15 @@ int main(void)
     printf("Prestiti registrati in questa sessione: %d\n", prestiti_oggi);
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

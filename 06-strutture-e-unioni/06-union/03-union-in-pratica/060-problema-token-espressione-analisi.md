@@ -2,67 +2,85 @@
 
 ## 1. Problema
 
-La calcolatrice divide un'espressione in token (numeri, operatori, parentesi) e la calcola rispettando precedenza e parentesi con tre funzioni ricorsive: espressione, termine e fattore. Ogni token è una union etichettata; le funzioni avanzano un indice comune e segnalano gli errori in *ok.
+La calcolatrice divide un'espressione in token (numeri, operatori,
+parentesi) e la calcola rispettando precedenza e parentesi con tre
+funzioni ricorsive: `espressione`, `termine` e `fattore`. Ogni token è una
+union etichettata; le funzioni avanzano un indice comune e segnalano gli
+errori in `*ok`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Token` | `tipo, union anonima {numero, simbolo}` | elemento dell'espressione |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `token` | `Token[]` | 40 | Token dell'espressione |
-| `riga` | `char[]` | 80 | Espressione letta |
-| `n`, `pos`, `ok` | `int` | — | Numero di token, posizione, esito |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[80]` | Espressione con numeri (anche decimali), `+ - * /`, parentesi e spazi; `FINE` termina |
+
+### Output
+
+- `= R  (N token)` con il risultato (`%g`) e il numero di token.
+- `Espressione non valida.`
+
+### Vincoli
+
+- Grammatica: espressione = termine { (+|−) termine }; termine = fattore
+  { (*|/) fattore }; fattore = numero | ( espressione ).
+- Moltiplicazione e divisione hanno la precedenza; a parità si calcola da
+  sinistra.
+- Non valida: carattere non ammesso, punto senza cifre, più di 40 token,
+  divisione per zero, parentesi non chiusa, token avanzati (es. `2 3`).
+- Non ci sono numeri negativi: il segno meno è sempre un operatore.
+- Una riga più lunga del buffer viene troncata e il resto scartato. A fine
+  input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `TipoToken` | `typedef enum { NUMERO, OPERATORE, PARENTESI } TipoToken;` | Etichetta |
+| `Token` | struct con `tipo` e union anonima `{ double numero; char simbolo; }` | Un token |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `token`, `n` | `Token[40]`, `int` | Token della riga (−1 = errore) |
+| `pos` | `int` | Indice del prossimo token, comune alle funzioni |
+| `ok` | `int` | Validità, azzerata al primo errore |
+| `resto` | `int` | Caratteri scartati di una riga lunga |
 
 | Funzione | Compito |
 |----------|---------|
-| `dividi_in_token(testo, token, massimo)` | Numero di token, -1 per un carattere non ammesso |
-| `espressione(...)` | termine {(+|-) termine} |
-| `termine(...)` | fattore {(*|/) fattore} |
-| `fattore(...)` | numero oppure ( espressione ) |
+| `dividi_in_token(testo, token, massimo)` | Analisi lessicale |
+| `espressione`, `termine`, `fattore` | Calcolo ricorsivo |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Precedenza e parentesi
+1. Finché non si termina: leggere una riga; con `FINE` terminare;
+   dividerla in token; calcolare `espressione` partendo da `pos = 0`; se
+   `ok` e tutti i token sono stati usati stampare il risultato, altrimenti
+   l'errore.
 
-**a) Input** – `2 * (3 + 4.5) - 1`; `1 + 2 * 3`; `(1 + 2) * 3`
+## 3. Casi di test
 
-**b) Output** – 14 (9 token); 7; 9
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `pos`
+### Test 1 – Espressioni
 
-**d) Vincoli** – moltiplicazioni prima delle somme
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – ogni livello chiama quello di precedenza più alta.
-
-### Caso d'uso 2 – Errori
-
-**a) Input** – `10 / (5 - 5)`; `(2 + 3`
-
-**b) Output** – "Espressione non valida."
-
-**c) Variabili di supporto** – `ok`
-
-**d) Vincoli** – divisore non nullo, parentesi chiuse
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la funzione che trova l'errore azzera *ok.
-
-### Caso d'uso 3 – Carattere non ammesso
-
-**a) Input** – `7 % 2`
-
-**b) Output** – "Espressione non valida."
-
-**c) Variabili di supporto** – `n`
-
-**d) Vincoli** – solo cifre, punto, + - * / ( ) e spazi
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – dividi_in_token restituisce -1.
+- **Input:** `2+3*4`, `(2+3)*4`, `10/4-1`, `7/(3-3)`, `2*(3+`, `2 3`,
+  `2^3`, `.`, `((1.5))`, `1+1+...+1` (30 uni, 59 token), `FINE`
+- **Output atteso:**
+  ```
+    = 14  (5 token)
+    = 20  (7 token)
+    = 1.5  (5 token)
+    Espressione non valida.
+    Espressione non valida.
+    Espressione non valida.
+    Espressione non valida.
+    Espressione non valida.
+    = 1.5  (5 token)
+    Espressione non valida.
+  ```

@@ -52,7 +52,7 @@ int main(void)
         secondo.fila = 0;
     }
 
-    if (primo.fila <= 0 || secondo.fila <= 0) {
+    if (primo.fila <= 0 || primo.pc <= 0 || secondo.fila <= 0 || secondo.pc <= 0) {
         printf("Dati non validi.\n");
     } else if (primo.fila == secondo.fila && primo.pc == secondo.pc) {
         printf("I due studenti hanno gia' la stessa postazione: controllare il registro.\n");

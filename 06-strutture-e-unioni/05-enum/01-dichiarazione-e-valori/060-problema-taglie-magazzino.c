@@ -24,12 +24,15 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define SOGLIA_RIORDINO 5
 
 typedef enum {
     XS, S, M, L, XL, XXL, NUM_TAGLIE
 } Taglia;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -44,11 +47,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (V taglia n, C taglia n, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'V' || comando == 'C') {
             if (scanf("%7s %d", sigla, &quantita) != 2) {
-                comando = 'Q';
+                printf("  Dati non validi.\n");
             } else {
                 t = XS;
                 while (t < NUM_TAGLIE && strcmp(sigle[t], sigla) != 0) {
@@ -84,7 +88,19 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

@@ -43,17 +43,24 @@ typedef struct {
 
 void passo(Ascensore *a);
 const char *nome(Stato s);
+void svuota_riga(void);
 
 int main(void)
 {
     Ascensore ascensore = {0, 0, PORTE_APERTE};
     int chiamata = 0;
     int passi;
+    int letti;
 
     while (chiamata != -1) {
         printf("Chiamata al piano (0-3, -1 per finire): ");
-        if (scanf("%d", &chiamata) != 1) {
-            chiamata = -1;
+        letti = scanf("%d", &chiamata);
+        if (letti == EOF) {
+            chiamata = -1;              /* input terminato: come -1 */
+        } else if (letti == 0) {
+            svuota_riga();              /* non e' un numero */
+            printf("  Chiamata non valida.\n");
+            chiamata = 0;               /* si continua */
         } else if (chiamata != -1 && (chiamata < 0 || chiamata >= PIANI)) {
             printf("  Il piano %d non esiste.\n", chiamata);
         } else if (chiamata != -1) {
@@ -127,4 +134,15 @@ const char *nome(Stato s)
         break;
     }
     return testo;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

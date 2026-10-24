@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define ARTICOLI 6
 
@@ -36,6 +37,8 @@ typedef struct {
     int quantita;
     int scorta_minima;
 } Articolo;
+
+void svuota_riga(void);
 
 int main(void)
 {
@@ -56,12 +59,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P codice n, C codice n, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P' || comando == 'C') {
             if (scanf("%7s %d", codice, &pezzi) != 2 || pezzi <= 0) {
                 printf("  Dati non validi.\n");
-                comando = 'Q';
             } else {
                 a = 0;
                 while (a < ARTICOLI && strcmp(magazzino[a].codice, codice) != 0) {
@@ -79,7 +82,8 @@ int main(void)
                     magazzino[a].quantita = magazzino[a].quantita - pezzi;
                     printf("  %s: ora %d pezzi.\n", magazzino[a].descrizione, magazzino[a].quantita);
                     if (magazzino[a].quantita < magazzino[a].scorta_minima) {
-                        printf("  Attenzione: sotto la scorta minima (%d).\n", magazzino[a].scorta_minima);
+                        printf("  Attenzione: sotto la scorta minima (%d).\n",
+                               magazzino[a].scorta_minima);
                     }
                 }
             }
@@ -97,7 +101,19 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
+        svuota_riga();                  /* un comando per riga */
     }
 
     return 0;
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

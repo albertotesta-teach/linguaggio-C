@@ -56,6 +56,7 @@ int in_minuti(Orario o);
 int orario_valido(Orario o);
 int aggiungi_tappa(Gita *g, const Tappa *t);
 void stampa_gita(const Gita *g);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -74,10 +75,12 @@ int main(void)
         } else if (scanf("%d:%d %d:%d", &nuova.arrivo.ore, &nuova.arrivo.minuti,
                          &nuova.partenza.ore, &nuova.partenza.minuti) != 4) {
             printf("  Tappa non valida.\n");
-            finito = 1;
         } else {
             esito = aggiungi_tappa(&gita, &nuova);
             printf("  %s: %s\n", nuova.luogo, messaggi[esito]);
+        }
+        if (!finito) {
+            svuota_riga();              /* una tappa per riga */
         }
     }
 
@@ -139,4 +142,15 @@ void stampa_gita(const Gita *g)
     }
     printf("Tappe %d, in viaggio %d h %02d min, in sosta %d h %02d min\n", g->n_tappe,
            viaggio / 60, viaggio % 60, soste / 60, soste % 60);
+}
+
+/* Scarta i caratteri rimasti sulla riga. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

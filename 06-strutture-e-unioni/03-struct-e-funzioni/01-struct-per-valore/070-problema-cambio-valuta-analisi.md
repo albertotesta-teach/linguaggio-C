@@ -2,66 +2,103 @@
 
 ## 1. Problema
 
-Durante lo scambio culturale gli studenti annotano le spese in valuta locale. Il programma converte ogni spesa in euro con una tabella di cambi e stampa il totale del viaggio. Un importo è una struct con valore e valuta; converti la riceve per valore e restituisce un Importo nuovo.
+Durante lo scambio culturale gli studenti annotano le spese in valuta
+locale. Il programma converte ogni spesa in euro con una tabella di cambi
+e stampa il totale del viaggio. Un importo è una struct `Importo` con
+valore e valuta; `converti` la riceve per valore e restituisce un
+`Importo` nuovo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Importo` | `valore, valuta` | somma di denaro con la sua valuta |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `spesa`, `in_euro` | `Importo` | — | Spesa letta e convertita |
-| `totale` | `Importo` | — | Somma in euro |
-| `ok` | `int` | — | Esito della conversione |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `valore` | `double` | Importo della spesa; 0 termina |
+| `valuta` | `char[8]` | Sigla di tre lettere: `EUR`, `GBP`, `CHF`, `USD` |
+
+### Output
+
+- Per ogni spesa: `V SIGLA = E EUR` con due decimali, oppure
+  `Valuta X non in tabella.`, `Valuta non valida.`, `Importo non valido.`
+- Alla fine: `Totale del viaggio: T EUR`.
+
+### Vincoli
+
+- Cambi (unità per 1 euro): EUR 1.0, GBP 0.86, CHF 0.95, USD 1.08.
+- Conversione passando per l'euro: valore / cambio(da) × cambio(verso).
+- `converti` segnala con il parametro di uscita `ok` se una valuta non è
+  in tabella.
+- La sigla deve avere esattamente 3 caratteri; maiuscole e minuscole
+  contano.
+- Una spesa per riga: il resto della riga viene scartato; un errore non
+  interrompe l'inserimento. A fine input il programma termina come con 0.
+
+### Assunzioni
+
+- I cambi sono indicativi e fissi.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Importo` | `typedef struct { double valore; char valuta[4]; } Importo;` | Una somma di denaro con la sua valuta |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `spesa`, `in_euro` | `Importo` | Spesa letta e convertita |
+| `totale` | `Importo` | Somma in euro |
+| `ok` | `int` | Esito della conversione |
+| `letti` | `int` | Valore restituito da `scanf` |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_importo(valore, valuta)` | Costruisce un Importo |
-| `converti(i, verso, &ok)` | Restituisce l'importo nella valuta richiesta passando per l'euro |
-| `cambio(valuta, &ok)` | Unità per 1 euro dalla tabella |
+| `crea_importo(valore, valuta)` | Costruisce un `Importo` |
+| `converti(i, verso, &ok)` | Restituisce l'importo convertito nella valuta `verso` |
+| `cambio(valuta, &ok)` | Unità di valuta per 1 euro, cercata nella tabella |
+| `svuota_riga` | Scarta i caratteri rimasti sulla riga |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Conversione
+1. Finché l'importo non è 0:
+   1. leggere l'importo (fine input → 0; testo → non valido);
+   2. se diverso da 0 leggere la valuta e scartare il resto della riga;
+   3. se la sigla non ha 3 caratteri segnalarla;
+   4. altrimenti convertire in euro: se la valuta è in tabella stampare e
+      sommare al totale, altrimenti segnalarla.
+2. Stampare il totale.
 
-**a) Input** – `12.50 GBP`
+## 3. Casi di test
 
-**b) Output** – "12.50 GBP = 14.53 EUR"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `in_euro`
+### Test 1 – Spese del viaggio
 
-**d) Vincoli** – cambi indicativi della tabella
+- **Cosa si verifica:** conversioni, valute sconosciute o non valide,
+  importo non numerico, sigla minuscola.
+- **Input:** `25.80 GBP`, `12 CHF`, `15 USD`, `9.50 EUR`, `100 JPY`,
+  `5 EURO`, `abc`, `3 gbp`, `0`
+- **Valori intermedi attesi:** 25.80 / 0.86 = 30.00; 12 / 0.95 = 12.63;
+  15 / 1.08 = 13.89; totale 66.02.
+- **Output atteso:**
+  ```
+    25.80 GBP = 30.00 EUR
+    12.00 CHF = 12.63 EUR
+    15.00 USD = 13.89 EUR
+    9.50 EUR = 9.50 EUR
+    Valuta JPY non in tabella.
+    Valuta non valida.
+    Importo non valido.
+    Valuta gbp non in tabella.
+  Totale del viaggio: 66.02 EUR
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna spesa
 
-**f) Algoritmo in linguaggio naturale** – valore / cambio di partenza × cambio di arrivo.
+- **Input:** `0`
+- **Output atteso:** `Totale del viaggio: 0.00 EUR`.
 
-### Caso d'uso 2 – Valuta sconosciuta
+### Test 3 – Fine input
 
-**a) Input** – `15 JPY`
-
-**b) Output** – "Valuta JPY non in tabella."
-
-**c) Variabili di supporto** – `ok`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – cambio scrive 0 in *ok e la spesa non entra nel totale.
-
-### Caso d'uso 3 – Totale
-
-**a) Input** – `0`
-
-**b) Output** – "Totale del viaggio: 42.96 EUR"
-
-**c) Variabili di supporto** – `totale`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sommare i valori convertiti.
+- **Input:** `10 GBP`, poi fine input.
+- **Output atteso:** `Totale del viaggio: 11.63 EUR`.
