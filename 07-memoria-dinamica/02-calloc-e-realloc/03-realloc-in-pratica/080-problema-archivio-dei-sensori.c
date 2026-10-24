@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_SENSORI 8
 #define MAX_ORE 168
@@ -77,8 +78,9 @@ int main(void)
         while (comando != 'Q') {
             printf("Comando (P, L, M, Q): ");
             if (scanf(" %c", &comando) != 1) {
-                comando = 'Q';
+                comando = 'Q';          /* input terminato: come Q */
             }
+            comando = (char) toupper((unsigned char) comando);
             if (comando == 'P') {
                 if (scanf("%d", &ore) != 1 || ore < 1 || ore > MAX_ORE) {
                     printf("  Periodo non valido.\n");
@@ -120,8 +122,8 @@ int main(void)
             } else if (comando != 'Q') {
                 printf("  Comando sconosciuto.\n");
             }
-            if (comando != 'Q' && comando != 'M') {
-                scanf("%*[^\n]");
+            if (comando != 'Q') {
+                scanf("%*[^\n]");  /* un comando per riga */
             }
         }
 

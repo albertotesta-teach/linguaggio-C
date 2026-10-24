@@ -74,11 +74,13 @@ int main(void)
         } else if (scanf("%lf %d", &v.prezzo, &v.quantita) != 2 || v.prezzo <= 0 ||
                    v.quantita < 1) {
             printf("  vendita non valida\n");
-            scanf("%*[^\n]");
         } else {
             strcpy(v.prodotto, parola);
             ok = aggiungi(vendite, v);
             finito = !ok;
+        }
+        if (!finito) {
+            scanf("%*[^\n]");          /* una vendita per riga */
         }
     }
 

@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define QUOTA 85.0
 #define MAX_POSTI 80
@@ -70,8 +71,9 @@ int main(void)
             while (comando != 'Q') {
                 printf("Comando (I, V, A, E, R, Q): ");
                 if (scanf(" %c", &comando) != 1) {
-                    comando = 'Q';
+                    comando = 'Q';      /* input terminato: come Q */
                 }
+                comando = (char) toupper((unsigned char) comando);
                 if (comando == 'I') {
                     if (scanf("%19s %7s %lf", nome, classe, &euro) != 3 ||
                         strlen(classe) > 3 || euro < 0 || euro > QUOTA) {
@@ -109,8 +111,8 @@ int main(void)
                 } else if (comando != 'Q') {
                     printf("  Comando sconosciuto.\n");
                 }
-                if (comando != 'Q' && comando != 'E' && comando != 'R') {
-                    scanf("%*[^\n]");
+                if (comando != 'Q') {
+                    scanf("%*[^\n]");  /* un comando per riga */
                 }
             }
             free(posti);

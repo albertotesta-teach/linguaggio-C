@@ -51,7 +51,8 @@ int main(void)
 
     printf("Testo del tema (FINE per terminare):\n");
     while (!finito) {
-        if (fgets(riga, LUNG, stdin) == NULL || strncmp(riga, "FINE", 4) == 0) {
+        if (fgets(riga, LUNG, stdin) == NULL || strcmp(riga, "FINE\n") == 0 ||
+            strcmp(riga, "FINE") == 0) {
             finito = 1;
         } else {
             i = 0;
@@ -134,7 +135,7 @@ int aggiungi(char ***parole, int **conta, int n, const char *parola)
         }
     }
     if (ok) {
-        copia = malloc(strlen(parola) + 1);
+        copia = malloc((strlen(parola) + 1) * sizeof *copia);
         ok = copia != NULL;
         if (ok) {
             strcpy(copia, parola);

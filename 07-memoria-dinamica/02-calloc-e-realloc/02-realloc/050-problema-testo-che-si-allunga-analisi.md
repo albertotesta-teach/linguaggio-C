@@ -2,75 +2,90 @@
 
 ## 1. Problema
 
-Il segretario scrive il verbale del consiglio di classe una frase per riga. Il verbale è un unico blocco che a ogni frase si allunga con realloc esattamente della lunghezza della frase, più lo spazio di separazione; le frasi senza punto finale lo ricevono. Alla fine il verbale si stampa a righe di al massimo 60 caratteri senza spezzare le parole.
+Il segretario scrive il verbale del consiglio di classe una frase per
+riga. Il verbale è un unico blocco che a ogni frase si allunga con
+`realloc` esattamente della lunghezza della frase, più lo spazio di
+separazione; le frasi senza punto finale lo ricevono. Alla fine il verbale
+si stampa a righe di al massimo 60 caratteri senza spezzare le parole.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `verbale` | `char *` | lunghezza + 1 (heap) | Testo completo |
-| `frase` | `char[]` | 200 | Frase letta |
-| `nuova` | `size_t` | — | Nuova dimensione del blocco |
-| `frasi` | `int` | — | Frasi aggiunte |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `frase` | `char[200]` | Una frase per riga; `FINE` termina |
+
+### Output
+
+- `blocco di B byte` dopo ogni frase aggiunta.
+- `VERBALE (F frasi, C caratteri)` e il testo a righe di al massimo 60
+  caratteri.
+- `Memoria insufficiente...` se un'allocazione fallisce.
+
+### Vincoli
+
+- Il verbale parte da un blocco di 1 byte (stringa vuota).
+- Nuova dimensione: lunghezza attuale + spazio (dalla seconda frase) +
+  lunghezza della frase + terminatore; `realloc` in un puntatore
+  temporaneo: se fallisce il verbale resta quello di prima.
+- Le righe vuote si ignorano; una frase senza punto lo riceve.
+- Una riga più lunga del buffer viene troncata e il resto scartato. A fine
+  input il programma termina come con `FINE`.
+- A capo prima della parola che farebbe superare 60 colonne.
+
+### Assunzioni
+
+- Nessuna parola supera i 60 caratteri.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `verbale`, `tmp` | `char *` | Blocco del verbale e risultato di `realloc` |
+| `frase` | `char[200]` | Riga letta (con un byte libero per il punto) |
+| `lunghezza`, `nuova` | `size_t` | Lunghezze |
+| `frasi` | `int` | Frasi aggiunte |
+| `resto` | `int` | Caratteri scartati di una riga lunga |
 
 | Funzione | Compito |
 |----------|---------|
-| `stampa_a_righe(testo, larghezza)` | Va a capo prima della parola che supererebbe la larghezza |
+| `stampa_a_righe(testo, larghezza)` | Stampa senza spezzare le parole |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Frasi
+1. Allocare un blocco con la stringa vuota.
+2. Per ogni riga fino a `FINE`: se non vuota aggiungere il punto se
+   manca, allungare il blocco con `realloc`, accodare spazio e frase,
+   stampare la nuova dimensione.
+3. Stampare il verbale a righe e liberare il blocco.
 
-**a) Input** – quattro frasi, una riga vuota, `FINE`
+## 3. Casi di test
 
-**b) Output** – "blocco di 56 byte" ... "blocco di 213 byte"; verbale di 4 frasi e 212 caratteri
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `nuova`
+### Test 1 – Tre frasi
 
-**d) Vincoli** – —
+- **Input:** `Il consiglio si riunisce alle ore 15`,
+  `Sono presenti tutti i docenti.`, riga vuota,
+  `Si discute del comportamento della classe durante la gita a Torino`,
+  `FINE`
+- **Valori intermedi attesi:** 0 + 37 + 1 = 38 byte; 37 + 1 + 30 + 1 =
+  69; 68 + 1 + 67 + 1 = 137.
+- **Output atteso:**
+  ```
+  Frasi del verbale (FINE per terminare):
+    blocco di 38 byte
+    blocco di 69 byte
+    blocco di 137 byte
 
-**e) Assunzioni** – il blocco parte da 1 byte ("")
+  VERBALE (3 frasi, 136 caratteri)
+  Il consiglio si riunisce alle ore 15. Sono presenti tutti i
+  docenti. Si discute del comportamento della classe durante
+  la gita a Torino.
+  ```
 
-**f) Algoritmo in linguaggio naturale** – nuova = strlen(verbale) + spazio + lunghezza + 1; realloc; strcat.
+### Test 2 – Verbale vuoto
 
-### Caso d'uso 2 – Punto finale
-
-**a) Input** – frase senza punto
-
-**b) Output** – il punto viene aggiunto
-
-**c) Variabili di supporto** – `lunghezza`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – fgets legge al massimo 198 caratteri, così c'è posto per il punto.
-
-### Caso d'uso 3 – Riga vuota
-
-**a) Input** – invio
-
-**b) Output** – nessuna frase aggiunta
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – —
-
-### Caso d'uso 4 – Stampa
-
-**a) Input** – `FINE`
-
-**b) Output** – righe di al massimo 60 caratteri
-
-**c) Variabili di supporto** – `colonna`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – parole separate da spazi
-
-**f) Algoritmo in linguaggio naturale** – a capo quando colonna + 1 + lunghezza supera 60.
+- **Input:** `FINE`
+- **Output atteso:** `VERBALE (0 frasi, 0 caratteri)` e una riga vuota.

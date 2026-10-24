@@ -2,98 +2,97 @@
 
 ## 1. Problema
 
-L'archivio fotografico del giornalino contiene foto con anno, autore e didascalia. Ogni foto è una struct allocata e la didascalia è un secondo blocco della lunghezza esatta. Si libera prima la didascalia e poi la struct; per cambiare una didascalia si alloca il blocco nuovo prima di liberare il vecchio; per eliminare una foto si spostano indietro i puntatori.
+L'archivio fotografico del giornalino contiene foto con anno, autore e
+didascalia. Ogni foto è una struct allocata e la didascalia è un secondo
+blocco della lunghezza esatta. Si libera prima la didascalia e poi la
+struct; per cambiare una didascalia si alloca il blocco nuovo prima di
+liberare il vecchio; per eliminare una foto si spostano indietro i
+puntatori.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Foto` | `anno, autore[16], didascalia (char *)` | una foto con la didascalia nello heap |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `archivio` | `Foto *[]` | 10 puntatori | Foto in ordine di inserimento |
-| `testo` | `char[]` | 80 | Didascalia letta |
-| `autore` | `char[]` | 16 | Autore |
-| `n`, `anno`, `numero` | `int` | — | Foto presenti e dati dei comandi |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `A anno autore didascalia`, `C numero didascalia`, `D numero`, `M` mostra, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `foto N aggiunta (didascalia di B byte)`, `Dati non validi.`,
+  `Manca la didascalia.`, `Archivio pieno.`
+- `didascalia della foto N cambiata`,
+  `Memoria insufficiente: didascalia invariata.`, `Foto inesistente.`
+- `foto N eliminata`.
+- `M`: le foto numerate oppure `archivio vuoto`.
+- Alla fine: `Archivio chiuso: foto liberate N, blocchi liberati 2N`.
+
+### Vincoli
+
+- `crea_foto`: struct e didascalia; se la seconda allocazione fallisce si
+  libera la prima (nessuna perdita).
+- `distruggi_foto`: prima `free(f->didascalia)`, poi `free(f)`: dopo aver
+  liberato la struct il campo non sarebbe più leggibile.
+- `cambia_didascalia`: nuovo blocco, poi `free` del vecchio; se manca
+  memoria la didascalia resta quella di prima.
+- Anno da 1900 a 2100; la didascalia è il resto della riga senza spazi
+  iniziali e finali (al massimo 79 caratteri).
+- Al massimo 10 foto. Un comando per riga. A fine input il programma
+  termina come con `Q`.
+
+### Assunzioni
+
+- L'autore è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Foto` | `typedef struct { int anno; char autore[16]; char *didascalia; } Foto;` | Una foto con la didascalia nello heap |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `archivio`, `n` | `Foto *[10]`, `int` | Foto presenti |
+| `testo` | `char[80]` | Didascalia letta |
 
 | Funzione | Compito |
 |----------|---------|
-| `copia_testo(testo)` | Blocco di strlen + 1 con il testo |
-| `crea_foto(anno, autore, didascalia)` | Struct e didascalia; NULL senza perdite se una malloc fallisce |
-| `distruggi_foto(f)` | Libera la didascalia e poi la struct |
-| `cambia_didascalia(f, nuova)` | Nuovo blocco, poi free del vecchio; 0 se manca memoria |
-| `leggi_resto(testo)` | Resto della riga senza spazi iniziali e finali |
-| `mostra(archivio, n)` | Elenco delle foto |
+| `copia_testo(testo)` | Blocco con una copia del testo |
+| `crea_foto`, `distruggi_foto` | Allocazione e liberazione nell'ordine giusto |
+| `cambia_didascalia(f, nuova)` | Sostituzione sicura |
+| `leggi_resto(testo)` | Resto della riga senza spazi ai bordi |
+| `mostra(archivio, n)` | Elenco |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Aggiunta
+1. Finché il comando non è `Q`: leggere il comando in maiuscolo; eseguire
+   aggiunta, cambio, eliminazione (spostando indietro i puntatori) o
+   elenco; scartare il resto della riga.
+2. Distruggere le foto rimaste e stampare il riepilogo.
 
-**a) Input** – `A 2024 Marta Festa di fine anno in cortile`
+## 3. Casi di test
 
-**b) Output** – "foto 1 aggiunta (didascalia di 30 byte)"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `archivio[n]`
+### Test 1 – Archivio
 
-**d) Vincoli** – anno da 1900 a 2100, al massimo 10 foto
-
-**e) Assunzioni** – autore di una parola
-
-**f) Algoritmo in linguaggio naturale** – crea_foto: malloc della struct, copia_testo della didascalia.
-
-### Caso d'uso 2 – Dati mancanti
-
-**a) Input** – `A 2023 Sara`; `A 1800 Sara vecchia`
-
-**b) Output** – "Manca la didascalia."; "Dati non validi."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
-
-### Caso d'uso 3 – Cambio didascalia
-
-**a) Input** – `C 2 Primo posto alla gara di robotica`
-
-**b) Output** – "didascalia della foto 2 cambiata"
-
-**c) Variabili di supporto** – `copia`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – prima la nuova copia, poi free della vecchia: se la malloc fallisce la vecchia resta.
-
-### Caso d'uso 4 – Eliminazione
-
-**a) Input** – `D 1`
-
-**b) Output** – "foto 1 eliminata"; le foto successive scalano
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – distruggi_foto e spostamento indietro dei puntatori.
-
-### Caso d'uso 5 – Fine
-
-**a) Input** – `Q`
-
-**b) Output** – "Archivio chiuso: foto liberate 2, blocchi liberati 4"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – distruggi_foto per ogni foto rimasta.
+- **Input:** `A 2024 Rossi Festa di fine anno`,
+  `a 2023 Bianchi   Gita a Torino  `, `A 1800 Verdi Vecchia`,
+  `A 2025 Neri`, `M`, `C 1 Festa di fine anno 2024`, `C 5 xx`, `D 2`,
+  `d 9`, `M extra`, `X`, `Q`
+- **Output atteso:**
+  ```
+    foto 1 aggiunta (didascalia di 19 byte)
+    foto 2 aggiunta (didascalia di 14 byte)
+    Dati non validi.
+    Manca la didascalia.
+    1. [2024, Rossi] Festa di fine anno
+    2. [2023, Bianchi] Gita a Torino
+    didascalia della foto 1 cambiata
+    Foto inesistente.
+    foto 2 eliminata
+    Foto inesistente.
+    1. [2024, Rossi] Festa di fine anno 2024
+    Comando sconosciuto.
+  Archivio chiuso: foto liberate 1, blocchi liberati 2
+  ```

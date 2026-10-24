@@ -85,10 +85,12 @@ int main(void)
                        scanf("%19s %d", r.studente, &r.minuti) != 2 ||
                        !data_valida(r.giorno, r.mese) || r.minuti < 1) {
                 printf("  riga non valida\n");
-                scanf("%*[^\n]");
             } else if (!aggiungi(registro, r)) {
                 printf("  Memoria insufficiente.\n");
                 finito = 1;
+            }
+            if (!finito) {
+                scanf("%*[^\n]");      /* un ritardo per riga */
             }
         }
 
@@ -96,7 +98,8 @@ int main(void)
                capacita(registro));
         for (i = 0; i < lunghezza(registro); i++) {
             per_mese[elemento(registro, i).mese]++;
-            conta = conta_data(registro, elemento(registro, i).giorno, elemento(registro, i).mese);
+            r = elemento(registro, i);
+            conta = conta_data(registro, r.giorno, r.mese);
             if (conta > massimo) {
                 massimo = conta;
                 peggiore = i;
@@ -106,8 +109,8 @@ int main(void)
             printf("  %s %2d\n", nomi_mesi[ordine[k] - 1], per_mese[ordine[k]]);
         }
         if (peggiore != -1) {
-            printf("Data con piu' ritardi: %02d/%02d (%d)\n", elemento(registro, peggiore).giorno,
-                   elemento(registro, peggiore).mese, massimo);
+            r = elemento(registro, peggiore);
+            printf("Data con piu' ritardi: %02d/%02d (%d)\n", r.giorno, r.mese, massimo);
         }
         printf("Avviso alla famiglia (almeno %d ritardi):\n", AVVISO);
         for (i = 0; i < lunghezza(registro); i++) {
@@ -185,7 +188,6 @@ Ritardo elemento(const Registro *r, int i)
     return r->dati[i];
 }
 
-/* Mesi di scuola (settembre-giugno) e giorno da 1 a 31. */
 /* Giorno esistente in un mese di scuola (luglio e agosto esclusi). */
 int data_valida(int giorno, int mese)
 {

@@ -2,100 +2,106 @@
 
 ## 1. Problema
 
-Il torneo di calcetto d'istituto ha un numero di squadre che cambia ogni anno. Il Torneo contiene un puntatore a un array di Squadra allocato da crea_torneo. Le partite aggiornano punti e gol; la classifica usa un array temporaneo di indici allocato e liberato dentro la funzione, senza riordinare l'array delle squadre.
+Il torneo di calcetto d'istituto ha un numero di squadre che cambia ogni
+anno. Il `Torneo` contiene un puntatore a un array di `Squadra` allocato da
+`crea_torneo`. Le partite aggiornano punti e gol; la classifica usa un
+array temporaneo di indici allocato e liberato dentro la funzione, senza
+riordinare l'array delle squadre.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Squadra` | `nome[16], punti, giocate, fatti, subiti` | una squadra |
-| `Torneo` | `nome[24], n_squadre, squadre (Squadra *)` | il torneo con il suo array nello heap |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `t` | `Torneo *` | — | Torneo nello heap |
-| `n` | `int` | — | Squadre (2-16) |
-| `nome1`, `nome2`, `gol1`, `gol2` | `char[]`, `int` | 16 | Dati di una partita |
-| `a`, `b` | `int` | — | Indici delle due squadre |
-| `ordine` | `int *` | n_squadre (heap, in classifica) | Indici in ordine di classifica |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `n` | `int` | Numero di squadre, da 2 a 16 |
+| nomi | `char[16]` | Nome di ogni squadra |
+| `comando` | `char` | `P squadra gol squadra gol`, `C` classifica, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `nome mancante o ripetuto: uso Sk` se un nome manca o è già usato.
+- `P`: `A g1 - g2 B registrata`, `Squadre non valide.`,
+  `Risultato non valido.`
+- `C`: la classifica con giocate, gol fatti e subiti, differenza reti e
+  punti.
+- `Numero non valido.`, `Memoria insufficiente.`, `Comando sconosciuto.`
+
+### Vincoli
+
+- `crea_torneo`: due allocazioni con liberazione della prima se la
+  seconda fallisce; `distruggi_torneo` accetta `NULL`.
+- Vittoria 3 punti, pareggio 1.
+- Ordine: più punti, a parità differenza reti maggiore; a parità completa
+  resta l'ordine di inserimento.
+- La classifica ordina (selezione) un array di indici
+  `malloc(n * sizeof *ordine)`, liberato prima di uscire dalla funzione.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Ogni squadra ha un nome di una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Squadra` | `typedef struct { char nome[16]; int punti; int giocate; int fatti; int subiti; } Squadra;` | Statistiche di una squadra |
+| `Torneo` | `typedef struct { char nome[24]; int n_squadre; Squadra *squadre; } Torneo;` | Il torneo con l'array dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `t` | `Torneo *` | Torneo creato (`NULL` se dati non validi o memoria esaurita) |
+| `a`, `b` | `int` | Indici delle squadre della partita |
+| `ordine` (in `classifica`) | `int *` | Indici ordinati |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_torneo(nome, n)` | Struct e array delle squadre azzerate |
-| `distruggi_torneo(t)` | Libera l'array e poi la struct |
-| `cerca_squadra(t, nome)` | Indice o -1 |
-| `registra(&squadra, fatti, subiti)` | Giocate, gol e punti |
-| `precede(a, b)` | Più punti, a parità differenza reti |
-| `classifica(t)` | Ordina gli indici con la selection sort e stampa |
+| `crea_torneo`, `distruggi_torneo` | Allocazione e liberazione |
+| `cerca_squadra(t, nome)` | Indice della squadra, −1 se assente |
+| `registra(s, fatti, subiti)` | Aggiorna una squadra |
+| `precede(a, b)` | Criterio della classifica |
+| `classifica(t)` | Ordina gli indici e stampa |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Iscrizione delle squadre
+1. Leggere n e creare il torneo; leggere i nomi, sostituendo con `Sk`
+   quelli mancanti o ripetuti.
+2. Finché il comando non è `Q`: con `P` leggere il risultato, cercare le
+   squadre e registrarlo per entrambe; con `C` stampare la classifica;
+   scartare il resto della riga.
+3. Distruggere il torneo.
 
-**a) Input** – `4`, poi `Leoni Falchi Leoni Squali`
+## 3. Casi di test
 
-**b) Output** – "nome mancante o ripetuto: uso S3"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `t->squadre`
+### Test 1 – Quattro squadre
 
-**d) Vincoli** – nomi diversi
+- **Input:** `4`, `Leoni`, `Tigri`, `Leoni`, `Aquile`,
+  `P Leoni 2 Tigri 1`, `p S3 0 Aquile 0`, `P Tigri 3 Aquile 1`,
+  `P Leoni 1 Leoni 1`, `P Orsi 1 Leoni 0`, `P Leoni x`, `C`, `X`, `Q`
+- **Output atteso:**
+  ```
+    nome mancante o ripetuto: uso S3
+    Leoni 2 - 1 Tigri registrata
+    S3 0 - 0 Aquile registrata
+    Tigri 3 - 1 Aquile registrata
+    Squadre non valide.
+    Squadre non valide.
+    Risultato non valido.
+    Calcetto d'istituto
+       squadra       G  GF  GS  DR  punti
+     1 Leoni         1   2   1  +1     3
+     2 Tigri         2   4   3  +1     3
+     3 S3            1   0   0  +0     1
+     4 Aquile        2   1   3  -2     1
+    Comando sconosciuto.
+  ```
+  (Leoni e Tigri hanno punti e differenza reti uguali: resta l'ordine di
+  inserimento).
 
-**e) Assunzioni** – nomi di una parola
+### Test 2 – Numero non valido
 
-**f) Algoritmo in linguaggio naturale** – cerca_squadra(t, nome) deve restituire l'indice appena scritto.
-
-### Caso d'uso 2 – Risultati
-
-**a) Input** – `P Leoni 3 Falchi 1`, `P S3 2 Squali 2`
-
-**b) Output** – "Leoni 3 - 1 Falchi registrata"
-
-**c) Variabili di supporto** – `a`, `b`
-
-**d) Vincoli** – gol non negativi, squadre diverse
-
-**e) Assunzioni** – 3 punti alla vittoria, 1 al pareggio
-
-**f) Algoritmo in linguaggio naturale** – registra per entrambe le squadre, con i gol scambiati.
-
-### Caso d'uso 3 – Squadra sconosciuta
-
-**a) Input** – `P Lupi 1 Falchi 0`
-
-**b) Output** – "Squadre non valide."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – cerca_squadra restituisce -1.
-
-### Caso d'uso 4 – Classifica
-
-**a) Input** – `C`
-
-**b) Output** – Leoni 4, Falchi 3, S3 2, Squali 1, con G, GF, GS e DR
-
-**c) Variabili di supporto** – `ordine`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – a parità di punti e differenza reti resta l'ordine di iscrizione
-
-**f) Algoritmo in linguaggio naturale** – malloc degli indici, selection sort con precede, stampa, free.
-
-### Caso d'uso 5 – Numero non valido
-
-**a) Input** – `1`
-
-**b) Output** – "Numero non valido."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – da 2 a 16 squadre
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione; distruggi_torneo(NULL) non fa nulla.
+- **Input:** `1`
+- **Output atteso:** `Numero non valido.`

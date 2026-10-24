@@ -2,65 +2,94 @@
 
 ## 1. Problema
 
-La 4A e la 4B vengono accorpate. Il programma legge i due elenchi in ordine alfabetico, ingrandisce con realloc il blocco della 4A fino a contenere anche la 4B e fonde i due elenchi partendo dal fondo, senza un terzo array e senza ordinare da capo.
+La 4A e la 4B vengono accorpate. Il programma legge i due elenchi in
+ordine alfabetico, ingrandisce con `realloc` il blocco della 4A fino a
+contenere anche la 4B e fonde i due elenchi partendo dal fondo, senza un
+terzo array e senza ordinare da capo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Studente` | `cognome[20], classe[4]` | uno studente con la classe di provenienza |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `quarta_a`, `quarta_b` | `Studente *` | n_a, poi n_a + n_b; n_b (heap) | Le due classi |
-| `n_a`, `n_b` | `int` | — | Studenti delle classi |
-| `i`, `j`, `k` | `int` | — | Ultimo di a, ultimo di b, posizione da scrivere |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| per ogni classe | numero e cognomi | Numero di studenti (1-30) seguito dai cognomi in ordine alfabetico |
+
+### Output
+
+- `Blocco della 4A: N studenti, B byte`.
+- `Blocco ingrandito: T studenti, B' byte` e la nuova 4A con la classe di
+  provenienza.
+- `X non e' in ordine dopo Y` ed `Elenco della 4X non valido.`;
+  `Memoria insufficiente.`
+
+### Vincoli
+
+- `leggi_classe` riceve `Studente **` per allocare e restituire il blocco
+  al chiamante.
+- `fondi`: `realloc(*a, (n_a + n_b) * sizeof *tmp)` in un temporaneo;
+  fusione dal fondo con tre indici (i sulla 4A, j sulla 4B, k sulla
+  destinazione): gli elementi della 4A non ancora copiati non vengono mai
+  sovrascritti.
+- A parità di cognome viene prima lo studente della 4A.
+- I due blocchi si liberano alla fine.
+
+### Assunzioni
+
+- I cognomi sono una parola e si confrontano con `strcmp` (maiuscole
+  prima delle minuscole).
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Studente` | `typedef struct { char cognome[20]; char classe[4]; } Studente;` | Uno studente con la classe di provenienza |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `quarta_a`, `quarta_b` | `Studente *` | I due blocchi |
+| `n_a`, `n_b` | `int` | Dimensioni |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_classe(&elenco, &n, classe)` | Alloca e legge; controlla l'ordine alfabetico |
-| `fondi(&a, n_a, b, n_b)` | realloc di a e fusione dal fondo; 0 se fallisce |
+| `leggi_classe(elenco, n, classe)` | Alloca e legge una classe controllando l'ordine |
+| `fondi(a, n_a, b, n_b)` | Ingrandisce la prima e vi fonde la seconda |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Fusione
+1. Leggere le due classi; se una non è valida fermarsi.
+2. Stampare la dimensione del blocco della 4A, fondere, stampare la nuova
+   dimensione e l'elenco.
+3. Liberare i blocchi.
 
-**a) Input** – `4 Bassi Conti Ferri Rossi`, `3 Amato Galli Neri`
+## 3. Casi di test
 
-**b) Output** – 7 studenti in ordine, con la classe di provenienza; blocco da 96 a 168 byte
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `k`
+### Test 1 – Fusione
 
-**d) Vincoli** – al massimo 30 studenti per classe
+- **Input:** `3 Bianchi Gallo Rossi`, `4 Amato Ferri Neri Villa`
+- **Valori intermedi attesi:** `Studente` di 24 byte: 72 byte, poi 168.
+- **Output atteso:**
+  ```
+  Blocco della 4A: 3 studenti, 72 byte
+  Blocco ingrandito: 7 studenti, 168 byte
 
-**e) Assunzioni** – cognomi di una parola
+  Nuova 4A:
+     1. Amato        (da 4B)
+     2. Bianchi      (da 4A)
+     3. Ferri        (da 4B)
+     4. Gallo        (da 4A)
+     5. Neri         (da 4B)
+     6. Rossi        (da 4A)
+     7. Villa        (da 4B)
+  ```
 
-**f) Algoritmo in linguaggio naturale** – finché restano elementi di b, il maggiore tra a[i] e b[j] va in a[k].
+### Test 2 – Elenco non in ordine
 
-### Caso d'uso 2 – Elenco non in ordine
-
-**a) Input** – `3 Bassi Ferri Conti`
-
-**b) Output** – "Conti non e' in ordine dopo Ferri"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – ordine alfabetico
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – strcmp tra cognomi consecutivi.
-
-### Caso d'uso 3 – Elementi di a già al posto giusto
-
-**a) Input** – —
-
-**b) Output** – —
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – quando b finisce, gli elementi rimasti di a sono già nelle prime posizioni.
+- **Input:** `3 Rossi Bianchi Gallo`
+- **Output atteso:**
+  ```
+    Bianchi non e' in ordine dopo Rossi
+  Elenco della 4A non valido.
+  ```

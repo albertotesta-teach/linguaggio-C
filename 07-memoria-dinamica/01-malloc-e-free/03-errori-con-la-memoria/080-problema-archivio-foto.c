@@ -45,6 +45,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_FOTO 10
 #define LUNG 80
@@ -76,12 +77,12 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (A, C, D, M, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (scanf("%d %15s", &anno, autore) != 2 || anno < 1900 || anno > 2100) {
                 printf("  Dati non validi.\n");
-                scanf("%*[^\n]");
             } else {
                 leggi_resto(testo);
                 if (testo[0] == '\0') {
@@ -102,7 +103,6 @@ int main(void)
         } else if (comando == 'C') {
             if (scanf("%d", &numero) != 1 || numero < 1 || numero > n) {
                 printf("  Foto inesistente.\n");
-                scanf("%*[^\n]");
             } else {
                 leggi_resto(testo);
                 if (testo[0] == '\0') {
@@ -124,12 +124,13 @@ int main(void)
                 n--;
                 printf("  foto %d eliminata\n", numero);
             }
-            scanf("%*[^\n]");
         } else if (comando == 'M') {
             mostra(archivio, n);
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
-            scanf("%*[^\n]");
+        }
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 
@@ -144,7 +145,7 @@ int main(void)
 /* Un blocco con una copia del testo, della lunghezza giusta. */
 char *copia_testo(const char *testo)
 {
-    char *copia = malloc(strlen(testo) + 1);
+    char *copia = malloc((strlen(testo) + 1) * sizeof *copia);
 
     if (copia != NULL) {
         strcpy(copia, testo);

@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_POSTI 60
 
@@ -63,8 +64,9 @@ int main(void)
             while (comando != 'Q') {
                 printf("Comando (I, A, T, E, Q): ");
                 if (scanf(" %c", &comando) != 1) {
-                    comando = 'Q';
+                    comando = 'Q';      /* input terminato: come Q */
                 }
+                comando = (char) toupper((unsigned char) comando);
                 if (comando == 'I') {
                     if (scanf("%19s %7s", nome, classe) != 2 || strlen(classe) > 3) {
                         printf("  Dati non validi.\n");
@@ -101,8 +103,8 @@ int main(void)
                 } else if (comando != 'Q') {
                     printf("  Comando sconosciuto.\n");
                 }
-                if (comando != 'Q' && comando != 'E') {
-                    scanf("%*[^\n]");
+                if (comando != 'Q') {
+                    scanf("%*[^\n]");  /* un comando per riga */
                 }
             }
             free(iscritti);

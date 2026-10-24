@@ -44,12 +44,19 @@ int main(void)
     int i;
     int finito = 0;
     size_t byte_usati = 0;
+    int resto;
 
     printf("Nomi dei diplomati (FINE per terminare):\n");
     while (!finito && n < MAX_NOMI) {
         if (fgets(riga, LUNG, stdin) == NULL) {
             finito = 1;
         } else {
+            if (strchr(riga, '\n') == NULL) {
+                resto = getchar();      /* riga troppo lunga: scarta il resto */
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
             riga[strcspn(riga, "\n")] = '\0';
             if (strcmp(riga, "FINE") == 0) {
                 finito = 1;
@@ -57,7 +64,7 @@ int main(void)
                 normalizza(riga);
             }
             if (!finito && riga[0] != '\0') {
-                copia = malloc(strlen(riga) + 1);
+                copia = malloc((strlen(riga) + 1) * sizeof *copia);
                 if (copia == NULL) {
                     printf("Memoria insufficiente.\n");
                     finito = 1;

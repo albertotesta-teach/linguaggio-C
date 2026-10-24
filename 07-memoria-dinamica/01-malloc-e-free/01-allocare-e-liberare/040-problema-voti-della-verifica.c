@@ -27,6 +27,7 @@
 #define MAX_STUDENTI 40
 
 int leggi_voto(int studente, double *voto);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -55,7 +56,8 @@ int main(void)
             }
         }
         if (voti != NULL && letti < n) {
-            printf("\nInput terminato: mancano %d voti.\n", n - letti);
+            printf("\nInput terminato: %s %d %s.\n", n - letti == 1 ? "manca" : "mancano",
+                   n - letti, n - letti == 1 ? "voto" : "voti");
         } else if (voti != NULL) {
             media = somma / n;
 
@@ -103,7 +105,7 @@ int leggi_voto(int studente, double *voto)
         printf("Voto dello studente %d: ", studente);
         letto = scanf("%lf", voto);
         if (letto == 0) {
-            scanf("%*s");
+            svuota_riga();              /* non e' un numero */
         }
         valido = letto == 1 && *voto >= 1 && *voto <= 10 &&
                  *voto * 2 == (int) (*voto * 2);
@@ -112,4 +114,15 @@ int leggi_voto(int studente, double *voto)
         }
     }
     return valido;
+}
+
+/* Scarta i caratteri rimasti sulla riga dopo un inserimento errato. */
+void svuota_riga(void)
+{
+    int c;
+
+    c = getchar();
+    while (c != '\n' && c != EOF) {
+        c = getchar();
+    }
 }

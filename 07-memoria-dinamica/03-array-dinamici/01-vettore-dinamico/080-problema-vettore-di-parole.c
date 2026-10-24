@@ -105,7 +105,7 @@ Glossario *crea_glossario(int capacita)
 int aggiungi(Glossario *g, const char *testo)
 {
     char **tmp;
-    char *copia = malloc(strlen(testo) + 1);
+    char *copia = malloc((strlen(testo) + 1) * sizeof *copia);
     int ok = copia != NULL;
 
     if (ok && g->n == g->capacita) {

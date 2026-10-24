@@ -2,69 +2,98 @@
 
 ## 1. Problema
 
-Il bar della scuola registra le vendite della giornata, una riga `prodotto prezzo quantità` per scontrino, in un vettore dinamico di `Voce`. A fine giornata il programma costruisce un secondo vettore con una voce per prodotto (quantità sommate, incasso nel campo prezzo) usando le stesse funzioni, poi stampa il riepilogo, l'incasso totale e il prodotto più venduto.
+Il bar della scuola registra le vendite della giornata, una riga
+`prodotto prezzo quantità` per scontrino, in un vettore dinamico di
+`Voce`. A fine giornata il programma costruisce un secondo vettore con una
+voce per prodotto (quantità sommate, incasso nel campo prezzo) usando le
+stesse funzioni, poi stampa il riepilogo, l'incasso totale e il prodotto
+più venduto.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Voce` | `prodotto[20], prezzo, quantita` | una vendita o un totale |
-| `Elenco` | `dati (Voce *), n, capacita` | vettore dinamico di voci |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `vendite`, `riepilogo` | `Elenco *` | struct + blocco di n Voce (heap) | Scontrini e totali per prodotto |
-| `v` | `Voce` | — | Vendita letta o voce nuova del riepilogo |
-| `p` | `Voce *` | — | Voce del riepilogo da aggiornare, valida fino alla prossima aggiunta |
-| `incasso` | `double` | — | Totale della giornata |
-| `migliore` | `int` | — | Prodotto con più pezzi |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| riga | testo | `prodotto prezzo quantita`; `FINE` termina |
+
+### Output
+
+- `vendita non valida` per ogni riga scartata.
+- `Vendite registrate: V, prodotti diversi: P`.
+- Per ogni prodotto: quantità e incasso.
+- `Incasso: T euro` e `Piu' venduto: X` (se ci sono vendite).
+- `Memoria insufficiente.`
+
+### Vincoli
+
+- Vettore `{Voce *dati; int n; int capacita;}` con capacità iniziale 4 e
+  raddoppio; il `main` usa solo le funzioni del vettore.
+- `elemento` restituisce un puntatore alla voce, valido solo fino alla
+  prossima `aggiungi` (che può spostare il blocco).
+- Prezzo positivo, quantità almeno 1.
+- Nel riepilogo il campo `prezzo` contiene l'incasso del prodotto.
+- A parità di quantità vale il primo prodotto.
+- Una vendita per riga: il resto viene scartato. A fine input il
+  programma termina come con `FINE`.
+
+### Assunzioni
+
+- Il nome del prodotto è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Voce` | `typedef struct { char prodotto[20]; double prezzo; int quantita; } Voce;` | Una vendita o un prodotto del riepilogo |
+| `Elenco` | `typedef struct { Voce *dati; int n; int capacita; } Elenco;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `vendite`, `riepilogo` | `Elenco *` | I due vettori |
+| `voce` | `Voce *` | Voce del riepilogo da aggiornare |
+| `migliore`, `incasso` | `int`, `double` | Risultati |
 
 | Funzione | Compito |
 |----------|---------|
-| `elemento(e, i)` | Puntatore alla voce i dentro il vettore |
-| `cerca(e, prodotto)` | Indice della voce del prodotto o -1 |
-| `crea_elenco, aggiungi, lunghezza, distruggi_elenco` | Funzioni del vettore |
+| `crea_elenco`, `distruggi_elenco` | Allocazione e liberazione |
+| `aggiungi`, `lunghezza`, `elemento` | Uso del vettore |
+| `cerca(e, prodotto)` | Posizione del prodotto, −1 se assente |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Una mattina
+1. Creare i due vettori.
+2. Leggere le vendite fino a `FINE` aggiungendo quelle valide.
+3. Per ogni vendita: se il prodotto non è nel riepilogo aggiungerlo con
+   l'incasso, altrimenti sommare quantità e incasso.
+4. Stampare riepilogo, incasso e prodotto più venduto; distruggere i
+   vettori.
 
-**a) Input** – 9 vendite, poi `FINE`
+## 3. Casi di test
 
-**b) Output** – 8 vendite, 5 prodotti; cornetto 6 pz 7.20 euro; incasso 19.10 euro; più venduto cornetto
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `p`
+### Test 1 – Una mattina al bar
 
-**d) Vincoli** – prezzo > 0, quantità ≥ 1
+- **Input:** `panino 2.50 1`, `acqua 0.80 2`, `panino 2.50 2 extra`,
+  `caffe 1 3`, `pizzetta 1.20 0`, `brioche x 1`, `acqua 0.80 1`, `FINE`
+- **Output atteso:**
+  ```
+  Vendite (prodotto prezzo quantita', FINE per terminare):
+    vendita non valida
+    vendita non valida
 
-**e) Assunzioni** – stesso prezzo per lo stesso prodotto
+  Vendite registrate: 5, prodotti diversi: 3
+    panino         3 pz     7.50 euro
+    acqua          3 pz     2.40 euro
+    caffe          3 pz     3.00 euro
+  Incasso: 12.90 euro
+  Piu' venduto: panino
+  ```
+  (a parità di 3 pezzi vale il primo prodotto).
 
-**f) Algoritmo in linguaggio naturale** – per ogni vendita: cerca nel riepilogo; se c'è si aggiorna tramite p, altrimenti si aggiunge.
+### Test 2 – Nessuna vendita
 
-### Caso d'uso 2 – Vendita non valida
-
-**a) Input** – `succo 1.50 -1`
-
-**b) Output** – "vendita non valida"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – la riga si scarta.
-
-### Caso d'uso 3 – Due elenchi da liberare
-
-**a) Input** – —
-
-**b) Output** – —
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – distruggi_elenco su vendite e riepilogo.
+- **Input:** `FINE`
+- **Output atteso:** `Vendite registrate: 0, prodotti diversi: 0` e
+  `Incasso: 0.00 euro`.

@@ -2,75 +2,84 @@
 
 ## 1. Problema
 
-Un sensore misura la CO2 in aula; alcune letture sono errori (sotto 300 o sopra 5000 ppm) e da 1000 ppm in su bisogna aprire le finestre. La funzione filtra restituisce un nuovo array con le sole misure in un intervallo e ne comunica la lunghezza con un parametro di uscita. Il programma filtra due volte e libera i tre blocchi.
+Un sensore misura la CO2 in aula; alcune letture sono errori (sotto 300 o
+sopra 5000 ppm) e da 1000 ppm in su bisogna aprire le finestre. La
+funzione `filtra` restituisce un nuovo array, allocato con `malloc`, con
+le sole misure in un intervallo e ne comunica la lunghezza con un
+parametro di uscita. Il programma filtra due volte e libera i tre blocchi.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `letture` | `double *` | n (heap) | Letture del sensore |
-| `valide`, `alte` | `double *` | quante servono (heap) | Risultati dei due filtri, NULL se vuoti |
-| `n_valide`, `n_alte` | `int` | — | Lunghezze restituite da filtra |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `n` | `int` | Numero di letture, da 1 a 144 |
+| `letture[i]` | `double` | Valori in ppm |
+
+### Output
+
+- Tre righe `titolo (N): valori  media M` (oppure `nessuna`): tutte le
+  letture, quelle valide, quelle da almeno 1000 ppm.
+- `Scartate per errore del sensore: K`.
+- `Numero non valido.`, `Memoria insufficiente.`,
+  `Letture mancanti: ne servono N.`
+
+### Vincoli
+
+- `filtra` conta prima gli elementi da tenere, poi alloca esattamente
+  quel numero; con 0 elementi restituisce `NULL` e lunghezza 0 (non è un
+  errore di memoria).
+- Valide: da 300 a 5000 ppm compresi; finestre: da 1000 a 5000.
+- Il secondo filtro lavora sull'array delle valide.
+- I tre blocchi si liberano alla fine (`free(NULL)` è ammesso).
+
+### Assunzioni
+
+- Le letture sono separate da spazi o a capo.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `letture`, `valide`, `alte` | `double *` | I tre blocchi |
+| `n`, `n_valide`, `n_alte` | `int` | Lunghezze |
+| `letti` | `int` | Letture inserite |
 
 | Funzione | Compito |
 |----------|---------|
-| `filtra(misure, n, minimo, massimo, &quante)` | Conta, alloca il blocco giusto, copia; NULL se non resta nessuna misura |
-| `stampa(titolo, v, n)` | Valori e media, oppure "nessuna" |
+| `filtra(misure, n, minimo, massimo, &quante)` | Nuovo array con i valori nell'intervallo |
+| `stampa(titolo, v, n)` | Valori e media |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Letture con errori
+1. Leggere n e allocare le letture; leggerle (se mancano segnalarlo).
+2. Stampare tutte le letture; filtrare le valide e stamparle con il numero
+   di scartate; filtrare le valide da almeno 1000 ppm e stamparle.
+3. Liberare i tre blocchi.
 
-**a) Input** – `8`, poi `620 845 9999 1020 1180 0 960 1310`
+## 3. Casi di test
 
-**b) Output** – 6 valide (media 989), 2 scartate, 3 da 1000 in su (1020 1180 1310)
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `n_valide`, `n_alte`
+### Test 1 – Mattina in aula
 
-**d) Vincoli** – letture valide da 300 a 5000 ppm
+- **Input:** `8`, `450 1200 250 980 1500 6200 1000 720`
+- **Output atteso:**
+  ```
+  Numero di letture (da 1 a 144): Letture in ppm: Tutte le letture (8): 450 1200 250 980 1500 6200 1000 720  media 1538
+  Letture valide (6): 450 1200 980 1500 1000 720  media 975
+  Scartate per errore del sensore: 2
+  Almeno 1000 ppm (aprire le finestre) (3): 1200 1500 1000  media 1233
+  ```
 
-**e) Assunzioni** – nessuna
+### Test 2 – Nessuna lettura valida
 
-**f) Algoritmo in linguaggio naturale** – prima passata: contare; malloc(conta × sizeof); seconda passata: copiare.
+- **Input:** `3`, `200 100 6000`
+- **Output atteso:** `Letture valide (0): nessuna`, scartate 3,
+  `Almeno 1000 ppm (aprire le finestre) (0): nessuna`.
 
-### Caso d'uso 2 – Aria buona
+### Test 3 – Letture mancanti
 
-**a) Input** – `3`, poi `500 600 700`
-
-**b) Output** – "Almeno 1000 ppm (aprire le finestre) (0): nessuna"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – conta = 0: nessuna malloc, risultato NULL e quante = 0.
-
-### Caso d'uso 3 – Solo errori
-
-**a) Input** – `2`, poi `0 9000`
-
-**b) Output** – "Letture valide (0): nessuna"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il secondo filtro riceve un array vuoto e restituisce NULL.
-
-### Caso d'uso 4 – Memoria insufficiente
-
-**a) Input** – —
-
-**b) Output** – "Memoria insufficiente."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – quante > 0 ma risultato NULL.
+- **Input:** `3`, `400 x`
+- **Output atteso:** `Letture mancanti: ne servono 3.`

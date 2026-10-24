@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct {
     char nome[20];
@@ -64,8 +65,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (E, S, L, F, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'E') {
             if (scanf("%19s", s.nome) != 1) {
                 printf("  Nome mancante.\n");
@@ -101,8 +103,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'F' && comando != 'S') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
     if (fila != NULL) {

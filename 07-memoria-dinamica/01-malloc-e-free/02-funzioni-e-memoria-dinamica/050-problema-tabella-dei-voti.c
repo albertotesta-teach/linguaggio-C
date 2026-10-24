@@ -69,7 +69,9 @@ int main(void)
 
 double *crea_tabella(int righe, int colonne)
 {
-    return malloc(righe * colonne * sizeof(double));
+    double *tab = malloc(righe * colonne * sizeof *tab);
+
+    return tab;
 }
 
 int indice(int r, int c, int colonne)

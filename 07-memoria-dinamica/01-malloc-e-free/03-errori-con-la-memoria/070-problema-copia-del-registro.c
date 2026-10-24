@@ -85,10 +85,14 @@ int main(void)
                 finito = 1;
             } else if (sscanf(parola, "%d", &posizioni[modifiche]) != 1 ||
                        scanf("%lf", &nuovi[modifiche]) != 1 || posizioni[modifiche] < 1 ||
-                       posizioni[modifiche] > originale.n) {
+                       posizioni[modifiche] > originale.n || nuovi[modifiche] < 1 ||
+                       nuovi[modifiche] > 10) {
                 printf("  modifica non valida\n");
             } else {
                 modifiche++;
+            }
+            if (!finito) {
+                scanf("%*[^\n]");      /* una modifica per riga */
             }
         }
 

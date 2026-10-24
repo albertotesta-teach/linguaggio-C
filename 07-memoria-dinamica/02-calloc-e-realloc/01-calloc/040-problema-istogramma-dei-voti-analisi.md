@@ -2,61 +2,104 @@
 
 ## 1. Problema
 
-Ogni docente usa la sua scala di voti, con i mezzi voti. Il programma legge il voto minimo e il massimo, alloca con calloc un contatore per ogni voto possibile ((massimo - minimo) × 2 + 1 contatori, già a zero), conta i voti letti fino a FINE e stampa l'istogramma dal voto più alto, il voto più frequente e la percentuale di sufficienze.
+Ogni docente usa la sua scala di voti, con i mezzi voti. Il programma
+legge il voto minimo e il massimo, alloca con `calloc` un contatore per
+ogni voto possibile ((massimo − minimo) × 2 + 1 contatori, già a zero),
+conta i voti letti fino a `FINE` e stampa l'istogramma dal voto più alto,
+il voto più frequente e la percentuale di sufficienze.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `conta` | `int *` | categorie (heap, calloc) | Un contatore per voto, a zero |
-| `minimo`, `massimo`, `categorie` | `int` | — | Scala e numero di contatori |
-| `totale`, `sufficienti`, `moda` | `int` | — | Statistiche |
-| `parola`, `dopo` | `char[]`, `char` | 16 | Voto letto come testo e controllo dei caratteri in più |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `minimo`, `massimo` | `int` | Scala dei voti, 1 ≤ minimo < massimo ≤ 10 |
+| voti | parole | Voti nella scala, multipli di 0.5; `FINE` termina |
+
+### Output
+
+- `N contatori azzerati da calloc`.
+- `X scartato` per ogni voto non valido.
+- L'istogramma con un asterisco per voto, dal più alto al più basso.
+- `Voti: T, piu' frequente: V (K volte), sufficienze: P%` (`volta` al
+  singolare), se ci sono voti.
+- `Scala non valida.`, `Memoria insufficiente.`
+
+### Vincoli
+
+- `conta = calloc(categorie, sizeof *conta)`: i contatori partono da 0
+  senza un ciclo di azzeramento; `free` alla fine.
+- Indice del voto: (voto − minimo) × 2.
+- Voto valido: un numero e nient'altro (`%lf%c` legge un solo campo),
+  nella scala, multiplo di 0.5.
+- A parità di frequenza vale il voto più alto.
+- Sufficiente da 6 in su. A fine input il conteggio termina come con
+  `FINE`.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `conta` | `int *` | Contatori allocati con `calloc` |
+| `categorie` | `int` | Numero di voti possibili |
+| `totale`, `sufficienti` | `int` | Contatori |
+| `moda` | `int` | Indice del voto più frequente |
+| `parola`, `dopo` | `char[16]`, `char` | Lettura e controllo del voto |
 
 | Funzione | Compito |
 |----------|---------|
-| `indice(voto, minimo)` | Posizione del contatore: (voto - minimo) × 2 |
+| `indice(voto, minimo)` | Posizione del contatore |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Istogramma
+1. Leggere la scala e controllarla; allocare i contatori con `calloc`.
+2. Leggere le parole fino a `FINE`: se è un voto valido aumentare il suo
+   contatore e i totali, altrimenti scartarla.
+3. Stampare l'istogramma dal voto più alto aggiornando la moda; stampare il
+   riepilogo; liberare i contatori.
 
-**a) Input** – `3 10`, poi `6 7.5 5 6.5 8 6 4.5 11 6 7.3 9 6.5 FINE`
+## 3. Casi di test
 
-**b) Output** – righe da 10.0 a 3.0 con un asterisco per voto; più frequente 6.0, sufficienze 80%
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `conta`
+### Test 1 – Scala da 4 a 8
 
-**d) Vincoli** – scala tra 1 e 10, minimo < massimo
+- **Input:** `4 8`, `6 6.5 7 5 4 8 6 7.5 3 9 6.3 sei 7`, `FINE`
+- **Valori intermedi attesi:** 9 contatori; 9 voti validi, 7 sufficienti
+  (78%); 6 e 7 compaiono due volte: vale il 7.
+- **Output atteso:**
+  ```
+  9 contatori azzerati da calloc
+  Voti (FINE per terminare):
+    3 scartato
+    9 scartato
+    6.3 scartato
+    sei scartato
 
-**e) Assunzioni** – mezzi voti
+   8.0 | *
+   7.5 | *
+   7.0 | * *
+   6.5 | *
+   6.0 | * *
+   5.5 |
+   5.0 | *
+   4.5 |
+   4.0 | *
+  Voti: 9, piu' frequente: 7.0 (2 volte), sufficienze: 78%
+  ```
 
-**f) Algoritmo in linguaggio naturale** – calloc(categorie); per ogni voto valido conta[indice]++; stampa all'indietro.
+### Test 2 – Singolare
 
-### Caso d'uso 2 – Voti scartati
+- **Input:** `4 8`, `4 8`, `FINE`
+- **Output atteso:** `Voti: 2, piu' frequente: 8.0 (1 volta), sufficienze: 50%`.
 
-**a) Input** – `11`, `7.3`, `6.5x`
+### Test 3 – Nessun voto e scala non valida
 
-**b) Output** – "11 scartato", "7.3 scartato"
-
-**c) Variabili di supporto** – `dopo`
-
-**d) Vincoli** – voto nella scala e multiplo di 0.5
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sscanf con %lf%c deve leggere un solo valore.
-
-### Caso d'uso 3 – Scala non valida
-
-**a) Input** – `8 5`
-
-**b) Output** – "Scala non valida."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
+- **Input:** `1 10`, `FINE`; poi `8 4`
+- **Output atteso:** l'istogramma vuoto senza riepilogo; poi
+  `Scala non valida.`

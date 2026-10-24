@@ -35,6 +35,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 typedef struct {
     double *dati;
@@ -68,8 +69,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (=, +, -, U, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == '=' || comando == '+' || comando == '-') {
             ok = scanf("%lf", &valore) == 1;
             if (ok) {
@@ -90,7 +92,6 @@ int main(void)
                 voto = nuovo;
                 printf("  voto %.1f\n", voto);
             }
-            scanf("%*[^\n]");
         } else if (comando == 'U') {
             if (togli_ultimo(storia, &voto)) {
                 printf("  annullata: voto %.1f\n", voto);
@@ -105,6 +106,9 @@ int main(void)
             printf(" ]\n");
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
+        }
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
     distruggi_storia(storia);

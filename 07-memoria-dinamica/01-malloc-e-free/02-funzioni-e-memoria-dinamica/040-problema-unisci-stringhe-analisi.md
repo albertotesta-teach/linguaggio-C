@@ -2,78 +2,90 @@
 
 ## 1. Problema
 
-Il laboratorio di informatica crea gli indirizzi email degli studenti nuovi unendo nome e cognome (nome.cognome@studenti.scuola.it), in minuscolo e senza caratteri che non sono lettere. Se l'indirizzo esiste già si aggiunge un numero a partire da 2. La funzione crea_email calcola la lunghezza esatta, alloca il blocco e lo restituisce; il chiamante conserva i puntatori e alla fine li libera.
+Il laboratorio di informatica crea gli indirizzi email degli studenti
+nuovi unendo nome e cognome (`nome.cognome@studenti.scuola.it`), in
+minuscolo e senza i caratteri che non sono lettere. Se l'indirizzo esiste
+già si aggiunge un numero a partire da 2. La funzione `crea_email` calcola
+la lunghezza esatta, alloca il blocco e lo restituisce; il chiamante
+conserva i puntatori e alla fine li libera.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `elenco` | `char *[]` | 30 puntatori | Indirizzi creati, uno per blocco |
-| `nome`, `cognome` | `char[]` | 24 | Parole lette |
-| `email` | `char *` | lunghezza esatta + 1 (heap) | Indirizzo appena creato |
-| `numero` | `int` | — | 0, poi 2, 3, ... per i doppioni |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `nome`, `cognome` | `char[24]` | Una coppia per riga; `FINE` termina |
+
+### Output
+
+- Per ogni studente: `indirizzo (N caratteri)`, oppure
+  `Nome o cognome senza lettere.`, `Memoria insufficiente.`
+- Alla fine: `Account da creare: N` e l'elenco degli indirizzi.
+
+### Vincoli
+
+- Lunghezza: lettere del nome + 1 (punto) + lettere del cognome + cifre
+  del numero + lunghezza del dominio, più il terminatore; il blocco è
+  `malloc((lunghezza + 1) * sizeof *email)`.
+- Un indirizzo già presente si scarta (`free`) e si riprova con il numero
+  successivo (2, 3, ...).
+- Si conservano solo le lettere, in minuscolo (`D'Amico` → `damico`).
+- Ogni blocco memorizzato viene liberato alla fine; al massimo 30
+  studenti.
+- Il resto della riga viene scartato. A fine input il programma termina
+  come con `FINE`.
+
+### Assunzioni
+
+- Nome e cognome sono una parola ciascuno (i cognomi composti si scrivono
+  uniti o con il trattino).
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `elenco` | `char *[30]` | Indirizzi creati |
+| `email` | `char *` | Blocco restituito da `crea_email` |
+| `numero` | `int` | Suffisso per gli omonimi (0 = nessuno) |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_email(nome, cognome, numero)` | Alloca e riempie nome.cognome[numero]@dominio; NULL se la memoria non basta |
-| `lettere(testo)` | Quante lettere contiene il testo |
-| `cifre(numero)` | Quante cifre ha il numero |
-| `presente(elenco, n, email)` | 1 se l'indirizzo è già nell'elenco |
+| `crea_email(nome, cognome, numero)` | Alloca e compone l'indirizzo; `NULL` se manca memoria |
+| `lettere(testo)` | Conta le lettere |
+| `cifre(numero)` | Cifre di un numero positivo |
+| `presente(elenco, n, email)` | 1 se l'indirizzo esiste già |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Indirizzo nuovo
+1. Finché non si termina e c'è posto: leggere nome e cognome (con `FINE` o
+   a fine input terminare), scartare il resto della riga; se uno dei due
+   non ha lettere segnalarlo; altrimenti creare l'indirizzo e, finché è
+   già presente, liberarlo e crearlo con il numero successivo;
+   memorizzarlo e stamparlo.
+2. Stampare l'elenco liberando ogni blocco.
 
-**a) Input** – `Marta Bassi`; `Luca D'Amico`
+## 3. Casi di test
 
-**b) Output** – marta.bassi@studenti.scuola.it (30 caratteri); luca.damico@...
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `email`
+### Test 1 – Omonimi e caratteri non alfabetici
 
-**d) Vincoli** – nomi e cognomi di una parola
+- **Input:** `Mario Rossi`, `mario ROSSI`, `Anna D'Amico`,
+  `Mario Rossi extra`, `123 456`, `MARIA DE-LUCA`, `FINE`
+- **Output atteso:**
+  ```
+    mario.rossi@studenti.scuola.it (30 caratteri)
+    mario.rossi2@studenti.scuola.it (31 caratteri)
+    anna.damico@studenti.scuola.it (30 caratteri)
+    mario.rossi3@studenti.scuola.it (31 caratteri)
+    Nome o cognome senza lettere.
+    maria.deluca@studenti.scuola.it (31 caratteri)
 
-**e) Assunzioni** – solo lettere ASCII
-
-**f) Algoritmo in linguaggio naturale** – lunghezza = lettere(nome) + 1 + lettere(cognome) + lunghezza del dominio; malloc(lunghezza + 1).
-
-### Caso d'uso 2 – Indirizzo già presente
-
-**a) Input** – `Marta Bassi` e poi `MARTA bassi`
-
-**b) Output** – marta.bassi2@..., marta.bassi3@...
-
-**c) Variabili di supporto** – `numero`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – maiuscole e minuscole sono equivalenti
-
-**f) Algoritmo in linguaggio naturale** – se presente, free del blocco e nuovo tentativo con il numero successivo.
-
-### Caso d'uso 3 – Nome senza lettere
-
-**a) Input** – `123 456`
-
-**b) Output** – "Nome o cognome senza lettere."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – almeno una lettera
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
-
-### Caso d'uso 4 – Fine
-
-**a) Input** – `FINE`
-
-**b) Output** – elenco degli account; ogni blocco liberato dopo la stampa
-
-**c) Variabili di supporto** – `n`
-
-**d) Vincoli** – al massimo 30 studenti
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – per ogni elenco[i]: stampa e free.
+  Account da creare: 5
+    mario.rossi@studenti.scuola.it
+    mario.rossi2@studenti.scuola.it
+    anna.damico@studenti.scuola.it
+    mario.rossi3@studenti.scuola.it
+    maria.deluca@studenti.scuola.it
+  ```

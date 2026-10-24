@@ -2,57 +2,85 @@
 
 ## 1. Problema
 
-Per valutare la leggibilità di un testo il programma conta le parole per lunghezza. L'insegnante sceglie la lunghezza massima da distinguere: calloc alloca massimo + 1 contatori, e le parole più lunghe finiscono nell'ultimo. Alla fine stampa la distribuzione con le percentuali, la lunghezza media e la parola più lunga.
+Per valutare la leggibilità di un testo il programma conta le parole per
+lunghezza. L'insegnante sceglie la lunghezza massima da distinguere:
+`calloc` alloca massimo + 1 contatori e le parole più lunghe finiscono
+nell'ultimo. Alla fine stampa la distribuzione con le percentuali, la
+lunghezza media e la parola più lunga.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `conta` | `int *` | massimo + 1 (heap, calloc) | conta[k]: parole di k lettere, conta[massimo]: massimo o più |
-| `riga` | `char[]` | 200 | Riga letta |
-| `piu_lunga` | `char[]` | 40 | Parola più lunga trovata |
-| `parole`, `lettere_totali` | `int` | — | Per la media |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `massimo` | `int` | Lunghezza massima distinta, da 2 a 30 |
+| testo | righe | Testo; `FINE` da solo su una riga termina |
 
-### Caso d'uso 1 – Testo scientifico
+### Output
 
-**a) Input** – `8`, poi due righe sulla fotosintesi, `FINE`
+- `Parole: N`.
+- Per ogni lunghezza presente: `L lettere: K (P%)`, con `+` sull'ultima
+  (lunghezza massima o più).
+- `Lunghezza media: M lettere` e `Parola piu' lunga: ...` se ci sono
+  parole.
+- `Valore non valido.`, `Memoria insufficiente.`
 
-**b) Output** – 16 parole; 8+ lettere: 7 (43.8%); media 6.3; più lunga "clorofilliana"
+### Vincoli
 
-**c) Variabili di supporto** – `conta`
+- `conta = calloc(massimo + 1, sizeof *conta)`: indice = lunghezza, con
+  le parole più lunghe nell'ultimo contatore; l'indice 0 non si usa.
+- Una parola è una sequenza di lettere: cifre, apostrofi e punteggiatura
+  la separano.
+- A parità di lunghezza resta la prima parola più lunga trovata.
+- A fine input il conteggio termina come con `FINE`.
 
-**d) Vincoli** – massimo da 2 a 30
+### Assunzioni
 
-**e) Assunzioni** – una parola è una sequenza di lettere
+- Righe al massimo di 199 caratteri; testo senza lettere accentate.
 
-**f) Algoritmo in linguaggio naturale** – per ogni parola conta[min(lunghezza, massimo)]++.
+### Variabili di supporto
 
-### Caso d'uso 2 – Apostrofo
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `conta` | `int *` | Contatori per lunghezza |
+| `riga` | `char[200]` | Riga letta |
+| `parole`, `lettere_totali` | `int` | Per la media |
+| `piu_lunga` | `char[40]` | Parola più lunga |
+| `inizio`, `lunghezza` | `int` | Posizione e lunghezza della parola corrente |
 
-**a) Input** – `l'energia`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – due parole: "l" e "energia"
+1. Leggere il massimo, allocare i contatori, scartare il resto della riga.
+2. Per ogni riga fino a `FINE`: scorrere i caratteri; a ogni sequenza di
+   lettere contare la parola nel contatore della sua lunghezza (o
+   nell'ultimo) e aggiornare totale e parola più lunga.
+3. Stampare la distribuzione, la media e la parola più lunga; liberare i
+   contatori.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – l'apostrofo separa
+### Test 1 – Due frasi
 
-**f) Algoritmo in linguaggio naturale** – il carattere non alfabetico chiude la parola.
+- **Input:** `4`, `Il gatto dorme sul divano rosso.`,
+  `La professoressa spiega la fotosintesi!`, `FINE`
+- **Valori intermedi attesi:** 11 parole, 60 lettere; tre di 2 lettere,
+  una di 3, sette di 4 o più.
+- **Output atteso:**
+  ```
+  Testo (FINE per terminare):
 
-### Caso d'uso 3 – Valore non valido
+  Parole: 11
+     2  lettere:   3  (27.3%)
+     3  lettere:   1  ( 9.1%)
+     4+ lettere:   7  (63.6%)
+  Lunghezza media: 5.5 lettere
+  Parola piu' lunga: professoressa
+  ```
 
-**a) Input** – `1`
+### Test 2 – Testo vuoto
 
-**b) Output** – "Valore non valido."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
+- **Input:** `5`, `FINE`
+- **Output atteso:** `Parole: 0` e nient'altro.

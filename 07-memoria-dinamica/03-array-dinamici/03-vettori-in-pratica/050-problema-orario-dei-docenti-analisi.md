@@ -2,87 +2,110 @@
 
 ## 1. Problema
 
-Il coordinatore cerca le ore in cui tutti i docenti del consiglio di classe sono liberi per una riunione. Le lezioni arrivano come `docente giorno ora`. Ogni docente ha un proprio vettore dinamico di ore occupate (codice giorno × 10 + ora) che cresce indipendentemente dagli altri; un'ora è libera per tutti se nessun vettore la contiene.
+Il coordinatore cerca le ore in cui tutti i docenti del consiglio di
+classe sono liberi per una riunione. Le lezioni arrivano come `docente
+giorno ora`. Ogni docente ha un proprio vettore dinamico di ore occupate
+(codice giorno × 10 + ora) che cresce indipendentemente dagli altri; un'ora
+è libera per tutti se nessun vettore la contiene. Anche il consiglio è un
+vettore dinamico di docenti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Ore` | `dati (int *), n, capacita` | ore occupate di un docente |
-| `Docente` | `nome[20], ore (Ore *)` | un docente e il suo vettore |
-| `Consiglio` | `dati (Docente *), n, capacita` | vettore di docenti |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `consiglio` | `Consiglio *` | struct + blocco di n Docente (heap) | Docenti, ognuno con il suo vettore |
-| `ore` di ogni docente | `Ore *` | struct + blocco di int (heap) | Ore occupate |
-| `nome`, `giorno` | `char[]` | 20, 8 | Dati letti |
-| `ora`, `g`, `indice`, `letti` | `int` | — | Ora, giorno 1-5, docente, valori letti |
-| `libere`, `libere_giorno` | `int` | — | Ore libere comuni |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| lezioni | testo | `docente giorno ora` con giorno `lun`...`ven` e ora 1-6; `FINE` termina |
+
+### Output
+
+- `lezione non valida per nome`, `nome giorno ora gia' inserita`.
+- `Carico dei docenti:` con ore e capacità del vettore di ognuno.
+- `Ore libere per tutti:` giorno per giorno (o `nessuna`) e il totale su
+  30.
+- `Nessuna lezione inserita.`, `Memoria insufficiente.`
+
+### Vincoli
+
+- Due vettori annidati: `Consiglio` contiene `Docente`, ognuno con un
+  `Ore *` creato da `crea_ore(4)` e raddoppiato quando serve.
+- `aggiungi_docente` crea prima il vettore delle ore; se il consiglio non
+  può crescere lo distrugge e restituisce −1.
+- `distruggi_consiglio` libera i vettori di ogni docente, poi l'array,
+  poi la struct.
+- Il `main` usa solo le funzioni dei due vettori.
+- I giorni si scrivono in minuscolo.
+
+### Assunzioni
+
+- I nomi dei docenti sono una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Ore` | `typedef struct { int *dati; int n; int capacita; } Ore;` | Ore occupate di un docente |
+| `Docente` | `typedef struct { char nome[20]; Ore *ore; } Docente;` | Un docente |
+| `Consiglio` | `typedef struct { Docente *dati; int n; int capacita; } Consiglio;` | Vettore dei docenti |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `consiglio` | `Consiglio *` | I docenti |
+| `indice`, `g` | `int` | Docente e giorno della lezione |
+| `libere`, `libere_giorno` | `int` | Contatori |
+| `letti` | `int` | Valore restituito da `scanf` |
 
 | Funzione | Compito |
 |----------|---------|
-| `aggiungi_docente(c, nome)` | Nuovo docente con vettore di ore vuoto; indice o -1 |
-| `contiene(v, codice)` | 1 se l'ora è nel vettore |
-| `numero_giorno(giorno)` | Da lun-ven a 1-5; 0 se non valido |
-| `libera_per_tutti(c, codice)` | Nessun docente contiene il codice |
-| `distruggi_consiglio(c)` | Prima ogni vettore di ore, poi il blocco dei docenti |
-| `crea_ore, aggiungi, lunghezza, capacita, crea_consiglio, cerca_docente, nome_docente, ore_docente` | Funzioni dei due vettori |
+| `crea_ore`, `aggiungi`, `lunghezza`, `capacita`, `contiene`, `distruggi_ore` | Vettore delle ore |
+| `crea_consiglio`, `cerca_docente`, `aggiungi_docente`, `numero_docenti`, `nome_docente`, `ore_docente`, `distruggi_consiglio` | Vettore dei docenti |
+| `numero_giorno(giorno)` | `lun`...`ven` → 1-5, 0 se non valido |
+| `libera_per_tutti(c, codice)` | 1 se nessun docente ha lezione |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Tre docenti
+1. Leggere le lezioni fino a `FINE`: controllarle; trovare o aggiungere
+   il docente; aggiungere il codice dell'ora se non c'è già.
+2. Stampare il carico di ogni docente.
+3. Per ogni giorno e ora controllare se è libera per tutti e stamparla;
+   stampare il totale.
+4. Distruggere il consiglio.
 
-**a) Input** – lezioni di Rossi (5), Bianchi (7), Verdi (9), poi `FINE`
+## 3. Casi di test
 
-**b) Output** – capacità 8, 8, 16; ore libere: gio 1 2 3 5 6, ven 1 2 3 4 5; totale 10 su 30
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `libere`
+### Test 1 – Tre docenti
 
-**d) Vincoli** – giorni lun-ven, ore 1-6
+- **Input:** `Rossi lun 1`, `Rossi lun 2`, `Bianchi lun 1`,
+  `Bianchi mar 3`, `Rossi mar 4`, `Verdi mer 1`, `Verdi sab 2`,
+  `Verdi mer 9`, `Rossi lun 2`, `Rossi gio 1`, `Rossi gio 2`,
+  `Rossi ven 6`, `Neri lun x`, `FINE`
+- **Valori intermedi attesi:** Rossi ha 6 ore: il suo vettore passa da 4 a
+  8; 8 ore distinte occupate, 22 libere.
+- **Output atteso:**
+  ```
+  Lezioni: docente giorno ora (FINE per terminare)
+    lezione non valida per Verdi
+    lezione non valida per Verdi
+    Rossi lun 2 gia' inserita
+    lezione non valida per Neri
 
-**e) Assunzioni** – una lezione per ora per docente
+  Carico dei docenti:
+    Rossi      ore  6  (capacita del vettore 8)
+    Bianchi    ore  2  (capacita del vettore 4)
+    Verdi      ore  1  (capacita del vettore 4)
 
-**f) Algoritmo in linguaggio naturale** – doppio ciclo giorno/ora con libera_per_tutti.
+  Ore libere per tutti:
+    lun: 3 4 5 6
+    mar: 1 2 5 6
+    mer: 2 3 4 5 6
+    gio: 3 4 5 6
+    ven: 1 2 3 4 5
+  Totale ore libere comuni: 22 su 30
+  ```
 
-### Caso d'uso 2 – Lezione ripetuta
+### Test 2 – Nessuna lezione
 
-**a) Input** – `Rossi lun 1` due volte
-
-**b) Output** – "Rossi lun 1 gia' inserita"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – contiene prima di aggiungere.
-
-### Caso d'uso 3 – Dati errati
-
-**a) Input** – `Neri sab 2`, `Neri gio x`
-
-**b) Output** – "lezione non valida per Neri"
-
-**c) Variabili di supporto** – `letti`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se l'ora non è un numero si salta la parola.
-
-### Caso d'uso 4 – Nessuna lezione
-
-**a) Input** – `FINE`
-
-**b) Output** – "Nessuna lezione inserita."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – numero_docenti == 0.
+- **Input:** `FINE`
+- **Output atteso:** `Nessuna lezione inserita.`

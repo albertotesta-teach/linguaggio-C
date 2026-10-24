@@ -2,88 +2,111 @@
 
 ## 1. Problema
 
-Il collaboratore all'ingresso registra ogni studente che entra in ritardo con data, nome e minuti. Il numero di ingressi dell'anno non si conosce: le registrazioni vanno in un vettore dinamico di struct `Ritardo`, che parte da 4 posti e raddoppia quando è pieno. Il programma legge le righe `gg/mm nome minuti` fino a FINE e stampa gli ingressi per mese (da settembre a giugno), la data con più ritardi e gli studenti con almeno 3 ritardi.
+Il collaboratore all'ingresso registra ogni studente che entra in ritardo
+con data, nome e minuti. Il numero di ingressi dell'anno non si conosce:
+le registrazioni vanno in un vettore dinamico di struct `Ritardo`, che
+parte da 4 posti e raddoppia quando è pieno. Il programma legge le righe
+`gg/mm nome minuti` fino a `FINE` e stampa gli ingressi per mese (da
+settembre a giugno), la data con più ritardi e gli studenti con almeno 3
+ritardi.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Ritardo` | `giorno, mese, studente[20], minuti` | un ingresso in ritardo |
-| `Registro` | `dati (Ritardo *), n, capacita` | vettore dinamico di Ritardo |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `registro` | `Registro *` | struct + blocco di n Ritardo (heap) | Tutte le registrazioni, crescita a raddoppio |
-| `r` | `Ritardo` | — | Riga letta, poi copia dell'elemento i |
-| `parola` | `char[]` | 16 | Prima parola: data o FINE |
-| `per_mese` | `int[]` | 13 | Ingressi per mese (indice 1-12) |
-| `massimo`, `peggiore` | `int` | — | Data con più ingressi |
-| `conta` | `int` | — | Ritardi di una data o di uno studente |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| riga | testo | `gg/mm nome minuti`; `FINE` termina |
+
+### Output
+
+- `riga non valida` per ogni riga scartata.
+- `Ingressi in ritardo: N (capacita' C)`.
+- Gli ingressi per mese da settembre a giugno.
+- `Data con piu' ritardi: gg/mm (K)` (se ci sono ingressi).
+- `Avviso alla famiglia (almeno 3 ritardi):` con gli studenti.
+
+### Vincoli
+
+- Vettore `{Ritardo *dati; int n; int capacita;}`: capacità iniziale 4,
+  raddoppio con `realloc` in un temporaneo quando `n == capacita`.
+- Il `main` usa il vettore solo con le sue funzioni (`aggiungi`,
+  `lunghezza`, `capacita`, `elemento`), mai con i campi.
+- Data valida: mese di scuola (luglio e agosto esclusi), giorno esistente
+  (febbraio fino al 29); minuti positivi.
+- A parità vale la prima data con il massimo; ogni studente compare una
+  volta sola nell'avviso (alla sua prima registrazione).
+- Una riga per ritardo: il resto viene scartato. A fine input il
+  programma termina come con `FINE`.
+
+### Assunzioni
+
+- Il nome è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Ritardo` | `typedef struct { int giorno; int mese; char studente[20]; int minuti; } Ritardo;` | Un ingresso in ritardo |
+| `Registro` | `typedef struct { Ritardo *dati; int n; int capacita; } Registro;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `registro` | `Registro *` | Il vettore |
+| `per_mese` | `int[13]` | Ingressi per mese |
+| `ordine` | `const int[10]` | Mesi da settembre a giugno |
+| `massimo`, `peggiore` | `int` | Data con più ritardi |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_registro(capacita)` | Alloca struct e blocco; NULL se manca memoria |
-| `aggiungi(r, nuovo)` | Raddoppia con realloc se pieno, poi scrive in fondo; 0 se manca memoria |
-| `lunghezza, capacita, elemento` | Accesso al registro senza toccare i campi |
-| `data_valida(giorno, mese)` | Giorno esistente, mese di scuola (no luglio e agosto) |
-| `conta_studente(r, nome, fino_a)` | Ritardi dello studente tra i primi fino_a elementi |
-| `conta_data(r, giorno, mese)` | Ingressi in quella data |
-| `distruggi_registro(r)` | Libera blocco e struct |
+| `crea_registro`, `distruggi_registro` | Allocazione e liberazione |
+| `aggiungi(r, nuovo)` | Aggiunge in fondo, raddoppiando se serve |
+| `lunghezza`, `capacita`, `elemento` | Accesso al vettore |
+| `data_valida(giorno, mese)` | Controllo della data |
+| `conta_studente(r, nome, fino_a)` | Ritardi dello studente tra i primi `fino_a` |
+| `conta_data(r, giorno, mese)` | Ritardi in una data |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Un trimestre
+1. Creare il registro.
+2. Leggere le righe fino a `FINE`: controllarle e aggiungerle.
+3. Contare gli ingressi per mese e trovare la data con più ritardi.
+4. Stampare i mesi, la data e gli studenti con almeno 3 ritardi.
+5. Distruggere il registro.
 
-**a) Input** – 11 righe da `15/09 Rossi 10` a `18/12 Verdi 25`, poi `FINE`
+## 3. Casi di test
 
-**b) Output** – 10 ingressi (capacità 16); ott 4; data peggiore 02/10 (3); avviso a Rossi (4) e Verdi (3)
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `per_mese`, `conta`
+### Test 1 – Un trimestre
 
-**d) Vincoli** – minuti ≥ 1
+- **Input:** `02/10 Rossi 10`, `02/10 Bianchi 5`, `15/10 Rossi 7`,
+  `31/11 Verdi 5`, `20/11 Rossi 12 extra`, `03/12 Verdi 0`,
+  `10/07 Neri 5`, `12/01 Bianchi 8`, `02/10 Verdi 3`, `xx`,
+  `20/03 Bianchi 4`, `FINE`
+- **Valori intermedi attesi:** 7 ingressi validi: la capacità passa da 4
+  a 8.
+- **Output atteso:**
+  ```
+  Ritardi (gg/mm nome minuti, FINE per terminare):
+    riga non valida
+    riga non valida
+    riga non valida
+    riga non valida
 
-**e) Assunzioni** – date dello stesso anno scolastico
-
-**f) Algoritmo in linguaggio naturale** – aggiungi per ogni riga valida; poi un ciclo su elemento(i) per i conteggi.
-
-### Caso d'uso 2 – Data inesistente
-
-**a) Input** – `31/11 Verdi 5`
-
-**b) Output** – "riga non valida"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – giorno entro i giorni del mese
-
-**e) Assunzioni** – febbraio fino a 29
-
-**f) Algoritmo in linguaggio naturale** – la riga si scarta fino al fine riga.
-
-### Caso d'uso 3 – Avviso una volta sola
-
-**a) Input** – Rossi compare 4 volte
-
-**b) Output** – una sola riga "Rossi: 4 ritardi"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – si stampa solo alla prima comparsa: conta_studente(nome, i) == 0.
-
-### Caso d'uso 4 – Nessun ingresso
-
-**a) Input** – `FINE`
-
-**b) Output** – 0 ingressi, tutti i mesi a 0, nessuna data
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – peggiore resta -1.
+  Ingressi in ritardo: 7 (capacita' 8)
+    set  0
+    ott  4
+    nov  1
+    dic  0
+    gen  1
+    feb  0
+    mar  1
+    apr  0
+    mag  0
+    giu  0
+  Data con piu' ritardi: 02/10 (3)
+  Avviso alla famiglia (almeno 3 ritardi):
+    Rossi: 3 ritardi
+    Bianchi: 3 ritardi
+  ```

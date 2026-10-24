@@ -2,68 +2,98 @@
 
 ## 1. Problema
 
-La classe raccoglie le estrazioni di una ruota del lotto (5 numeri diversi da 1 a 90) per un'unità di statistica. Le estrazioni vanno in un vettore dinamico di struct `Estrazione`. Alla fine si calcolano per ogni numero la frequenza e il ritardo (estrazioni passate dall'ultima uscita, -1 se mai uscito) e si stampano i 5 più frequenti e i 5 più in ritardo tra quelli usciti, con il richiamo all'indipendenza delle estrazioni.
+La classe raccoglie le estrazioni di una ruota del lotto (5 numeri diversi
+da 1 a 90) per un'unità di statistica. Le estrazioni vanno in un vettore
+dinamico di struct `Estrazione`. Alla fine si calcolano per ogni numero la
+frequenza e il ritardo (estrazioni passate dall'ultima uscita, −1 se mai
+uscito) e si stampano i 5 più frequenti e i 5 più in ritardo tra quelli
+usciti, con il richiamo all'indipendenza delle estrazioni.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Estrazione` | `numeri[5]` | una estrazione |
-| `Archivio` | `dati (Estrazione *), n, capacita` | vettore dinamico di estrazioni |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `archivio` | `Archivio *` | struct + blocco di n Estrazione (heap) | Tutte le estrazioni |
-| `e` | `Estrazione` | — | Estrazione letta |
-| `frequenza`, `ritardo` | `int[]` | 91 | Statistiche per numero (indice 1-90) |
-| `parola`, `letti` | `char[]`, `int` | 16 | Primo numero o FINE; numeri letti |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[80]` | Cinque numeri per riga; `FINE` termina |
+
+### Output
+
+- `estrazione non valida` per ogni riga scartata.
+- `Estrazioni: N`.
+- Se ci sono estrazioni: `Piu' frequenti:` e `Piu' in ritardo tra gli
+  usciti:` con 5 numeri e il valore tra parentesi, e la frase
+  sull'indipendenza.
+
+### Vincoli
+
+- Vettore `{Estrazione *dati; int n; int capacita;}` con capacità iniziale
+  4 e raddoppio; il `main` usa solo le funzioni del vettore.
+- Riga valida: esattamente cinque interi da 1 a 90, tutti diversi.
+- Ritardo di un numero: n − 1 − indice dell'ultima estrazione in cui è
+  uscito.
+- Classifica: valore più alto, a parità il numero più piccolo; i numeri
+  mai usciti (ritardo −1) sono esclusi.
+- Una riga più lunga del buffer viene troncata e il resto scartato. A fine
+  input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Estrazione` | `typedef struct { int numeri[5]; } Estrazione;` | Un'estrazione |
+| `Archivio` | `typedef struct { Estrazione *dati; int n; int capacita; } Archivio;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `archivio` | `Archivio *` | Le estrazioni |
+| `frequenza`, `ritardo` | `int[91]` | Statistiche per numero |
+| `riga`, `dopo`, `resto` | `char[80]`, `char`, `int` | Lettura della riga |
 
 | Funzione | Compito |
 |----------|---------|
-| `valida(&e)` | 5 numeri tra 1 e 90, tutti diversi |
-| `stampa_primi(titolo, valore)` | I 5 numeri con valore più alto (esclusi i -1) |
-| `crea_archivio, aggiungi, lunghezza, elemento, distruggi_archivio` | Funzioni del vettore |
+| `crea_archivio`, `distruggi_archivio` | Allocazione e liberazione |
+| `aggiungi`, `lunghezza`, `elemento` | Uso del vettore |
+| `valida(e)` | Numeri nell'intervallo e diversi |
+| `stampa_primi(titolo, valore)` | I 5 numeri con il valore più alto |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Sette estrazioni valide
+1. Leggere le righe fino a `FINE`; aggiungere le estrazioni valide.
+2. Inizializzare i ritardi a −1; scorrere le estrazioni aggiornando
+   frequenza e ritardo di ogni numero.
+3. Stampare il numero di estrazioni e, se ce ne sono, le due classifiche.
+4. Distruggere l'archivio.
 
-**a) Input** – 9 righe di 5 numeri, poi `FINE`
+## 3. Casi di test
 
-**b) Output** – 7 estrazioni; più frequenti 12 (4) e 45 (4); più in ritardo 3, 67, 88 (6)
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `frequenza`, `ritardo`
+### Test 1 – Quattro estrazioni valide
 
-**d) Vincoli** – numeri 1-90 tutti diversi
+- **Input:** `12 45 67 3 90`, `45 12 8 77 21`, `3 45 60 61 62`, `1 2 3 4`,
+  `5 6 7 8 99`, `10 10 11 12 13`, `1 2 3 4 5 6`, `33 34 35 36 37`, `FINE`
+- **Output atteso:**
+  ```
+  Estrazioni (5 numeri, FINE per terminare):
+    estrazione non valida
+    estrazione non valida
+    estrazione non valida
+    estrazione non valida
 
-**e) Assunzioni** – ordine cronologico
+  Estrazioni: 4
+  Piu' frequenti:  45 (3)  3 (2)  12 (2)  8 (1)  21 (1)
+  Piu' in ritardo tra gli usciti:  67 (3)  90 (3)  8 (2)  12 (2)  21 (2)
+  Ogni estrazione e' indipendente: il ritardo non aumenta la probabilita'.
+  ```
+  (righe con quattro o sei numeri, un numero oltre 90 o ripetuto sono
+  scartate).
 
-**f) Algoritmo in linguaggio naturale** – per ogni estrazione i: frequenza[x]++ e ritardo[x] = n - 1 - i.
+### Test 2 – Nessuna estrazione
 
-### Caso d'uso 2 – Estrazioni scartate
-
-**a) Input** – `12 12 4 5 6`, `91 2 3 4 5`
-
-**b) Output** – "estrazione non valida" (due volte)
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – valida controlla intervallo e doppioni.
-
-### Caso d'uso 3 – Numeri mai usciti
-
-**a) Input** – —
-
-**b) Output** – esclusi dalla classifica dei ritardi
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – ritardo -1
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – stampa_primi ignora i valori -1.
+- **Input:** `FINE`
+- **Output atteso:** `Estrazioni: 0`.

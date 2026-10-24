@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MATERIE 3
 
@@ -55,8 +56,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (A, T, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (scanf("%19s %lf %lf %lf", nome, &v[0], &v[1], &v[2]) != 4) {
                 printf("  Dati non validi.\n");
@@ -86,8 +88,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'S') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 

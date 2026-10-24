@@ -35,6 +35,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct {
     char nome[20];
@@ -73,8 +74,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (N, C, S, R, E, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'N') {
             if (scanf("%19s %d %d", a.nome, &a.quantita, &a.scorta) != 3 || a.quantita < 0 ||
                 a.scorta < 0) {
@@ -92,7 +94,7 @@ int main(void)
                 p = trova(magazzino, a.nome);
             }
             if (p == NULL) {
-                printf("  Articolo inesistente o quantita non valida.\n");
+                printf("  Articolo inesistente o quantita' non valida.\n");
             } else if (comando == 'C') {
                 p->quantita += quantita;
                 printf("  %s: disponibili %d\n", p->nome, p->quantita);
@@ -122,8 +124,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'R' && comando != 'E') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
     distruggi_magazzino(magazzino);

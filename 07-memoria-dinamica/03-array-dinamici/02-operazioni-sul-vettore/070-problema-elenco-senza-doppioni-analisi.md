@@ -2,68 +2,88 @@
 
 ## 1. Problema
 
-Gli studenti si offrono volontari per l'open day; qualcuno si iscrive due volte, qualcuno si ritira. L'elenco è un vettore dinamico di `Nome` con due operazioni in più: aggiungi_se_manca e rimuovi_valore. I nomi si normalizzano (iniziale maiuscola, resto minuscolo) così "rossi" e "ROSSI" sono la stessa persona.
+Gli studenti si offrono volontari per l'open day; qualcuno si iscrive due
+volte, qualcuno si ritira. L'elenco è un vettore dinamico di `Nome` con
+due operazioni in più: `aggiungi_se_manca` e `rimuovi_valore`. I nomi si
+normalizzano (iniziale maiuscola, resto minuscolo) così `rossi` e `ROSSI`
+sono la stessa persona.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Nome` | `testo[20]` | un volontario |
-| `Elenco` | `dati (Nome *), n, capacita` | vettore senza doppioni |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `volontari` | `Elenco *` | struct + blocco di n Nome (heap) | Volontari in ordine di iscrizione |
-| `nome` | `char[]` | 20 | Nome letto e normalizzato |
-| `esito` | `int` | — | 1 aggiunto, 0 già presente, -1 memoria |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `I nome` iscrivi, `R nome` ritira, `E` elenco, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `iscrizione di Nome (volontari: N)`, `Nome e' gia' nell'elenco`.
+- `ritiro di Nome (volontari: N)`, `Nome non e' nell'elenco`.
+- `E`: i volontari numerati.
+- `Nome mancante.`, `Memoria insufficiente.`, `Comando sconosciuto.`
+
+### Vincoli
+
+- Vettore `{Nome *dati; int n; int capacita;}` con capacità iniziale 2 e
+  raddoppio; il `main` usa solo le funzioni del vettore.
+- `aggiungi_se_manca`: 1 aggiunto, 0 già presente, −1 memoria
+  insufficiente.
+- `rimuovi_valore` cerca il nome e sposta indietro i successivi (l'ordine
+  di iscrizione resta).
+- I nomi si normalizzano prima di ogni ricerca.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Il nome è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Nome` | `typedef struct { char testo[20]; } Nome;` | Un nome |
+| `Elenco` | `typedef struct { Nome *dati; int n; int capacita; } Elenco;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `volontari` | `Elenco *` | Il vettore |
+| `esito` | `int` | Risultato di `aggiungi_se_manca` |
 
 | Funzione | Compito |
 |----------|---------|
-| `aggiungi_se_manca(e, nome)` | Cerca; se manca aggiunge (raddoppio); 1, 0 o -1 |
-| `rimuovi_valore(e, nome)` | Cerca e rimuove spostando i successivi; 0 se manca |
+| `crea_elenco`, `distruggi_elenco` | Allocazione e liberazione |
+| `aggiungi_se_manca(e, nome)` | Aggiunge solo se assente |
+| `rimuovi_valore(e, nome)` | Toglie il nome; 0 se assente |
+| `cerca`, `lunghezza`, `elemento` | Accesso |
 | `sistema(nome)` | Iniziale maiuscola, resto minuscolo |
-| `cerca, lunghezza, elemento, crea_elenco, distruggi_elenco` | Funzioni del vettore |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Iscrizioni
+1. Finché il comando non è `Q`: leggere il comando in maiuscolo; con
+   `I`/`R` leggere e normalizzare il nome, poi aggiungerlo o toglierlo;
+   con `E` stampare; scartare il resto della riga.
+2. Distruggere l'elenco.
 
-**a) Input** – `I rossi`, `I Bianchi`, `I ROSSI`, `I verdi`, `I Neri`
+## 3. Casi di test
 
-**b) Output** – 4 volontari; "Rossi e' gia' nell'elenco"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `esito`
+### Test 1 – Iscrizioni e ritiri
 
-**d) Vincoli** – nomi fino a 19 caratteri
-
-**e) Assunzioni** – un nome identifica una persona
-
-**f) Algoritmo in linguaggio naturale** – sistema, poi aggiungi_se_manca.
-
-### Caso d'uso 2 – Ritiro e reiscrizione
-
-**a) Input** – `R bianchi`, `R Gialli`, `I bianchi`, `E`
-
-**b) Output** – Bianchi esce e rientra in fondo: Rossi, Verdi, Neri, Bianchi; "Gialli non e' nell'elenco"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – rimuovi_valore sposta indietro i successivi.
-
-### Caso d'uso 3 – Fine dell'input
-
-**a) Input** – EOF
-
-**b) Output** – uscita come Q
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – scanf != 1 imposta Q.
+- **Input:** `I rossi`, `i ROSSI`, `I Bianchi`, `I verdi`, `R bianchi`,
+  `R Neri`, `E extra`, `X`, `Q`
+- **Valori intermedi attesi:** la terza iscrizione fa raddoppiare la
+  capacità da 2 a 4.
+- **Output atteso:**
+  ```
+    iscrizione di Rossi (volontari: 1)
+    Rossi e' gia' nell'elenco
+    iscrizione di Bianchi (volontari: 2)
+    iscrizione di Verdi (volontari: 3)
+    ritiro di Bianchi (volontari: 2)
+    Neri non e' nell'elenco
+    1. Rossi
+    2. Verdi
+    Comando sconosciuto.
+  ```

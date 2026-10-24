@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define MAX_RIGHE 26
 #define MAX_POSTI 40
@@ -58,10 +59,16 @@ int main(void)
             while (comando != 'Q') {
                 printf("Comando (P, C, M, Q): ");
                 if (scanf(" %c", &comando) != 1) {
-                    comando = 'Q';
+                    comando = 'Q';      /* input terminato: come Q */
                 }
+                comando = (char) toupper((unsigned char) comando);
                 if (comando == 'P') {
-                    if (scanf(" %c %d %d", &lettera, &numero, &quanti) != 3 || lettera < 'A' ||
+                    if (scanf(" %c %d %d", &lettera, &numero, &quanti) == 3) {
+                        lettera = (char) toupper((unsigned char) lettera);
+                    } else {
+                        lettera = ' ';          /* dati mancanti: non valido */
+                    }
+                    if (lettera < 'A' ||
                         lettera >= 'A' + righe || numero < 1 || quanti < 1 ||
                         numero + quanti - 1 > posti) {
                         printf("  Posti non validi.\n");
@@ -99,8 +106,9 @@ int main(void)
                         printf("  Prenotazione inesistente.\n");
                     } else {
                         occupati = occupati - quanti;
-                        printf("  prenotazione %d cancellata: liberati %d posti\n", numero,
-                               quanti);
+                        printf("  prenotazione %d cancellata: %s %d %s\n", numero,
+                               quanti == 1 ? "liberato" : "liberati", quanti,
+                               quanti == 1 ? "posto" : "posti");
                     }
                 } else if (comando == 'M') {
                     mappa(sala, righe, posti);
@@ -108,8 +116,8 @@ int main(void)
                 } else if (comando != 'Q') {
                     printf("  Comando sconosciuto.\n");
                 }
-                if (comando != 'Q' && comando != 'M') {
-                    scanf("%*[^\n]");
+                if (comando != 'Q') {
+                    scanf("%*[^\n]");  /* un comando per riga */
                 }
             }
             free(sala);

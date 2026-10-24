@@ -51,7 +51,8 @@ int main(void)
         } else if (riga[0] == '\0') {
             free(riga);
         } else {
-            printf("  %zu caratteri, ingrandimenti del blocco: %d\n", strlen(riga), ingrandimenti);
+            printf("  %zu caratteri, ingrandimenti del blocco: %d\n", strlen(riga),
+                   ingrandimenti);
             risposte[n] = riga;
             if (strlen(riga) > strlen(risposte[piu_lunga])) {
                 piu_lunga = n;
@@ -77,7 +78,7 @@ int main(void)
 
 char *leggi_riga(int *ingrandimenti)
 {
-    char *testo = malloc(PASSO);
+    char *testo = malloc(PASSO * sizeof *testo);
     char *tmp;
     int capienza = PASSO;
     int lunghezza = 0;
@@ -90,7 +91,7 @@ char *leggi_riga(int *ingrandimenti)
     }
     while (ok && c != '\n' && c != EOF) {
         if (lunghezza + 1 == capienza) {
-            tmp = realloc(testo, capienza + PASSO);
+            tmp = realloc(testo, (capienza + PASSO) * sizeof *tmp);
             if (tmp == NULL) {
                 ok = 0;
             } else {
@@ -111,7 +112,7 @@ char *leggi_riga(int *ingrandimenti)
         testo = NULL;
     } else {
         testo[lunghezza] = '\0';
-        tmp = realloc(testo, lunghezza + 1);
+        tmp = realloc(testo, (lunghezza + 1) * sizeof *tmp);
         if (tmp != NULL) {
             testo = tmp;
         }

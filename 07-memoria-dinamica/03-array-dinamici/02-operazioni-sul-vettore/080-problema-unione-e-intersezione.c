@@ -55,7 +55,8 @@ int main(void)
     int ok = robotica != NULL && fotografia != NULL;
 
     if (ok) {
-        ok = leggi_iscrizioni("robotica", robotica) && leggi_iscrizioni("fotografia", fotografia);
+        ok = leggi_iscrizioni("robotica", robotica) &&
+             leggi_iscrizioni("fotografia", fotografia);
     }
     if (ok) {
         tutti = unione(robotica, fotografia);
@@ -219,11 +220,17 @@ int leggi_iscrizioni(const char *laboratorio, Vettore *v)
 {
     int matricola = -1;
     int esito = 1;
+    int letto;
 
     printf("Matricole iscritte a %s (0 per finire): ", laboratorio);
     while (matricola != 0 && esito != -1) {
-        if (scanf("%d", &matricola) != 1) {
-            matricola = 0;
+        letto = scanf("%d", &matricola);
+        if (letto == EOF) {
+            matricola = 0;              /* input terminato: come 0 */
+        } else if (letto == 0) {
+            scanf("%*s");               /* scarta la parola che non e' un numero */
+            printf("  matricola non valida\n");
+            matricola = -1;
         } else if (matricola < 0) {
             printf("  matricola %d non valida\n", matricola);
         } else if (matricola > 0) {

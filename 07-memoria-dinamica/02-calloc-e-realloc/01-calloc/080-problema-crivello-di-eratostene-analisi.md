@@ -2,56 +2,86 @@
 
 ## 1. Problema
 
-Il programma trova i numeri primi fino a n con il crivello di Eratostene. Serve un flag per ogni numero da 0 a n, all'inizio tutti a 0 (nessun numero cancellato): calloc alloca e azzera n + 1 byte. Stampa quanti primi ci sono, l'elenco (o i primi 10 e gli ultimi 10) e le coppie di primi gemelli.
+Il programma trova i numeri primi fino a n con il crivello di Eratostene.
+Serve un flag per ogni numero da 0 a n, all'inizio tutti a 0 (nessun
+numero cancellato): `calloc` alloca e azzera n + 1 byte. Stampa quanti
+primi ci sono, l'elenco (o i primi 10 e gli ultimi 10) e le coppie di
+primi gemelli.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `composto` | `char *` | n + 1 (heap, calloc) | 1 se il numero è composto |
-| `n` | `int` | — | Limite (2-1000000) |
-| `primi`, `gemelli`, `contati` | `int` | — | Conteggi e posizione nella stampa |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `n` | `int` | Limite, da 2 a 1000000 |
 
-### Caso d'uso 1 – Primi fino a 100
+### Output
 
-**a) Input** – `100`
+- `Flag allocati: B byte`.
+- `Primi fino a n: P`.
+- L'elenco dei primi se sono al massimo 30, altrimenti i primi 10, `...`
+  e gli ultimi 10.
+- `Coppie di primi gemelli: G`.
+- `Numero non valido.`, `Memoria insufficiente.`
 
-**b) Output** – 25 primi, elencati tutti; 8 coppie di gemelli
+### Vincoli
 
-**c) Variabili di supporto** – `composto`
+- `composto = calloc(n + 1, sizeof *composto)`: un `char` per numero,
+  tutti a 0.
+- Crivello: per ogni p con p² ≤ n non cancellato, si cancellano i
+  multipli da p² in poi.
+- Primi gemelli: p e p + 2 entrambi primi e non oltre n.
 
-**d) Vincoli** – —
+### Assunzioni
 
-**e) Assunzioni** – nessuna
+- Nessuna.
 
-**f) Algoritmo in linguaggio naturale** – per ogni p con p × p ≤ n non cancellato, cancellare i multipli da p × p.
+### Variabili di supporto
 
-### Caso d'uso 2 – Un milione
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `composto` | `char *` | Flag dei numeri cancellati |
+| `p`, `m` | `int` | Primo corrente e suoi multipli |
+| `primi`, `gemelli`, `contati` | `int` | Contatori |
+| `MASSIMO` | `#define` | 1000000 |
 
-**a) Input** – `1000000`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – 78498 primi, i primi 10 ... gli ultimi 10; 8169 coppie
+1. Leggere n e allocare i flag con `calloc`.
+2. Applicare il crivello.
+3. Contare primi e coppie di gemelli.
+4. Stampare il conteggio e l'elenco (completo o abbreviato).
+5. Liberare i flag.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – al massimo 1000000
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – circa 1 MB di flag
+### Test 1 – Fino a 30
 
-**f) Algoritmo in linguaggio naturale** – stampa ridotta se i primi sono più di 30.
+- **Input:** `30`
+- **Output atteso:**
+  ```
+  Primi fino a (da 2 a 1000000): Flag allocati: 31 byte
+  Primi fino a 30: 10
+   2 3 5 7 11 13 17 19 23 29
+  Coppie di primi gemelli: 4
+  ```
+  (gemelli: 3-5, 5-7, 11-13, 17-19).
 
-### Caso d'uso 3 – Numero non valido
+### Test 2 – Elenco abbreviato
 
-**a) Input** – `1`
+- **Input:** `1000`
+- **Output atteso:**
+  ```
+  Primi fino a 1000: 168
+   2 3 5 7 11 13 17 19 23 29 ... 937 941 947 953 967 971 977 983 991 997
+  Coppie di primi gemelli: 35
+  ```
 
-**b) Output** – "Numero non valido."
+### Test 3 – Limiti
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
+- **Input:** `2`; poi `1`
+- **Output atteso:** `Primi fino a 2: 1`, ` 2`, `Coppie di primi gemelli:
+  0`; poi `Numero non valido.`

@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define POSIZIONI 4
 
@@ -59,8 +60,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (U, R, E, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'U') {
             k = primo_libero(scaffale);
             if (scanf("%15s %19s", oggetto, studente) != 2) {
@@ -95,8 +97,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'E') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 

@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 typedef struct {
     char nome[20];
@@ -70,8 +71,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (A, S, C, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (scanf("%19s %d:%d", a.nome, &minuti, &secondi) != 3 || minuti < 0 ||
                 secondi < 0 || secondi > 59) {
@@ -108,8 +110,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'C') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
     distruggi_classifica(classifica);

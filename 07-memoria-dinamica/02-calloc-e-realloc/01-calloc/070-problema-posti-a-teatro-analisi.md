@@ -2,75 +2,94 @@
 
 ## 1. Problema
 
-Per lo spettacolo di fine anno la sala ha righe e posti per riga letti all'avvio. La sala è una matrice in un solo blocco allocato con calloc (tutti i posti liberi, cioè 0); ogni posto prenotato contiene il codice della prenotazione. Il programma gestisce prenotazioni di posti vicini nella stessa riga, cancellazioni e la mappa della sala.
+Per lo spettacolo di fine anno la sala ha righe e posti per riga letti
+all'avvio. La sala è una matrice in un solo blocco allocato con `calloc`
+(tutti i posti liberi, cioè 0); ogni posto prenotato contiene il codice
+della prenotazione. Il programma gestisce prenotazioni di posti vicini
+nella stessa riga, cancellazioni e la mappa della sala.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `sala` | `int *` | righe × posti (heap, calloc) | Codice della prenotazione o 0 |
-| `righe`, `posti` | `int` | — | Dimensioni della sala |
-| `codice`, `occupati` | `int` | — | Ultimo codice e posti occupati |
-| `lettera`, `numero`, `quanti` | `char`, `int` | — | Dati del comando P |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `righe`, `posti` | `int` | Righe 1-26 (lettere A-Z), posti per riga 1-40 |
+| `comando` | `char` | `P riga primo quanti` prenota, `C codice` cancella, `M` mappa, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `prenotazione K: A3-A6`, `Alcuni posti sono gia' occupati.`,
+  `Posti non validi.`
+- `prenotazione K cancellata: liberati N posti` (`liberato 1 posto`),
+  `Prenotazione inesistente.`
+- `M`: la mappa con `.` libero e `#` occupato, e `occupati O su T`.
+- `Sala non valida (...)`, `Memoria insufficiente.`,
+  `Comando sconosciuto.`
+
+### Vincoli
+
+- `sala = calloc(righe * posti, sizeof *sala)`: tutti i posti a 0 senza
+  un ciclo; il posto (r, p) sta in `sala[r * posti + p]`.
+- Una prenotazione occupa posti consecutivi della stessa riga, tutti
+  liberi; il codice cresce di 1 a ogni prenotazione riuscita.
+- La cancellazione libera tutti i posti con quel codice.
+- La lettera della riga può essere minuscola.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `sala` | `int *` | Matrice in un blocco: 0 libero, altrimenti codice |
+| `codice`, `occupati` | `int` | Ultimo codice e posti occupati |
+| `lettera`, `numero`, `quanti` | `char`, `int`, `int` | Dati della prenotazione |
+| `liberi` | `int` | Tutti i posti richiesti sono liberi |
 
 | Funzione | Compito |
 |----------|---------|
-| `mappa(sala, righe, posti)` | Stampa la sala con . e # |
+| `mappa(sala, righe, posti)` | Disegna la sala |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Prenotazione
+1. Leggere le dimensioni e allocare la sala con `calloc`.
+2. Finché il comando non è `Q`: con `P` controllare i dati e i posti e
+   scrivere il nuovo codice; con `C` azzerare i posti del codice; con `M`
+   stampare la mappa; scartare il resto della riga.
+3. Liberare la sala.
 
-**a) Input** – `4 10`, poi `P A 3 4`
+## 3. Casi di test
 
-**b) Output** – "prenotazione 1: A3-A6"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `codice`
+### Test 1 – Sala 3 × 8
 
-**d) Vincoli** – righe 1-26, posti 1-40
-
-**e) Assunzioni** – righe indicate con le lettere da A
-
-**f) Algoritmo in linguaggio naturale** – controllare che tutti i posti siano liberi, poi scrivere il codice.
-
-### Caso d'uso 2 – Posti occupati
-
-**a) Input** – `P A 5 2`
-
-**b) Output** – "Alcuni posti sono gia' occupati."
-
-**c) Variabili di supporto** – `liberi`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessun posto viene scritto se uno solo è occupato.
-
-### Caso d'uso 3 – Fuori dalla sala
-
-**a) Input** – `P D 9 3`; `P E 1 1`
-
-**b) Output** – "Posti non validi."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – l'ultimo posto deve esistere
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – numero + quanti - 1 ≤ posti; lettera < 'A' + righe.
-
-### Caso d'uso 4 – Cancellazione e mappa
-
-**a) Input** – `C 1`, `P A 5 2`, `C 7`, `M`
-
-**b) Output** – posti liberati; "Prenotazione inesistente."; mappa con 5 posti occupati
-
-**c) Variabili di supporto** – `occupati`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – si azzerano le celle con quel codice.
+- **Input:** `3 8`, `P A 3 4`, `p b 1 2`, `P A 5 2`, `P C 7 3`, `P D 1 1`,
+  `P B 8 1`, `M`, `C 1`, `C 9`, `c 3`, `M extra`, `X`, `Q`
+- **Output atteso:**
+  ```
+    prenotazione 1: A3-A6
+    prenotazione 2: B1-B2
+    Alcuni posti sono gia' occupati.
+    Posti non validi.
+    Posti non validi.
+    prenotazione 3: B8-B8
+     palco
+    A ..####..
+    B ##.....#
+    C ........
+    occupati 7 su 24
+    prenotazione 1 cancellata: liberati 4 posti
+    Prenotazione inesistente.
+    prenotazione 3 cancellata: liberato 1 posto
+     palco
+    A ........
+    B ##......
+    C ........
+    occupati 2 su 24
+    Comando sconosciuto.
+  ```

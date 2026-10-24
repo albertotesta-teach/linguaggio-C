@@ -2,83 +2,102 @@
 
 ## 1. Problema
 
-Il comitato dei genitori registra ogni mese il prezzo del pasto in mensa. Le rilevazioni vanno in un vettore dinamico di `Rilevazione`. Il programma stampa la variazione percentuale mese per mese, costruisce un secondo vettore con i mesi di aumento (lunghezza non nota in anticipo), indica l'aumento più forte e la variazione complessiva.
+Il comitato dei genitori registra ogni mese il prezzo del pasto in mensa.
+Le rilevazioni vanno in un vettore dinamico di `Rilevazione`. Il programma
+stampa la variazione percentuale mese per mese, costruisce un secondo
+vettore con i mesi di aumento (lunghezza non nota in anticipo), indica
+l'aumento più forte e la variazione complessiva.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Rilevazione` | `mese[8], prezzo` | prezzo di un mese |
-| `Storico` | `dati (Rilevazione *), n, capacita` | vettore dinamico di rilevazioni |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `storico` | `Storico *` | struct + blocco di n Rilevazione (heap) | Prezzi nel tempo |
-| `mesi_aumento` | `Storico *` | creato da aumenti | Copie dei mesi di aumento, da distruggere |
-| `r`, `prima`, `ultima` | `Rilevazione` | — | Rilevazione letta, primo e ultimo mese |
-| `massimo`, `letti` | `int` | — | Mese con l'aumento più forte; valori letti |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| rilevazioni | testo | `mese prezzo` (prezzo positivo); `FINE` termina |
+
+### Output
+
+- `prezzo non valido per mese` per ogni rilevazione scartata.
+- La tabella mese, prezzo e variazione percentuale dal mese precedente.
+- `Mesi con aumento: A su N-1` con l'elenco e `Aumento piu' forte: mese
+  (+P%)`, oppure `Nessun aumento.`
+- `Complessivo primo-ultimo: p1 -> p2 euro (±P%)`.
+- `Servono almeno due mesi.`, `Memoria insufficiente.`
+
+### Vincoli
+
+- Vettore `{Rilevazione *dati; int n; int capacita;}` con capacità
+  iniziale 4 e raddoppio; il `main` usa solo le funzioni del vettore.
+- Variazione = (dopo − prima) / prima × 100.
+- `aumenti` crea un vettore nuovo con i soli mesi in cui il prezzo sale
+  (prezzo uguale non è un aumento); in caso di errore lo distrugge e
+  restituisce `NULL`.
+- A parità vale il primo aumento più forte.
+- Entrambi i vettori si distruggono alla fine.
+
+### Assunzioni
+
+- I mesi sono inseriti in ordine cronologico.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Rilevazione` | `typedef struct { char mese[8]; double prezzo; } Rilevazione;` | Prezzo di un mese |
+| `Storico` | `typedef struct { Rilevazione *dati; int n; int capacita; } Storico;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `storico`, `mesi_aumento` | `Storico *` | Rilevazioni e mesi di aumento |
+| `prima`, `ultima` | `Rilevazione` | Estremi del periodo |
+| `massimo` | `int` | Mese con l'aumento più forte |
 
 | Funzione | Compito |
 |----------|---------|
-| `variazione(prima, dopo)` | (dopo - prima) / prima × 100 |
-| `variazione_mese(s, i)` | Variazione del mese i rispetto al precedente |
-| `aumenti(s)` | Vettore nuovo con i mesi di aumento; NULL se manca memoria |
-| `crea_storico, aggiungi, lunghezza, elemento, distruggi_storico` | Funzioni del vettore |
+| `crea_storico`, `distruggi_storico` | Allocazione e liberazione |
+| `aggiungi`, `lunghezza`, `elemento` | Uso del vettore |
+| `variazione(prima, dopo)`, `variazione_mese(s, i)` | Percentuali |
+| `aumenti(s)` | Nuovo vettore con i mesi di aumento |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Anno scolastico
+1. Leggere le rilevazioni fino a `FINE`.
+2. Con meno di due mesi segnalarlo; altrimenti stampare la tabella,
+   costruire il vettore degli aumenti e stamparlo con l'aumento più forte,
+   poi la variazione complessiva.
+3. Distruggere i vettori.
 
-**a) Input** – da `set24 4.20` a `mag25 4.90`, poi `FINE`
+## 3. Casi di test
 
-**b) Output** – tabella con le variazioni; 3 aumenti su 8 (nov24, gen25, mar25); più forte mar25 +10.0%; complessivo +16.7%
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `massimo`
+### Test 1 – Un anno scolastico
 
-**d) Vincoli** – prezzo > 0
+- **Input:** `set 4.80`, `ott 4.80`, `nov 5.00`, `dic 4.90`, `gen 5.30`,
+  `feb abc`, `mar -1`, `FINE`
+- **Output atteso:**
+  ```
+  Mese e prezzo (FINE per terminare):
+    prezzo non valido per feb
+    prezzo non valido per mar
 
-**e) Assunzioni** – mesi in ordine cronologico
+  Mese    Prezzo    Var. %
+  set       4.80
+  ott       4.80     +0.0%
+  nov       5.00     +4.2%
+  dic       4.90     -2.0%
+  gen       5.30     +8.2%
 
-**f) Algoritmo in linguaggio naturale** – aumenti scorre da 1 e copia i mesi con prezzo maggiore del precedente.
+  Mesi con aumento: 2 su 4
+    nov
+    gen
+  Aumento piu' forte: gen (+8.2%)
+  Complessivo set-gen: 4.80 -> 5.30 euro (+10.4%)
+  ```
 
-### Caso d'uso 2 – Prezzo errato
+### Test 2 – Pochi dati e nessun aumento
 
-**a) Input** – `feb25 abc`
-
-**b) Output** – "prezzo non valido per feb25"
-
-**c) Variabili di supporto** – `letti`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – si salta la parola non numerica.
-
-### Caso d'uso 3 – Nessun aumento
-
-**a) Input** – `set24 4`, `ott24 3.5`
-
-**b) Output** – "Nessun aumento.", complessivo -12.5%
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il vettore risultato ha lunghezza 0 ma va distrutto.
-
-### Caso d'uso 4 – Un solo mese
-
-**a) Input** – `set24 4.20 FINE`
-
-**b) Output** – "Servono almeno due mesi."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – almeno 2 rilevazioni
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna variazione calcolabile.
+- **Input:** `set 4.80`, `FINE`; poi `set 5`, `ott 4.5`, `FINE`
+- **Output atteso:** `Servono almeno due mesi.`; poi `Nessun aumento.` e
+  `Complessivo set-ott: 5.00 -> 4.50 euro (-10.0%)`.

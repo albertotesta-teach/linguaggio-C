@@ -2,76 +2,101 @@
 
 ## 1. Problema
 
-Il professore inserisce il numero di studenti presenti alla verifica e i loro voti. Il programma calcola la media, conta i voti sopra la media, elenca le insufficienze e trova il voto più alto e il più basso. Per confrontare ogni voto con la media servono due passate, quindi i voti vanno conservati: l'array si alloca con malloc dopo aver letto n, grande esattamente n voti.
+Il professore inserisce il numero di studenti presenti alla verifica e i
+loro voti. Il programma calcola la media, conta i voti sopra la media,
+elenca le insufficienze e trova il voto più alto e il più basso. Per
+confrontare ogni voto con la media servono due passate, quindi i voti
+vanno conservati: l'array si alloca con `malloc` dopo aver letto n, grande
+esattamente n voti.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `voti` | `double *` | n elementi (heap) | Voti della classe, allocati dopo aver letto n |
-| `n`, `letti` | `int` | — | Studenti presenti e voti già inseriti |
-| `somma`, `media` | `double` | — | Prima passata |
-| `sopra`, `insufficienti` | `int` | — | Conteggi della seconda passata |
-| `massimo`, `minimo` | `double` | — | Voti estremi |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `n` | `int` | Studenti presenti, da 1 a 40 |
+| `voti[i]` | `double` | Voto di ogni studente, da 1 a 10, anche mezzo voto |
+
+### Output
+
+- `voto non valido (da 1 a 10, anche mezzi voti)` per ogni voto da
+  ripetere.
+- `Media della classe: M`, `Insufficienze:` con studente e voto (oppure
+  `nessuna`), `Sopra la media: S su n`, `Voto piu' alto: A, piu' basso: B`.
+- `Numero non valido.`, `Memoria insufficiente.`, oppure
+  `Input terminato: mancano K voti.` (`manca 1 voto`).
+
+### Vincoli
+
+- `voti = malloc(n * sizeof *voti)`: la dimensione si conosce solo
+  durante l'esecuzione; si controlla che `malloc` non restituisca `NULL`.
+- Il blocco si libera con `free` in ogni caso (anche `free(NULL)` è
+  corretto).
+- Voto valido: da 1 a 10 e multiplo di 0.5 (`voto * 2` intero); un voto
+  non numerico viene scartato con il resto della riga.
+- Sopra la media: strettamente maggiore; insufficiente: minore di 6.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `voti` | `double *` | Blocco di n voti allocato dinamicamente |
+| `letti` | `int` | Voti validi inseriti |
+| `somma`, `media` | `double` | Prima passata |
+| `sopra`, `insufficienti` | `int` | Contatori della seconda passata |
+| `massimo`, `minimo` | `double` | Estremi |
+| `MAX_STUDENTI` | `#define` | 40 |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_voto(studente, &voto)` | Richiede il voto finché è valido; 0 se l'input finisce |
+| `leggi_voto(studente, voto)` | Chiede il voto finché non è valido; 0 a fine input |
+| `svuota_riga` | Scarta i caratteri rimasti dopo un inserimento non valido |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Classe completa
+1. Leggere n; se non valido segnalarlo.
+2. Allocare n `double`; se non riesce segnalarlo.
+3. Leggere i voti sommandoli; se l'input finisce prima, dire quanti
+   mancano.
+4. Altrimenti calcolare la media e, in una seconda passata, contare i voti
+   sopra la media, stampare le insufficienze e trovare massimo e minimo.
+5. Liberare la memoria.
 
-**a) Input** – `6`, poi `7 5.5 8 6.5 9 4`
+## 3. Casi di test
 
-**b) Output** – media 6.67, insufficienze studenti 2 e 6, 3 sopra la media, massimo 9.0, minimo 4.0
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `somma`, `sopra`
+### Test 1 – Sei studenti con voti da ripetere
 
-**d) Vincoli** – n da 1 a 40
+- **Input:** `6`, `7`, `5.5`, `abc def`, `11`, `6.3`, `8`, `4`, `9.5`, `6`
+- **Valori intermedi attesi:** voti 7, 5.5, 8, 4, 9.5, 6; somma 40, media
+  6.67; sopra la media 7, 8, 9.5.
+- **Output atteso:**
+  ```
+    voto non valido (da 1 a 10, anche mezzi voti)
+    voto non valido (da 1 a 10, anche mezzi voti)
+    voto non valido (da 1 a 10, anche mezzi voti)
 
-**e) Assunzioni** – nessuna
+  Media della classe: 6.67
+  Insufficienze:
+    studente  2: 5.5
+    studente  4: 4.0
+  Sopra la media: 3 su 6
+  Voto piu' alto: 9.5, piu' basso: 4.0
+  ```
 
-**f) Algoritmo in linguaggio naturale** – allocare n double; leggere i voti sommandoli; media = somma / n; seconda passata per i conteggi e gli estremi; free.
+### Test 2 – Input incompleto
 
-### Caso d'uso 2 – Voto non valido
+- **Input:** `3`, `7`, `8`, poi fine input; poi `3`, `7`, fine input
+- **Output atteso:** `Input terminato: manca 1 voto.`; poi
+  `Input terminato: mancano 2 voti.`
 
-**a) Input** – `11` oppure `abc`
+### Test 3 – Numero non valido
 
-**b) Output** – "voto non valido (da 1 a 10, anche mezzi voti)" e nuova richiesta
-
-**c) Variabili di supporto** – `letto`
-
-**d) Vincoli** – voti da 1 a 10, multipli di 0.5
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – se scanf non legge un numero si scarta la parola; il controllo voto × 2 intero esclude 7.3.
-
-### Caso d'uso 3 – Numero di studenti non valido
-
-**a) Input** – `0` oppure `45`
-
-**b) Output** – "Numero non valido."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – non si alloca nulla.
-
-### Caso d'uso 4 – Input interrotto
-
-**a) Input** – meno voti di n
-
-**b) Output** – "Input terminato: mancano k voti."
-
-**c) Variabili di supporto** – `letti`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – leggi_voto restituisce 0 a fine input; il blocco si libera comunque.
+- **Input:** `0` (poi `41`, `abc`)
+- **Output atteso:** `Numero non valido.`

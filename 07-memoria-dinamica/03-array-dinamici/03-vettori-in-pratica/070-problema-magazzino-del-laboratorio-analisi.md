@@ -2,98 +2,105 @@
 
 ## 1. Problema
 
-Il tecnico del laboratorio di elettronica tiene il conto del materiale: ogni articolo ha quantità e scorta minima. Il magazzino è un vettore dinamico di `Articolo`; carico e scarico modificano l'articolo tramite il puntatore restituito da trova. L'elenco da riordinare è un secondo vettore, creato da sotto_scorta con le copie degli articoli sotto la scorta: una fotografia del momento, distrutta dopo la stampa.
+Il tecnico del laboratorio di elettronica tiene il conto del materiale:
+ogni articolo ha quantità e scorta minima. Il magazzino è un vettore
+dinamico di `Articolo`; carico e scarico modificano l'articolo tramite il
+puntatore restituito da `trova`. L'elenco da riordinare è un secondo
+vettore, creato da `sotto_scorta` con le copie degli articoli sotto la
+scorta: una fotografia del momento, distrutta dopo la stampa.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Articolo` | `nome[20], quantita, scorta` | un materiale |
-| `Magazzino` | `dati (Articolo *), n, capacita` | vettore dinamico di articoli |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `magazzino` | `Magazzino *` | struct + blocco di n Articolo (heap) | Tutti gli articoli |
-| `riordino` | `Magazzino *` | creato da sotto_scorta | Copie da riordinare |
-| `a` | `Articolo` | — | Dati letti |
-| `p` | `Articolo *` | — | Articolo da caricare o scaricare |
-| `quantita` | `int` | — | Pezzi del movimento |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `N nome quantita scorta` nuovo articolo, `C nome q` carico, `S nome q` scarico, `R` riordino, `E` elenco, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `nuovo articolo: nome`, `nome esiste gia'.`, `Dati non validi.`
+- `nome: disponibili Q` (con `(sotto scorta)` dopo uno scarico),
+  `nome: disponibili solo Q`,
+  `Articolo inesistente o quantita' non valida.`
+- `R`: `Da riordinare: N` con la tabella, oppure `Niente da riordinare.`
+- `E`: la tabella di tutti gli articoli.
+- `Memoria insufficiente.`, `Comando sconosciuto.`
+
+### Vincoli
+
+- Vettore `{Articolo *dati; int n; int capacita;}` con capacità iniziale 2
+  e raddoppio; il `main` usa solo le funzioni del magazzino.
+- Il puntatore di `trova` si usa subito, prima di altre aggiunte.
+- Sotto scorta: quantità strettamente minore della scorta.
+- Il vettore del riordino contiene copie: modificarlo non cambia il
+  magazzino; si distrugge subito dopo la stampa.
+- Quantità e scorta non negative; carico e scarico positivi; lo scarico
+  non può superare la disponibilità.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Il nome dell'articolo è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Articolo` | `typedef struct { char nome[20]; int quantita; int scorta; } Articolo;` | Un articolo |
+| `Magazzino` | `typedef struct { Articolo *dati; int n; int capacita; } Magazzino;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `magazzino`, `riordino` | `Magazzino *` | Magazzino e fotografia del riordino |
+| `p` | `Articolo *` | Articolo da modificare |
 
 | Funzione | Compito |
 |----------|---------|
-| `trova(m, nome)` | Puntatore all'articolo o NULL |
-| `sotto_scorta(m)` | Vettore nuovo con le copie degli articoli sotto scorta |
-| `stampa(m)` | Tabella articolo, quantità, scorta |
-| `crea_magazzino, aggiungi, lunghezza, elemento, distruggi_magazzino` | Funzioni del vettore |
+| `crea_magazzino`, `distruggi_magazzino` | Allocazione e liberazione |
+| `aggiungi`, `lunghezza`, `elemento`, `trova` | Uso del vettore |
+| `sotto_scorta(m)` | Nuovo vettore con le copie sotto scorta |
+| `stampa(m)` | Tabella degli articoli |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Nuovi articoli
+1. Finché il comando non è `Q`: leggere il comando in maiuscolo; eseguire
+   nuovo articolo, carico, scarico, riordino (crea, stampa, distruggi) o
+   elenco; scartare il resto della riga.
+2. Distruggere il magazzino.
 
-**a) Input** – `N resistenze 200 50`, `N LED 40 30`, `N breadboard 12 10`, `N Arduino 6 4`
+## 3. Casi di test
 
-**b) Output** – 4 articoli; `N LED 5 5` rifiutato
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – —
+### Test 1 – Movimenti e riordino
 
-**d) Vincoli** – quantità e scorta ≥ 0
-
-**e) Assunzioni** – nomi unici
-
-**f) Algoritmo in linguaggio naturale** – trova == NULL, poi aggiungi.
-
-### Caso d'uso 2 – Scarichi
-
-**a) Input** – `S LED 15`, `S breadboard 20`, `S breadboard 3`
-
-**b) Output** – LED 25 (sotto scorta); "disponibili solo 12"; breadboard 9 (sotto scorta)
-
-**c) Variabili di supporto** – `p`
-
-**d) Vincoli** – scarico ≤ disponibile
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – p->quantita -= quantita.
-
-### Caso d'uso 3 – Riordino
-
-**a) Input** – `R`
-
-**b) Output** – 3 articoli: LED, breadboard, Arduino
-
-**c) Variabili di supporto** – `riordino`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sotto_scorta, stampa, distruggi.
-
-### Caso d'uso 4 – Carico
-
-**a) Input** – `C LED 50`, `R`
-
-**b) Output** – LED 75; ora da riordinare 2 articoli
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – quantità > 0
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il vecchio elenco non si aggiorna: se ne crea uno nuovo.
-
-### Caso d'uso 5 – Articolo inesistente
-
-**a) Input** – `C transistor 10`
-
-**b) Output** – "Articolo inesistente o quantita non valida."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – trova restituisce NULL.
+- **Input:** `N resistenze 100 50`, `n led 20 30`, `N breadboard 5 5`,
+  `N led 1 1`, `N cavi x 3`, `E`, `S resistenze 60`, `S led 25`,
+  `C led 15`, `s breadboard 1`, `C diodi 3`, `R extra`, `E`, `X`, `Q`
+- **Output atteso:**
+  ```
+    nuovo articolo: resistenze
+    nuovo articolo: led
+    nuovo articolo: breadboard
+    led esiste gia'.
+    Dati non validi.
+    Articolo         Quantita  Scorta
+    resistenze            100      50
+    led                    20      30
+    breadboard              5       5
+    resistenze: disponibili 40  (sotto scorta)
+    led: disponibili solo 20
+    led: disponibili 35
+    breadboard: disponibili 4  (sotto scorta)
+    Articolo inesistente o quantita' non valida.
+    Da riordinare: 2
+    Articolo         Quantita  Scorta
+    resistenze             40      50
+    breadboard              4       5
+    Articolo         Quantita  Scorta
+    resistenze             40      50
+    led                    35      30
+    breadboard              4       5
+    Comando sconosciuto.
+  ```

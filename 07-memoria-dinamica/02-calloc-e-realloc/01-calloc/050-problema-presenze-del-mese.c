@@ -39,6 +39,7 @@ int main(void)
     int peggiore = 0;
     int assenti_peggiore = -1;
     int finito = 0;
+    int letto;
 
     printf("Studenti e giorni di lezione: ");
     if (scanf("%d %d", &studenti, &giorni) != 2 || studenti < 1 || studenti > MAX_STUDENTI ||
@@ -53,8 +54,13 @@ int main(void)
                 printf("Giorno %d, assenti (0 per finire): ", g + 1);
                 numero = -1;
                 while (numero != 0 && !finito) {
-                    if (scanf("%d", &numero) != 1) {
-                        finito = 1;
+                    letto = scanf("%d", &numero);
+                    if (letto == EOF) {
+                        finito = 1;     /* input terminato */
+                    } else if (letto == 0) {
+                        scanf("%*s");   /* scarta la parola che non e' un numero */
+                        printf("  numero non valido\n");
+                        numero = -1;
                     } else if (numero < 0 || numero > studenti) {
                         printf("  studente %d inesistente\n", numero);
                     } else if (numero > 0) {

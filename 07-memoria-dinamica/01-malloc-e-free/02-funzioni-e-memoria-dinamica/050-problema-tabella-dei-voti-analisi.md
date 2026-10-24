@@ -2,63 +2,95 @@
 
 ## 1. Problema
 
-Il tabellone dello scrutinio ha una riga per studente e una colonna per materia; il numero di righe e di colonne si sceglie all'avvio. Si alloca un unico blocco di righe × colonne double con le righe una dopo l'altra: l'elemento (r, c) sta in tab[r × colonne + c]. Il programma stampa il tabellone con le medie per studente e per materia e lo studente migliore.
+Il tabellone dello scrutinio ha una riga per studente e una colonna per
+materia; il numero di righe e di colonne si sceglie all'avvio. Si alloca
+un unico blocco di righe × colonne `double` con le righe una dopo
+l'altra: l'elemento (r, c) sta in `tab[r * colonne + c]`. Il programma
+stampa il tabellone con le medie per studente e per materia e lo studente
+migliore.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `tab` | `double *` | righe × colonne (heap) | Tutti i voti in un blocco |
-| `righe`, `colonne` | `int` | — | Studenti (1-30) e materie (1-6) |
-| `media_migliore`, `migliore` | `double`, `int` | — | Studente con la media più alta |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `righe`, `colonne` | `int` | Studenti 1-30, materie 1-6 |
+| voti | `double` | Un voto da 1 a 10 per ogni cella, riga per riga |
+
+### Output
+
+- `Blocco di R x C = N double (B byte)`.
+- Il tabellone con le materie (ITA, MAT, ING, INF, STO, SCI), la media di
+  ogni studente e la riga delle medie per materia.
+- `Media piu' alta: studente S con M`.
+- `Dimensioni non valide (...)`, `Memoria insufficiente.`,
+  `Voti mancanti o non validi.`
+
+### Vincoli
+
+- Un solo `malloc(righe * colonne * sizeof *tab)` dentro `crea_tabella`,
+  controllo di `NULL`, `free` nel `main`.
+- Indice lineare `r * colonne + c` calcolato da `indice`.
+- Al primo voto mancante, non numerico o fuori da 1-10 la lettura si
+  ferma e il tabellone non viene stampato.
+- A parità di media vale il primo studente.
+
+### Assunzioni
+
+- I voti di uno studente si scrivono sulla stessa riga.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `tab` | `double *` | Blocco unico della tabella |
+| `righe`, `colonne` | `int` | Dimensioni |
+| `media_migliore`, `migliore` | `double`, `int` | Studente migliore |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_tabella(righe, colonne)` | Una malloc per tutto il tabellone |
+| `crea_tabella(righe, colonne)` | Alloca il blocco |
 | `indice(r, c, colonne)` | Posizione dell'elemento (r, c) |
-| `leggi_tabella(tab, righe, colonne)` | Voti riga per riga; 0 se un voto manca o è fuori da 1-10 |
-| `stampa_tabella(tab, righe, colonne)` | Tabellone, medie e studente migliore |
+| `leggi_tabella(tab, righe, colonne)` | Legge i voti; 0 se uno manca o non è valido |
+| `stampa_tabella(tab, righe, colonne)` | Tabellone con medie |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Tabellone completo
+1. Leggere le dimensioni e controllarle.
+2. Allocare il blocco e stamparne la dimensione.
+3. Leggere i voti; se tutti validi stampare il tabellone con le medie per
+   riga e per colonna e lo studente migliore.
+4. Liberare il blocco.
 
-**a) Input** – `3 4`, poi tre righe di 4 voti
+## 3. Casi di test
 
-**b) Output** – medie 7.62, 5.88, 8.62; medie per materia; "Media piu' alta: studente 3 con 8.62"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `somma`
+### Test 1 – Tre studenti, quattro materie
 
-**d) Vincoli** – voti da 1 a 10
+- **Input:** `3 4`, `7 8 6 9`, `5 6 5.5 7`, `8 9 9 10`
+- **Valori intermedi attesi:** 12 double × 8 byte = 96 byte; media dello
+  studente 2: 23.5 / 4 = 5.88.
+- **Output atteso:**
+  ```
+  Blocco di 3 x 4 = 12 double (96 byte)
 
-**e) Assunzioni** – a parità di media vince il primo
+               ITA  MAT  ING  INF  media
+  studente  1  7.0  8.0  6.0  9.0   7.50
+  studente  2  5.0  6.0  5.5  7.0   5.88
+  studente  3  8.0  9.0  9.0 10.0   9.00
+  media        6.7  7.7  6.8  8.7
 
-**f) Algoritmo in linguaggio naturale** – elemento (r, c) in tab[indice(r, c, colonne)]; somme per riga e per colonna.
+  Media piu' alta: studente 3 con 9.00
+  ```
 
-### Caso d'uso 2 – Dimensioni non valide
+### Test 2 – Voto non valido
 
-**a) Input** – `2 7`
+- **Input:** `2 2`, `7 8`, `5 11`
+- **Output atteso:** `Voti mancanti o non validi.`
 
-**b) Output** – "Dimensioni non valide (studenti 1-30, materie 1-6)."
+### Test 3 – Dimensioni non valide
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – al massimo 6 materie
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna allocazione.
-
-### Caso d'uso 3 – Voto non valido
-
-**a) Input** – `2 2`, poi `7 12`
-
-**b) Output** – "Voti mancanti o non validi."
-
-**c) Variabili di supporto** – `ok`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – leggi_tabella si ferma al primo voto errato; il blocco si libera comunque.
+- **Input:** `0 3`
+- **Output atteso:** `Dimensioni non valide (studenti 1-30, materie 1-6).`

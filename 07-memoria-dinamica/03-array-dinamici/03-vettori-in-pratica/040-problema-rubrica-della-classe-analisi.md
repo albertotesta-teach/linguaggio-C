@@ -2,100 +2,101 @@
 
 ## 1. Problema
 
-Il rappresentante di classe tiene i contatti dei compagni in una rubrica, vettore dinamico di `Contatto`. Le quattro operazioni classiche: aggiunta (rifiutata se il nome c'è già), ricerca per inizio del nome, modifica del telefono tramite il puntatore restituito da trova, cancellazione con spostamento dei successivi.
+Il rappresentante di classe tiene i contatti dei compagni in una rubrica,
+vettore dinamico di `Contatto`. Le quattro operazioni classiche: aggiunta
+(rifiutata se il nome c'è già), ricerca per inizio del nome, modifica del
+telefono tramite il puntatore restituito da `trova`, cancellazione con
+spostamento dei successivi.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Contatto` | `nome[20], telefono[16]` | un compagno |
-| `Rubrica` | `dati (Contatto *), n, capacita` | vettore dinamico di contatti |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `rubrica` | `Rubrica *` | struct + blocco di n Contatto (heap) | Contatti in ordine di inserimento |
-| `c` | `Contatto` | — | Dati letti |
-| `p` | `Contatto *` | — | Contatto nel vettore, usato subito |
-| `testo` | `char[]` | 20 | Inizio del nome o nome da cancellare |
-| `trovati` | `int` | — | Risultati della ricerca |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `A nome telefono`, `C inizio`, `M nome telefono`, `D nome`, `E` elenco, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `aggiunto nome (contatti: N)`, `nome e' gia' in rubrica.`,
+  `Dati non validi.`
+- `C`: i contatti il cui nome inizia con il testo, oppure
+  `Nessun contatto trovato.`
+- `M`: `nome: vecchio -> nuovo`, `nome non e' in rubrica.`
+- `D`: `cancellato nome (contatti: N)`, `Contatto non trovato.`
+- `E`: numero di contatti e elenco.
+- `Memoria insufficiente.`, `Comando sconosciuto.`
+
+### Vincoli
+
+- Vettore `{Contatto *dati; int n; int capacita;}` con capacità iniziale 2
+  e raddoppio; il `main` usa solo le funzioni della rubrica.
+- `trova` ed `elemento` restituiscono un puntatore all'elemento, valido
+  solo fino alla prossima aggiunta (che può spostare il blocco): la
+  modifica lo usa subito.
+- Telefono: da 6 a 15 cifre.
+- Ricerca per prefisso con `strncmp`; maiuscole e minuscole contano.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Il nome è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Contatto` | `typedef struct { char nome[20]; char telefono[16]; } Contatto;` | Un contatto |
+| `Rubrica` | `typedef struct { Contatto *dati; int n; int capacita; } Rubrica;` | Vettore dinamico |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `rubrica` | `Rubrica *` | Il vettore |
+| `c` | `Contatto` | Dati letti |
+| `p` | `Contatto *` | Contatto trovato |
+| `trovati` | `int` | Risultati della ricerca |
 
 | Funzione | Compito |
 |----------|---------|
-| `trova(r, nome)` | Puntatore al contatto o NULL; valido fino alla prossima aggiunta |
-| `elemento(r, i)` | Puntatore al contatto i |
-| `rimuovi(r, posizione)` | Sposta a sinistra i successivi |
-| `telefono_valido(telefono)` | Solo cifre, da 6 a 15 |
-| `inizia_con(nome, testo)` | strncmp sulla lunghezza di testo |
-| `crea_rubrica, aggiungi, lunghezza, cerca, distruggi_rubrica` | Funzioni del vettore |
+| `crea_rubrica`, `distruggi_rubrica` | Allocazione e liberazione |
+| `aggiungi`, `rimuovi` | Inserimento in fondo e cancellazione |
+| `lunghezza`, `elemento`, `cerca`, `trova` | Accesso e ricerca |
+| `telefono_valido(telefono)` | Solo cifre, 6-15 |
+| `inizia_con(nome, testo)` | Prefisso |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Aggiunte
+1. Finché il comando non è `Q`: leggere il comando in maiuscolo; eseguire
+   aggiunta, ricerca, modifica, cancellazione o elenco; scartare il resto
+   della riga.
+2. Distruggere la rubrica.
 
-**a) Input** – `A Rossi 3331234567`, `A Russo 3479876543`, `A Bianchi 3201112223`
+## 3. Casi di test
 
-**b) Output** – 3 contatti
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – —
+### Test 1 – Le quattro operazioni
 
-**d) Vincoli** – nome fino a 19 caratteri
-
-**e) Assunzioni** – un nome per persona
-
-**f) Algoritmo in linguaggio naturale** – trova == NULL, poi aggiungi.
-
-### Caso d'uso 2 – Rifiuti
-
-**a) Input** – `A Rossi 3330000000`, `A Verdi 12ab`
-
-**b) Output** – "Rossi e' gia' in rubrica.", "Dati non validi."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – telefono valido
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – controlli prima dell'aggiunta.
-
-### Caso d'uso 3 – Ricerca
-
-**a) Input** – `C Ru`
-
-**b) Output** – Russo (Rossi non inizia con Ru)
-
-**c) Variabili di supporto** – `trovati`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – maiuscole distinte
-
-**f) Algoritmo in linguaggio naturale** – inizia_con su ogni elemento.
-
-### Caso d'uso 4 – Modifica
-
-**a) Input** – `M Russo 3470000001`
-
-**b) Output** – "Russo: 3479876543 -> 3470000001"
-
-**c) Variabili di supporto** – `p`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – strcpy in p->telefono: il vettore cambia direttamente.
-
-### Caso d'uso 5 – Cancellazione
-
-**a) Input** – `D Rossi`, `D Gialli`, `E`
-
-**b) Output** – 2 contatti: Russo, Bianchi; "Contatto non trovato."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – cerca, poi rimuovi.
+- **Input:** `A Rossi 3331234567`, `a Rosa 3409876543`,
+  `A Bianchi 01311234`, `A Rossi 3330000000`, `A Verdi 12ab45`, `C Ro`,
+  `c Z`, `M Rosa 3401111111`, `M Neri 3402222222`, `D Bianchi`, `D Mori`,
+  `E extra`, `X`, `Q`
+- **Output atteso:**
+  ```
+    aggiunto Rossi (contatti: 1)
+    aggiunto Rosa (contatti: 2)
+    aggiunto Bianchi (contatti: 3)
+    Rossi e' gia' in rubrica.
+    Dati non validi.
+    Rossi        3331234567
+    Rosa         3409876543
+    Nessun contatto trovato.
+    Rosa: 3409876543 -> 3401111111
+    Neri non e' in rubrica.
+    cancellato Bianchi (contatti: 2)
+    Contatto non trovato.
+    Contatti in rubrica: 2
+     1. Rossi        3331234567
+     2. Rosa         3401111111
+    Comando sconosciuto.
+  ```

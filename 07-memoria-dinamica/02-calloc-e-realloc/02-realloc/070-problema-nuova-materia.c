@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_STUDENTI 10
 #define MAX_MATERIE 8
@@ -82,8 +83,9 @@ int main(void)
     while (ok && comando != 'Q') {
         printf("Comando (M, S, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'M') {
             if (scanf("%7s", nome) != 1 || strlen(nome) != 3) {
                 printf("  Nome della materia: 3 lettere.\n");
@@ -101,12 +103,13 @@ int main(void)
                 }
                 printf("  %s aggiunta: tabellone %d x %d\n", nome, righe, colonne);
             }
-            scanf("%*[^\n]");
         } else if (comando == 'S') {
             stampa(tab, righe, colonne, materie);
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
-            scanf("%*[^\n]");
+        }
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
     free(tab);

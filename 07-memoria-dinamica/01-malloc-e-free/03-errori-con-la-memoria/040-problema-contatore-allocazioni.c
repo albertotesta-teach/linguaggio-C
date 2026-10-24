@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_BLOCCHI 20
 #define MAX_BYTE 100000
@@ -82,8 +83,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (A, L, R, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (scanf("%ld %23s", &byte, uso) != 2 || byte < 1 || byte > MAX_BYTE) {
                 printf("  Richiesta non valida.\n");
@@ -113,8 +115,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'R') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 

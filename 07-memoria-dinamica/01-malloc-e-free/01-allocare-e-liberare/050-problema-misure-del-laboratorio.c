@@ -38,6 +38,8 @@ int main(void)
     double somma_valide = 0;
     double media;
     double scarto;
+    int esito;
+    int fine = 0;
 
     printf("Numero di misure (da 3 a %d): ", MAX_MISURE);
     if (scanf("%d", &n) != 1 || n < 3 || n > MAX_MISURE) {
@@ -48,14 +50,25 @@ int main(void)
             printf("Memoria insufficiente.\n");
         } else {
             printf("Periodi misurati in secondi:\n");
-            while (letti < n && scanf("%lf", &periodo[letti]) == 1 && periodo[letti] > 0) {
-                somma = somma + periodo[letti];
-                letti++;
+            while (letti < n && !fine) {
+                esito = scanf("%lf", &periodo[letti]);
+                if (esito == EOF) {
+                    fine = 1;
+                } else if (esito == 0 || periodo[letti] <= 0) {
+                    if (esito == 0) {
+                        scanf("%*s");   /* scarta la parola che non e' un numero */
+                    }
+                    printf("  misura %d non valida, ripetere\n", letti + 1);
+                } else {
+                    somma = somma + periodo[letti];
+                    letti++;
+                }
             }
         }
 
         if (periodo != NULL && letti < n) {
-            printf("Misura %d non valida: inserimento interrotto.\n", letti + 1);
+            printf("Input terminato: %s %d %s.\n", n - letti == 1 ? "manca" : "mancano",
+                   n - letti, n - letti == 1 ? "misura" : "misure");
         } else if (periodo != NULL) {
             media = somma / n;
             for (i = 0; i < n; i++) {

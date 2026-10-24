@@ -2,61 +2,87 @@
 
 ## 1. Problema
 
-La segreteria scrive i nomi dei diplomati in modo disordinato. Il programma li normalizza (spazi singoli, iniziali maiuscole) e conserva ogni nome in un blocco dello heap lungo esattamente strlen + 1 byte, raggiunto da un array di puntatori. Alla fine stampa l'elenco, confronta i byte usati con quelli di una matrice di righe da 80 caratteri e libera i blocchi uno per uno.
+La segreteria scrive i nomi dei diplomati in modo disordinato. Il
+programma li normalizza (spazi singoli, iniziali maiuscole) e conserva ogni
+nome in un blocco dello heap lungo esattamente `strlen + 1` byte,
+raggiunto da un array di puntatori. Alla fine stampa l'elenco, confronta i
+byte usati con quelli di una matrice di righe da 80 caratteri e libera i
+blocchi uno per uno.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `elenco` | `char *[]` | 50 puntatori | Un puntatore per nome |
-| `riga` | `char[]` | 80 | Buffer di lettura |
-| `copia` | `char *` | strlen + 1 byte (heap) | Blocco del nome corrente |
-| `n`, `byte_usati` | `int`, `size_t` | — | Nomi e byte allocati |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `riga` | `char[80]` | Un nome per riga; `FINE` termina |
+
+### Output
+
+- `Elenco per i diplomi:` con i nomi normalizzati numerati e i byte di
+  ogni blocco.
+- `Byte nello heap: B (con una matrice char[n][80]: M)`.
+- `Memoria insufficiente.` se un'allocazione fallisce.
+
+### Vincoli
+
+- Ogni copia: `malloc((strlen(riga) + 1) * sizeof *copia)`, controllo di
+  `NULL`, `strcpy`; alla fine un `free` per ogni blocco.
+- Normalizzazione nello stesso array: spazi iniziali, finali e ripetuti
+  eliminati, prima lettera di ogni parola maiuscola, le altre minuscole.
+- Righe vuote (o di soli spazi) non vengono memorizzate.
+- Al massimo 50 nomi; una riga più lunga di 79 caratteri viene troncata e
+  il resto scartato. A fine input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- I nomi non contengono lettere accentate.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `elenco` | `char *[50]` | Puntatori ai blocchi |
+| `riga` | `char[80]` | Riga letta |
+| `copia` | `char *` | Nuovo blocco |
+| `byte_usati` | `size_t` | Somma delle dimensioni dei blocchi |
+| `resto` | `int` | Caratteri scartati di una riga lunga |
 
 | Funzione | Compito |
 |----------|---------|
-| `normalizza(testo)` | Toglie gli spazi in più e scrive le parole con l'iniziale maiuscola, nello stesso buffer |
+| `normalizza(testo)` | Sistema spazi e maiuscole nello stesso array |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Nomi disordinati
+1. Finché non si termina e c'è posto: leggere una riga, scartare il resto
+   se troppo lunga; con `FINE` terminare; normalizzarla; se non è vuota
+   allocare un blocco della lunghezza giusta, copiarla e memorizzare il
+   puntatore.
+2. Stampare l'elenco e il confronto dei byte.
+3. Liberare tutti i blocchi.
 
-**a) Input** – `mARTA  bassi`, `LUCA FERRI`, `  anna maria   de luca `
+## 3. Casi di test
 
-**b) Output** – "Marta Bassi (12 byte)", "Luca Ferri (11 byte)", "Anna Maria De Luca (19 byte)"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `copia`
+### Test 1 – Nomi disordinati
 
-**d) Vincoli** – nomi fino a 79 caratteri
+- **Input:** `  mario   ROSSI `, `ANNA maria   bianchi`, riga vuota,
+  riga di soli spazi, `lUCA verdi`, `FINE`
+- **Valori intermedi attesi:** "Mario Rossi" 11 caratteri → 12 byte.
+- **Output atteso:**
+  ```
+  Nomi dei diplomati (FINE per terminare):
 
-**e) Assunzioni** – parole separate da spazi
+  Elenco per i diplomi:
+     1. Mario Rossi              (12 byte)
+     2. Anna Maria Bianchi       (19 byte)
+     3. Luca Verdi               (11 byte)
+  Byte nello heap: 42 (con una matrice char[3][80]: 240)
+  ```
 
-**f) Algoritmo in linguaggio naturale** – normalizzare la riga, allocare strlen + 1 byte, copiare con strcpy, salvare il puntatore.
+### Test 2 – Riga troppo lunga
 
-### Caso d'uso 2 – Riga vuota
-
-**a) Input** – `   `
-
-**b) Output** – nessun nome aggiunto
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – dopo la normalizzazione la riga è vuota.
-
-### Caso d'uso 3 – Confronto con una matrice
-
-**a) Input** – `FINE`
-
-**b) Output** – "Byte nello heap: 53 (con una matrice char[4][80]: 320)"
-
-**c) Variabili di supporto** – `byte_usati`
-
-**d) Vincoli** – al massimo 50 nomi
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – sommare strlen + 1 di ogni nome; liberare ogni elenco[i] con free.
+- **Input:** una riga di 90 cifre, `FINE`
+- **Output atteso:** un solo nome di 79 caratteri (80 byte): il resto
+  della riga non diventa un secondo nome.

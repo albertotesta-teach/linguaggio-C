@@ -35,13 +35,14 @@ void stampa_a_righe(const char *testo, int larghezza);
 
 int main(void)
 {
-    char *verbale = malloc(1);
+    char *verbale = malloc(1 * sizeof *verbale);
     char *tmp;
     char frase[LUNG];
     size_t lunghezza;
     size_t nuova;
     int frasi = 0;
     int finito = 0;
+    int resto;
 
     if (verbale == NULL) {
         printf("Memoria insufficiente.\n");
@@ -52,6 +53,12 @@ int main(void)
             if (fgets(frase, LUNG - 1, stdin) == NULL) {
                 finito = 1;
             } else {
+                if (strchr(frase, '\n') == NULL) {
+                    resto = getchar();  /* riga troppo lunga: scarta il resto */
+                    while (resto != '\n' && resto != EOF) {
+                        resto = getchar();
+                    }
+                }
                 frase[strcspn(frase, "\n")] = '\0';
                 lunghezza = strlen(frase);
                 if (strcmp(frase, "FINE") == 0) {
@@ -62,7 +69,7 @@ int main(void)
                         lunghezza++;
                     }
                     nuova = strlen(verbale) + (frasi > 0 ? 1 : 0) + lunghezza + 1;
-                    tmp = realloc(verbale, nuova);
+                    tmp = realloc(verbale, nuova * sizeof *tmp);
                     if (tmp == NULL) {
                         printf("Memoria insufficiente: frase non aggiunta.\n");
                     } else {

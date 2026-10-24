@@ -2,57 +2,88 @@
 
 ## 1. Problema
 
-Il pluviometro della stazione meteo registra i millimetri di pioggia di ogni giorno; i valori negativi o sopra 300 mm sono errori. Il programma toglie le letture errate con un filtro sul posto (due indici, nessun secondo array), conserva il numero del giorno originale e riduce i blocchi con realloc; se non resta nessuna lettura i blocchi si liberano.
+Il pluviometro della stazione meteo registra i millimetri di pioggia di
+ogni giorno; i valori negativi o sopra 300 mm sono errori. Il programma
+toglie le letture errate con un filtro sul posto (due indici, nessun
+secondo array), conserva il numero del giorno originale in un array
+parallelo e riduce i due blocchi con `realloc`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `pioggia` | `double *` | n, poi j (heap) | Letture valide |
-| `giorno` | `int *` | n, poi j (heap) | Giorno originale di ogni lettura valida |
-| `i`, `j` | `int` | — | Indice di lettura e di scrittura |
-| `totale`, `piovoso` | `double`, `int` | — | Statistiche |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `n` | `int` | Giorni, da 1 a 366 |
+| `pioggia[i]` | `double` | Millimetri di ogni giorno |
 
-### Caso d'uso 1 – Due errori
+### Output
 
-**a) Input** – `10`, poi `0 2.5 -1 14.2 0 999 3.8 27.6 0 1.2`
+- `giorno G: V scartato` per ogni lettura errata.
+- `Letture: L, valide: V`.
+- Se ci sono letture valide: `Blocchi ridotti da n a V elementi`, totale
+  e media, giorno più piovoso con il numero originale.
+- `Numero non valido.`, `Memoria insufficiente.`
 
-**b) Output** – giorni 3 e 6 scartati; blocchi ridotti da 10 a 8; totale 49.3 mm, media 6.2; giorno più piovoso 8
+### Vincoli
 
-**c) Variabili di supporto** – `j`
+- Filtro sul posto: `i` legge, `j` scrive (j ≤ i), così i valori validi si
+  compattano all'inizio dello stesso blocco.
+- `realloc` dei due blocchi a `j` elementi, ognuno in un puntatore
+  temporaneo; se la riduzione fallisce il blocco vecchio resta valido.
+  Con `j == 0` non si chiama `realloc` (mai `realloc(p, 0)`).
+- Valida: da 0 a 300 mm compresi.
+- Si leggono al massimo n valori; se l'input finisce prima si usano
+  quelli letti.
+- I due blocchi si liberano alla fine.
 
-**d) Vincoli** – da 0 a 300 mm
+### Assunzioni
 
-**e) Assunzioni** – una lettura al giorno
+- A parità vale il primo giorno più piovoso.
 
-**f) Algoritmo in linguaggio naturale** – j non supera mai i, quindi la copia pioggia[j] = pioggia[i] non perde dati.
+### Variabili di supporto
 
-### Caso d'uso 2 – Tutte errate
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `pioggia`, `tmp` | `double *` | Letture e risultato di `realloc` |
+| `giorno`, `tmp_giorno` | `int *` | Numero originale del giorno |
+| `letti`, `j` | `int` | Letture lette e valide |
+| `piovoso`, `totale` | `int`, `double` | Statistiche |
 
-**a) Input** – `2`, poi `-1 500`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – "Letture: 2, valide: 0"
+1. Leggere n e allocare i due blocchi; leggere le letture.
+2. Scorrere le letture: se valida copiarla in posizione `j` con il numero
+   del giorno, altrimenti segnalarla.
+3. Se ci sono valide: ridurre i blocchi, calcolare totale, media e giorno
+   più piovoso.
+4. Liberare i blocchi.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – nessuna
+### Test 1 – Una settimana
 
-**f) Algoritmo in linguaggio naturale** – nessuna realloc a 0: i blocchi si liberano con free.
+- **Input:** `7`, `12.5 0 -3 45.2 310 8 0.4`
+- **Output atteso:**
+  ```
+    giorno 3: -3.0 scartato
+    giorno 5: 310.0 scartato
+  Letture: 7, valide: 5
+  Blocchi ridotti da 7 a 5 elementi
+  Totale 66.1 mm, media 13.2 mm al giorno
+  Giorno piu' piovoso: 4 con 45.2 mm
+  ```
+  (il giorno più piovoso conserva il numero originale 4).
 
-### Caso d'uso 3 – Numero non valido
+### Test 2 – Nessuna lettura valida
 
-**a) Input** – `0`
+- **Input:** `2`, `-1 400`
+- **Output atteso:** due righe `scartato` e `Letture: 2, valide: 0`.
 
-**b) Output** – "Numero non valido."
+### Test 3 – Input incompleto
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – da 1 a 366 giorni
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – —
+- **Input:** `5`, `3 4`, fine input
+- **Output atteso:** `Letture: 2, valide: 2`,
+  `Blocchi ridotti da 5 a 2 elementi`, totale 7.0, giorno più piovoso 2.

@@ -55,27 +55,30 @@ int main(void)
         if (scanf("%23s", nome) != 1 || strcmp(nome, "FINE") == 0 ||
             scanf("%23s", cognome) != 1) {
             finito = 1;
-        } else if (lettere(nome) == 0 || lettere(cognome) == 0) {
-            printf("  Nome o cognome senza lettere.\n");
         } else {
-            numero = 0;
-            email = crea_email(nome, cognome, numero);
-            while (email != NULL && presente(elenco, n, email)) {
-                free(email);
-                if (numero == 0) {
-                    numero = 2;
-                } else {
-                    numero++;
-                }
-                email = crea_email(nome, cognome, numero);
-            }
-            if (email == NULL) {
-                printf("  Memoria insufficiente.\n");
-                finito = 1;
+            scanf("%*[^\n]");          /* scarta il resto della riga */
+            if (lettere(nome) == 0 || lettere(cognome) == 0) {
+                printf("  Nome o cognome senza lettere.\n");
             } else {
-                elenco[n] = email;
-                n++;
-                printf("  %s (%zu caratteri)\n", email, strlen(email));
+                numero = 0;
+                email = crea_email(nome, cognome, numero);
+                while (email != NULL && presente(elenco, n, email)) {
+                    free(email);
+                    if (numero == 0) {
+                        numero = 2;
+                    } else {
+                        numero++;
+                    }
+                    email = crea_email(nome, cognome, numero);
+                }
+                if (email == NULL) {
+                    printf("  Memoria insufficiente.\n");
+                    finito = 1;
+                } else {
+                    elenco[n] = email;
+                    n++;
+                    printf("  %s (%zu caratteri)\n", email, strlen(email));
+                }
             }
         }
     }
@@ -100,7 +103,7 @@ char *crea_email(const char *nome, const char *cognome, int numero)
     if (numero > 0) {
         lunghezza = lunghezza + cifre(numero);
     }
-    email = malloc(lunghezza + 1);
+    email = malloc((lunghezza + 1) * sizeof *email);
     if (email != NULL) {
         for (i = 0; nome[i] != '\0'; i++) {
             if (isalpha((unsigned char) nome[i])) {

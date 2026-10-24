@@ -2,79 +2,104 @@
 
 ## 1. Problema
 
-La segreteria inserisce uno studente per riga (cognome, nome, classe e tre voti). Per ogni riga il programma alloca una struct Studente, la fa riempire da leggi_studente che riceve l'indirizzo del blocco, stampa la scheda con media ed esito e libera la struct prima della riga successiva.
+La segreteria inserisce uno studente per riga (cognome, nome, classe e tre
+voti). Per ogni riga il programma alloca una struct `Studente` con
+`malloc`, la fa riempire da `leggi_studente`, che riceve l'indirizzo del
+blocco, stampa la scheda con media ed esito e libera la struct prima della
+riga successiva.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Studente` | `cognome[20], nome[20], classe[4], voti[3]` | scheda di uno studente |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `s` | `Studente *` | 1 struct (heap) | Scheda dello studente corrente |
-| `esito` | `int` | — | 1 riga corretta, 0 errore, -1 FINE |
-| `schede`, `scartate` | `int` | — | Contatori finali |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| riga | testo | `cognome nome classe voto voto voto`; `FINE` termina |
+
+### Output
+
+- Per ogni riga valida una scheda incorniciata con i voti di italiano,
+  matematica, inglese, la media e l'esito (`promosso`,
+  `1 insufficienza`, `N insufficienze`).
+- `Riga non valida: scheda non creata.`
+- Alla fine: `Schede stampate: S, righe scartate: R`.
+- `Memoria insufficiente.` se `malloc` fallisce.
+
+### Vincoli
+
+- Un blocco `malloc(sizeof *s)` per ogni riga, liberato con `free` prima
+  della successiva: in memoria c'è sempre al massimo una scheda.
+- Voti da 1 a 10; classe al massimo 3 caratteri; il resto della riga
+  viene scartato.
+- Insufficienza: voto minore di 6.
+- A fine input il programma termina come con `FINE`.
+
+### Assunzioni
+
+- Cognome e nome sono una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Studente` | `typedef struct { char cognome[20]; char nome[20]; char classe[4]; double voti[3]; } Studente;` | La scheda |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `s` | `Studente *` | Blocco allocato per la riga corrente |
+| `esito` | `int` | 1 valida, 0 non valida, −1 fine |
+| `schede`, `scartate` | `int` | Contatori |
 
 | Funzione | Compito |
 |----------|---------|
-| `leggi_studente(s)` | Scrive nei campi di *s; controlla voti e classe |
-| `stampa_scheda(s)` | Riquadro con voti, media ed esito |
+| `leggi_studente(s)` | Riempie la struct puntata e controlla i dati |
+| `stampa_scheda(s)` | Stampa la scheda con media ed esito |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Studente promosso
+1. Finché non si termina: allocare una struct (se fallisce terminare);
+   leggere la riga; se valida stampare la scheda, se non valida
+   segnalarla; liberare la struct.
+2. Stampare i contatori.
 
-**a) Input** – `Bassi Marta 3B 7 8.5 6`
+## 3. Casi di test
 
-**b) Output** – scheda con media 7.17, "esito: promosso"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `s`
+### Test 1 – Schede e righe scartate
 
-**d) Vincoli** – voti da 1 a 10
+- **Input:** `Rossi Elena 3B 7 8 6.5`, `Bianchi Luca 3B 5 6 4`,
+  `Verdi Anna 3B 5.5 7 8`, `Neri Paolo 3B 7 11 6`,
+  `Gialli Sara QUARTA 6 6 6`, `Blu Ugo 3B sette 6 6`, `FINE`
+- **Output atteso:**
+  ```
+    +--------------------------------+
+    | Rossi      Elena      3B       |
+    |   italiano       7.0           |
+    |   matematica     8.0           |
+    |   inglese        6.5           |
+    |   media         7.17           |
+    |   esito: promosso              |
+    +--------------------------------+
+    +--------------------------------+
+    | Bianchi    Luca       3B       |
+    |   italiano       5.0           |
+    |   matematica     6.0           |
+    |   inglese        4.0           |
+    |   media         5.00           |
+    |   esito: 2 insufficienze       |
+    +--------------------------------+
+    +--------------------------------+
+    | Verdi      Anna       3B       |
+    |   italiano       5.5           |
+    |   matematica     7.0           |
+    |   inglese        8.0           |
+    |   media         6.83           |
+    |   esito: 1 insufficienza       |
+    +--------------------------------+
+    Riga non valida: scheda non creata.
+    Riga non valida: scheda non creata.
+    Riga non valida: scheda non creata.
 
-**e) Assunzioni** – una parola per cognome e nome
-
-**f) Algoritmo in linguaggio naturale** – malloc, leggi_studente(s), stampa_scheda(s), free.
-
-### Caso d'uso 2 – Insufficienze
-
-**a) Input** – `Ferri Luca 3A 5 6 4.5`; `Neri Paolo 3C 6 5.5 8`
-
-**b) Output** – "esito: 2 insufficienze"; "esito: 1 insufficienza"
-
-**c) Variabili di supporto** – `insufficienti`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – contare i voti sotto 6.
-
-### Caso d'uso 3 – Riga non valida
-
-**a) Input** – `Conti Sara 3B 11 7 7`
-
-**b) Output** – "Riga non valida: scheda non creata."
-
-**c) Variabili di supporto** – `scartate`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – leggi_studente restituisce 0; il blocco si libera lo stesso.
-
-### Caso d'uso 4 – Fine
-
-**a) Input** – `FINE`
-
-**b) Output** – "Schede stampate: 3, righe scartate: 1"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – esito -1: il ciclo termina dopo aver liberato l'ultima struct.
+  Schede stampate: 3, righe scartate: 3
+  ```

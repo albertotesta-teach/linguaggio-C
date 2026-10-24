@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_POSTAZIONI 40
 
@@ -66,7 +67,8 @@ int main(void)
     char comando = ' ';
 
     printf("Postazioni iniziali: ");
-    if (scanf("%d", &k) != 1 || k < 1 || k > MAX_POSTAZIONI || !nuove_postazioni(&pc, &n_pc, k)) {
+    if (scanf("%d", &k) != 1 || k < 1 || k > MAX_POSTAZIONI ||
+        !nuove_postazioni(&pc, &n_pc, k)) {
         printf("Numero non valido o memoria insufficiente.\n");
         comando = 'Q';
     }
@@ -74,8 +76,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (N, G, P, E, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'N') {
             if (scanf("%d", &k) != 1 || k < 1 || n_pc + k > MAX_POSTAZIONI) {
                 printf("  Numero non valido.\n");
@@ -130,8 +133,8 @@ int main(void)
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
         }
-        if (comando != 'Q' && comando != 'E') {
-            scanf("%*[^\n]");
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 

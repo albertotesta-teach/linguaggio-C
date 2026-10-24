@@ -67,6 +67,7 @@ int main(void)
             }
 
             printf("\n");
+            moda = categorie - 1;       /* a parita' vale il voto piu' alto */
             for (k = categorie - 1; k >= 0; k--) {
                 printf("%4.1f |", minimo + k / 2.0);
                 for (i = 0; i < conta[k]; i++) {
@@ -78,8 +79,9 @@ int main(void)
                 }
             }
             if (totale > 0) {
-                printf("Voti: %d, piu' frequente: %.1f (%d volte), sufficienze: %.0f%%\n",
-                       totale, minimo + moda / 2.0, conta[moda], 100.0 * sufficienti / totale);
+                printf("Voti: %d, piu' frequente: %.1f (%d %s), sufficienze: %.0f%%\n",
+                       totale, minimo + moda / 2.0, conta[moda],
+                       conta[moda] == 1 ? "volta" : "volte", 100.0 * sufficienti / totale);
             }
             free(conta);
         }

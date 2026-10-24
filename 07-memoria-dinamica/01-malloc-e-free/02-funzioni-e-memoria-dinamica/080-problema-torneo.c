@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_SQUADRE 16
 
@@ -92,8 +93,9 @@ int main(void)
     while (comando != 'Q') {
         printf("Comando (P, C, Q): ");
         if (scanf(" %c", &comando) != 1) {
-            comando = 'Q';
+            comando = 'Q';              /* input terminato: come Q */
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P') {
             if (scanf("%15s %d %15s %d", nome1, &gol1, nome2, &gol2) != 4 || gol1 < 0 ||
                 gol2 < 0) {
@@ -109,12 +111,13 @@ int main(void)
                     printf("  %s %d - %d %s registrata\n", nome1, gol1, gol2, nome2);
                 }
             }
-            scanf("%*[^\n]");
         } else if (comando == 'C') {
             classifica(t);
         } else if (comando != 'Q') {
             printf("  Comando sconosciuto.\n");
-            scanf("%*[^\n]");
+        }
+        if (comando != 'Q') {
+            scanf("%*[^\n]");          /* un comando per riga */
         }
     }
 

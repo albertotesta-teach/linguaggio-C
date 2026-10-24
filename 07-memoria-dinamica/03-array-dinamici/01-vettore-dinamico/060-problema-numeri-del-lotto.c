@@ -34,6 +34,7 @@
 #define NUMERI 5
 #define MASSIMO 90
 #define CLASSIFICA 5
+#define LUNG 80
 
 typedef struct {
     int numeri[NUMERI];
@@ -57,29 +58,34 @@ int main(void)
 {
     Archivio *archivio = crea_archivio(4);
     Estrazione e;
-    char parola[16];
+    char riga[LUNG];
+    char dopo;
     int frequenza[MASSIMO + 1] = {0};
     int ritardo[MASSIMO + 1];
     int finito = 0;
     int i;
     int k;
-    int letti;
+    int resto;
 
     if (archivio == NULL) {
         printf("Memoria insufficiente.\n");
     } else {
         printf("Estrazioni (5 numeri, FINE per terminare):\n");
         while (!finito) {
-            if (scanf("%15s", parola) != 1 || strcmp(parola, "FINE") == 0) {
+            if (fgets(riga, LUNG, stdin) == NULL || strcmp(riga, "FINE\n") == 0 ||
+                strcmp(riga, "FINE") == 0) {
                 finito = 1;
             } else {
-                letti = sscanf(parola, "%d", &e.numeri[0]);
-                for (k = 1; k < NUMERI && letti == k; k++) {
-                    letti = letti + scanf("%d", &e.numeri[k]);
+                if (strchr(riga, '\n') == NULL) {
+                    resto = getchar();  /* riga troppo lunga: scarta il resto */
+                    while (resto != '\n' && resto != EOF) {
+                        resto = getchar();
+                    }
                 }
-                if (letti != NUMERI || !valida(&e)) {
+                /* cinque numeri e nient'altro sulla riga */
+                if (sscanf(riga, "%d %d %d %d %d %c", &e.numeri[0], &e.numeri[1], &e.numeri[2],
+                           &e.numeri[3], &e.numeri[4], &dopo) != NUMERI || !valida(&e)) {
                     printf("  estrazione non valida\n");
-                    scanf("%*[^\n]");
                 } else if (!aggiungi(archivio, e)) {
                     printf("Memoria insufficiente.\n");
                     finito = 1;

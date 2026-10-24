@@ -58,7 +58,7 @@ int main(void)
         } else if (lunghezza == 0) {
             printf("  messaggio vuoto\n");
         } else {
-            messaggio = malloc(lunghezza + 1);
+            messaggio = malloc((lunghezza + 1) * sizeof *messaggio);
             if (messaggio == NULL) {
                 printf("  Memoria insufficiente.\n");
                 finito = 1;

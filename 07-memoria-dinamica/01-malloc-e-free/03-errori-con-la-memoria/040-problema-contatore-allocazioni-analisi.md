@@ -2,83 +2,107 @@
 
 ## 1. Problema
 
-Nel progetto di gruppo nessuno sa più quali blocchi sono stati liberati. Invece di chiamare direttamente malloc e free, le varie parti del programma usano registra_malloc e registra_free, che annotano ogni blocco in un registro: indirizzo, byte, uso e stato. Un secondo free dello stesso blocco viene segnalato e non eseguito; a fine programma il rapporto mostra i blocchi che sarebbero andati persi.
+Nel progetto di gruppo nessuno sa più quali blocchi sono stati liberati.
+Invece di chiamare direttamente `malloc` e `free`, le parti del programma
+usano `registra_malloc` e `registra_free`, che annotano ogni blocco in un
+registro: indirizzo, byte, uso e stato. Un secondo `free` dello stesso
+blocco viene segnalato e non eseguito; a fine programma il rapporto mostra
+i blocchi che sarebbero andati persi, che il registro libera.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Voce` | `indirizzo (void *), byte, uso[24], attivo` | un blocco annotato |
-| `Registro` | `voci[20], n, byte_attivi, picco` | il registro delle allocazioni |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `registro` | `Registro` | 20 voci | Blocchi allocati, byte attivi e picco |
-| `byte` | `long` | — | Dimensione richiesta (1-100000) |
-| `uso` | `char[]` | 24 | A che cosa serve il blocco |
-| `numero`, `esito` | `int` | — | Numero del blocco e risultato di registra_free |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `comando` | `char` | `A byte uso` alloca, `L numero` libera, `R` rapporto, `Q` fine (anche minuscoli) |
+| `byte` | `long` | Da 1 a 100000 |
+| `uso` | `char[24]` | Descrizione del blocco |
+| `numero` | `int` | Numero del blocco (da 1) |
+
+### Output
+
+- `blocco N: B byte per uso`, `Allocazione non riuscita.`,
+  `Richiesta non valida.`
+- `blocco N liberato`, `blocco N gia' liberato: doppio free evitato`,
+  `blocco N inesistente`, `Numero non valido.`
+- Rapporto: blocchi allocati, blocchi ancora attivi (o `nessuno`), byte
+  attivi.
+- A fine programma: il rapporto, l'avviso dei blocchi persi (se ce ne
+  sono) e il picco di memoria.
+
+### Vincoli
+
+- Al massimo 20 blocchi registrati.
+- Dopo `free` l'indirizzo si azzera e lo stato diventa non attivo: così un
+  secondo rilascio si riconosce.
+- `byte_attivi` aumenta a ogni allocazione e cala a ogni rilascio; il
+  picco è il suo massimo.
+- A fine programma `libera_tutto` libera i blocchi ancora attivi.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Nessuna.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Voce` | `typedef struct { void *indirizzo; size_t byte; char uso[24]; int attivo; } Voce;` | Un blocco registrato |
+| `Registro` | `typedef struct { Voce voci[20]; int n; size_t byte_attivi; size_t picco; } Registro;` | Il registro |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `registro` | `Registro` | Stato delle allocazioni |
+| `numero`, `esito` | `int` | Risultati delle funzioni |
 
 | Funzione | Compito |
 |----------|---------|
-| `registra_malloc(r, byte, uso)` | malloc e annotazione; numero del blocco o 0 |
-| `registra_free(r, numero)` | 1 liberato, 0 già liberato (doppio free evitato), -1 inesistente |
-| `rapporto(r)` | Blocchi ancora attivi e byte attivi |
-| `libera_tutto(r)` | registra_free di ogni blocco |
+| `registra_malloc(r, byte, uso)` | Alloca e annota; numero del blocco o 0 |
+| `registra_free(r, numero)` | 1 liberato, 0 già liberato, −1 inesistente |
+| `rapporto(r)` | Stampa i blocchi attivi e li conta |
+| `libera_tutto(r)` | Libera i blocchi rimasti |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Allocazioni
+1. Azzerare il registro.
+2. Finché il comando non è `Q`: leggere il comando in maiuscolo; allocare,
+   liberare o stampare il rapporto; scartare il resto della riga.
+3. Stampare il rapporto finale e l'avviso, liberare tutto, stampare il
+   picco.
 
-**a) Input** – `A 400 elenco-studenti`, `A 2000 tabella-voti`, `A 64 nome-classe`
+## 3. Casi di test
 
-**b) Output** – "blocco 1: 400 byte per elenco-studenti" ...
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `r->voci`
+### Test 1 – Doppio free e blocchi dimenticati
 
-**d) Vincoli** – al massimo 20 blocchi
+- **Input:** `A 1000 voti`, `a 250 nomi`, `A 0 x`, `A 500000 x`, `L 1`,
+  `L 1`, `L 9`, `L x`, `R`, `A 64 buffer`, `X`, `Q`
+- **Valori intermedi attesi:** picco 1000 + 250 = 1250 byte; alla fine
+  attivi 250 + 64 = 314.
+- **Output atteso:**
+  ```
+    blocco 1: 1000 byte per voti
+    blocco 2: 250 byte per nomi
+    Richiesta non valida.
+    Richiesta non valida.
+    blocco 1 liberato
+    blocco 1 gia' liberato: doppio free evitato
+    blocco 9 inesistente
+    Numero non valido.
+    Blocchi allocati: 2, ancora attivi:
+       2     250 byte  nomi
+    Byte attivi: 250
+    blocco 3: 64 byte per buffer
+    Comando sconosciuto.
 
-**e) Assunzioni** – l'uso è una parola
-
-**f) Algoritmo in linguaggio naturale** – malloc(byte); se riesce si annotano indirizzo, byte, uso e attivo = 1; si aggiorna il picco.
-
-### Caso d'uso 2 – Doppio free
-
-**a) Input** – `L 2` due volte
-
-**b) Output** – "blocco 2 liberato", poi "blocco 2 gia' liberato: doppio free evitato"
-
-**c) Variabili di supporto** – `attivo`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – free solo se la voce è attiva; dopo free indirizzo = NULL e attivo = 0.
-
-### Caso d'uso 3 – Blocco inesistente
-
-**a) Input** – `L 9`
-
-**b) Output** – "blocco 9 inesistente"
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – numeri da 1 a n
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – registra_free restituisce -1.
-
-### Caso d'uso 4 – Rapporto finale
-
-**a) Input** – `Q`
-
-**b) Output** – blocchi 1, 3 e 4 ancora attivi (592 byte), "li libera il registro", picco 2464 byte
-
-**c) Variabili di supporto** – `byte_attivi`, `picco`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – rapporto, poi libera_tutto: nessun blocco resta allocato.
+  Fine del programma
+    Blocchi allocati: 3, ancora attivi:
+       2     250 byte  nomi
+       3      64 byte  buffer
+    Byte attivi: 314
+    Il programma avrebbe perso questi blocchi: li libera il registro.
+    Picco di memoria: 1250 byte
+  ```

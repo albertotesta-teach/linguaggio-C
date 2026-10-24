@@ -2,100 +2,103 @@
 
 ## 1. Problema
 
-La scuola organizza i corsi pomeridiani di robotica e di teatro, con un numero di posti deciso all'avvio. Ogni corso è un Elenco con un puntatore a un array di Iscritto allocato da crea_elenco e liberato da distruggi_elenco; le funzioni iscrivi, ritira e stampa non toccano mai malloc e free.
+La scuola organizza i corsi pomeridiani di robotica e di teatro, con un
+numero di posti deciso all'avvio. Ogni corso è un `Elenco` con un
+puntatore a un array di `Iscritto` allocato da `crea_elenco` e liberato da
+`distruggi_elenco`; le funzioni `iscrivi`, `ritira` e `stampa` non toccano
+mai `malloc` e `free`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Tipo | Campi | Significato |
-|------|-------|-------------|
-| `Iscritto` | `nome[20], classe[4]` | uno studente |
-| `Elenco` | `corso[16], capienza, n, iscritti (Iscritto *)` | un corso con il suo array nello heap |
-| `Esito` | `ISCRITTO, CORSO_PIENO, GIA_ISCRITTO` | risultato di iscrivi |
+### Input
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `corsi` | `Elenco *[]` | 2 | I due corsi |
-| `posti` | `int[]` | 2 | Capienza scelta |
-| `e` | `Elenco *` | — | Corso indicato nel comando |
-| `corso`, `nome`, `classe` | `char[]` | 16, 20, 8 | Dati letti |
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `posti[0]`, `posti[1]` | `int` | Posti di robotica e di teatro, da 1 a 30 |
+| `comando` | `char` | `I corso nome classe`, `R corso nome`, `E` elenchi, `Q` fine (anche minuscoli) |
+
+### Output
+
+- `Iscrizione di nome a corso (n/capienza)`, `Il corso di X e' pieno.`,
+  `nome e' gia' tra gli iscritti a X.`
+- `Ritiro di nome da X.`, `nome non e' tra gli iscritti a X.`
+- `E`: per ogni corso gli iscritti numerati.
+- `Corso sconosciuto: X`, `Dati non validi.`, `Comando sconosciuto.`,
+  `Numero di posti non valido (da 1 a 30).`, `Memoria insufficiente.`
+
+### Vincoli
+
+- `crea_elenco` fa due allocazioni (la struct e l'array); se la seconda
+  fallisce libera la prima e restituisce `NULL`. `distruggi_elenco` libera
+  nell'ordine inverso e accetta `NULL`.
+- Un ritiro sposta indietro gli iscritti successivi (l'ordine resta).
+- Iscrizione: prima il controllo del doppione, poi quello dei posti.
+- Classe al massimo 3 caratteri.
+- Un comando per riga. A fine input il programma termina come con `Q`.
+
+### Assunzioni
+
+- Il nome dello studente è una sola parola.
+
+### Variabili di supporto
+
+| Tipo definito | Definizione | Significato |
+|---------------|-------------|-------------|
+| `Iscritto` | `typedef struct { char nome[20]; char classe[4]; } Iscritto;` | Uno studente |
+| `Elenco` | `typedef struct { char corso[16]; int capienza; int n; Iscritto *iscritti; } Elenco;` | Un corso con l'array dinamico |
+| `Esito` | `typedef enum { ISCRITTO, CORSO_PIENO, GIA_ISCRITTO } Esito;` | Risultato di `iscrivi` |
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `corsi` | `Elenco *[2]` | I due corsi |
+| `pronti` | `int` | Entrambe le allocazioni riuscite |
+| `e` | `Elenco *` | Corso indicato nel comando |
 
 | Funzione | Compito |
 |----------|---------|
-| `crea_elenco(corso, capienza)` | Struct e array degli iscritti; NULL se una malloc fallisce |
-| `distruggi_elenco(e)` | Libera l'array e poi la struct |
-| `iscrivi(e, nome, classe)` | Esito: ISCRITTO, CORSO_PIENO, GIA_ISCRITTO |
-| `ritira(e, nome)` | Toglie lo studente e sposta indietro i successivi |
-| `cerca(e, nome)` | Posizione o -1 |
-| `trova_corso(corsi, corso)` | Elenco con quel nome o NULL |
+| `crea_elenco`, `distruggi_elenco` | Allocazione e liberazione |
+| `cerca`, `iscrivi`, `ritira`, `stampa` | Operazioni sull'elenco |
+| `trova_corso(corsi, corso)` | Elenco con quel nome, o `NULL` |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Iscrizioni
+1. Leggere i posti; se validi creare i due elenchi, altrimenti
+   segnalarlo.
+2. Finché il comando non è `Q`: leggere il comando in maiuscolo; eseguire
+   iscrizione, ritiro o stampa; scartare il resto della riga.
+3. Distruggere i due elenchi.
 
-**a) Input** – `2 3`, poi `I robotica Marta 3B`, `I robotica Luca 2A`
+## 3. Casi di test
 
-**b) Output** – "Iscrizione di Marta a robotica (1/2)"
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `e->n`
+### Test 1 – Iscrizioni e ritiri
 
-**d) Vincoli** – posti da 1 a 30
+- **Input:** `2 3`, `I robotica Rossi 3A`, `i robotica Bianchi 2B`,
+  `I robotica Verdi 1C`, `I robotica Rossi 3A`, `I teatro Rossi 3A`,
+  `I danza Neri 1A`, `I teatro Gialli QUARTA`, `R robotica Bianchi`,
+  `r teatro Bianchi`, `I robotica Verdi 1C`, `E extra`, `X`, `Q`
+- **Output atteso:**
+  ```
+    Iscrizione di Rossi a robotica (1/2)
+    Iscrizione di Bianchi a robotica (2/2)
+    Il corso di robotica e' pieno.
+    Rossi e' gia' tra gli iscritti a robotica.
+    Iscrizione di Rossi a teatro (1/3)
+    Corso sconosciuto: danza
+    Dati non validi.
+    Ritiro di Bianchi da robotica.
+    Bianchi non e' tra gli iscritti a teatro.
+    Iscrizione di Verdi a robotica (2/2)
+    robotica: iscritti 2 su 2 posti
+      1. Rossi        3A
+      2. Verdi        1C
+    teatro: iscritti 1 su 3 posti
+      1. Rossi        3A
+    Comando sconosciuto.
+  ```
 
-**e) Assunzioni** – nomi di una parola
+### Test 2 – Posti non validi
 
-**f) Algoritmo in linguaggio naturale** – cercare il corso, controllare doppioni e capienza, copiare nell'ultima posizione.
-
-### Caso d'uso 2 – Corso pieno e doppione
-
-**a) Input** – `I robotica Sara 3B`; `I teatro Marta 3B` due volte
-
-**b) Output** – "Il corso di robotica e' pieno."; "Marta e' gia' tra gli iscritti a teatro."
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – uno studente può seguire entrambi i corsi
-
-**f) Algoritmo in linguaggio naturale** – switch sull'Esito restituito da iscrivi.
-
-### Caso d'uso 3 – Ritiro
-
-**a) Input** – `R robotica Marta`
-
-**b) Output** – "Ritiro di Marta da robotica."; il posto si libera per Sara
-
-**c) Variabili di supporto** – `posizione`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – spostare indietro di un posto gli iscritti successivi e decrementare n.
-
-### Caso d'uso 4 – Elenco
-
-**a) Input** – `E`
-
-**b) Output** – i due corsi con gli iscritti in ordine di iscrizione
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – stampa per ogni corso.
-
-### Caso d'uso 5 – Fine
-
-**a) Input** – `Q`
-
-**b) Output** – —
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – distruggi_elenco per entrambi i corsi.
+- **Input:** `0 3`
+- **Output atteso:** `Numero di posti non valido (da 1 a 30).`
