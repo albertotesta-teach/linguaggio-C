@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define BLOCCO "aula.lock"
 #define REGISTRO "prenotazioni.txt"
@@ -34,6 +35,7 @@
 int leggi_occupante(char occupante[], int dimensione);
 int prenota(const char *cognome);
 void ricopia(const char *nome);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -46,6 +48,7 @@ int main(void)
         if (scanf(" %c", &comando) != 1) {
             comando = 'Q';
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'P' || comando == 'L') {
             if (scanf("%29s", cognome) != 1) {
                 comando = 'Q';
@@ -76,6 +79,9 @@ int main(void)
             ricopia(REGISTRO);
         } else if (comando != 'Q') {
             printf("  comando sconosciuto\n");
+        }
+        if (comando != 'Q') {
+            svuota_riga();
         }
     }
 
@@ -136,5 +142,15 @@ void ricopia(const char *nome)
             c = fgetc(f);
         }
         fclose(f);
+    }
+}
+
+/* Scarta il resto della riga: un comando per riga. */
+void svuota_riga(void)
+{
+    int c = getchar();
+
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

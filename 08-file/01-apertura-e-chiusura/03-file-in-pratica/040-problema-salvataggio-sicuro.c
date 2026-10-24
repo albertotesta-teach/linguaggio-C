@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_LIBRI 50
 #define MAX_TITOLO 60
@@ -34,6 +35,7 @@
 int carica(const char *nome, char titoli[][MAX_TITOLO]);
 int salva(const char *nome, const char *temporaneo, char titoli[][MAX_TITOLO], int n);
 void elenco(char titoli[][MAX_TITOLO], int n);
+void svuota_riga(void);
 
 int main(void)
 {
@@ -51,10 +53,10 @@ int main(void)
         if (scanf(" %c", &comando) != 1) {
             comando = 'Q';
         }
+        comando = (char) toupper((unsigned char) comando);
         if (comando == 'A') {
             if (n == MAX_LIBRI) {
                 printf("  elenco pieno\n");
-                scanf("%*[^\n]");
             } else if (scanf(" %59[^\n]", titoli[n]) == 1) {
                 n++;
                 modificato = 1;
@@ -63,7 +65,6 @@ int main(void)
         } else if (comando == 'R') {
             if (scanf("%d", &numero) != 1 || numero < 1 || numero > n) {
                 printf("  numero non valido\n");
-                scanf("%*[^\n]");
             } else {
                 printf("  rimosso: %s\n", titoli[numero - 1]);
                 for (i = numero - 1; i < n - 1; i++) {
@@ -87,7 +88,9 @@ int main(void)
             }
         } else {
             printf("  comando sconosciuto\n");
-            scanf("%*[^\n]");
+        }
+        if (comando != 'Q') {
+            svuota_riga();      /* titoli troppo lunghi e dati in piu' */
         }
     }
 
@@ -153,5 +156,15 @@ void elenco(char titoli[][MAX_TITOLO], int n)
     }
     for (i = 0; i < n; i++) {
         printf("  %2d. %s\n", i + 1, titoli[i]);
+    }
+}
+
+/* Scarta il resto della riga: un comando per riga. */
+void svuota_riga(void)
+{
+    int c = getchar();
+
+    while (c != '\n' && c != EOF) {
+        c = getchar();
     }
 }

@@ -2,56 +2,89 @@
 
 ## 1. Problema
 
-I cartelli dell'open day si stampano in maiuscolo. Il filtro legge stdin carattere per carattere, converte le minuscole con toupper e scrive su stdout; non apre file, quindi si usa con la redirezione. Il resoconto e l'avviso sulle lettere accentate vanno su stderr, così su stdout esce solo il testo.
+I cartelli dell'open day si stampano in maiuscolo. Il filtro legge `stdin`
+carattere per carattere, converte le minuscole con `toupper` e scrive su
+`stdout`. Non apre file: si usa con la redirezione (`< testo.txt
+> stampa.txt`). Il resoconto e l'avviso sulle lettere accentate vanno su
+`stderr`, così su `stdout` esce solo il testo.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `c` | `int` | — | Carattere letto o EOF |
-| `letti`, `convertite` | `int` | — | Conteggi |
-| `non_ascii` | `int` | — | Byte oltre 127 (lettere accentate) |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| testo | flusso `stdin` | Qualunque testo, fino alla fine dell'input |
 
-### Caso d'uso 1 – Da tastiera
+### Output
 
-**a) Input** – due righe, poi Ctrl+D
+- Su `stdout` lo stesso testo con le lettere minuscole in maiuscolo.
+- Su `stderr`: `[filtro] caratteri letti: N, lettere convertite: K` e, se
+  ci sono, `[filtro] attenzione: B byte non ASCII (lettere accentate?) non
+  convertiti`.
 
-**b) Output** – le righe in maiuscolo; "[filtro] caratteri letti: 79, lettere convertite: 56"
+### Vincoli
 
-**c) Variabili di supporto** – —
+- Si usano solo i flussi standard: `fgetc(stdin)`, `fputc(c, stdout)`,
+  `fprintf(stderr, ...)`.
+- `c` è `int` per distinguere `EOF`; i valori letti vanno da 0 a 255 e si
+  possono passare a `islower`/`toupper`.
+- I byte maggiori di 127 (le lettere accentate in UTF-8) si copiano senza
+  modifiche e si contano.
 
-**d) Vincoli** – —
+### Assunzioni
 
-**e) Assunzioni** – fine dati con Ctrl+D
+- Nessuna.
 
-**f) Algoritmo in linguaggio naturale** – fgetc(stdin) fino a EOF; fputc(toupper(c), stdout).
+### Variabili di supporto
 
-### Caso d'uso 2 – Con redirezione
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `c` | `int` | Carattere letto, può valere `EOF` |
+| `letti`, `convertite`, `non_ascii` | `int` | Contatori del resoconto |
 
-**a) Input** – `< diario.txt > stampa.txt`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – stampa.txt in maiuscolo; a video solo il resoconto
+1. Leggere un carattere alla volta da `stdin` fino a `EOF`.
+2. Se è minuscolo convertirlo e contarlo; se è un byte non ASCII contarlo.
+3. Scriverlo su `stdout`.
+4. A fine input scrivere il resoconto su `stderr`.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+### Test 1 – Testo del cartello
 
-**e) Assunzioni** – nessuna
+- **Input:** `Open day: sabato 14 dicembre, ore 9-13`,
+  `Laboratori di informatica e di robotica` (con a capo finale)
+- **Valori intermedi attesi:** 38 + 39 caratteri e 2 a capo = 79; 56
+  minuscole.
+- **Output atteso:**
+  ```
+  OPEN DAY: SABATO 14 DICEMBRE, ORE 9-13
+  LABORATORI DI INFORMATICA E DI ROBOTICA
+  [filtro] caratteri letti: 79, lettere convertite: 56
+  ```
+- **Procedura:** `printf '...' | ./050-problema-filtro-maiuscole`.
 
-**f) Algoritmo in linguaggio naturale** – stderr non è rediretto da >.
+### Test 2 – Redirezione del diario
 
-### Caso d'uso 3 – Lettere accentate
+- **Cosa si verifica:** su `stampa.txt` va solo il testo, il resoconto
+  resta a video.
+- **Input:** `diario.txt` di 3 righe (98 caratteri) creato da
+  `01-aprire-e-chiudere/040`
+- **Output atteso:** a video
+  `[filtro] caratteri letti: 98, lettere convertite: 63`; `stampa.txt`
+  contiene le tre righe in maiuscolo (`12/10 MUSEO EGIZIO DI TORINO`, ...).
+- **Procedura:** `./050-problema-filtro-maiuscole < diario.txt > stampa.txt`.
 
-**a) Input** – testo con à, è
+### Test 3 – Lettere accentate
 
-**b) Output** – avviso su stderr
-
-**c) Variabili di supporto** – `non_ascii`
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – codifica UTF-8 o Latin-1
-
-**f) Algoritmo in linguaggio naturale** – toupper non converte i byte non ASCII.
+- **Input:** `città` e a capo
+- **Valori intermedi attesi:** `à` in UTF-8 sono 2 byte; 7 caratteri
+  letti, 4 convertiti.
+- **Output atteso:**
+  ```
+  CITTà
+  [filtro] caratteri letti: 7, lettere convertite: 4
+  [filtro] attenzione: 2 byte non ASCII (lettere accentate?) non convertiti
+  ```

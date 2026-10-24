@@ -41,6 +41,7 @@ int main(void)
     int migliore = 0;
     int n = 0;
     int finito = 0;
+    int letti;
     int i;
 
     printf("Settimana: ");
@@ -53,12 +54,23 @@ int main(void)
     while (!finito && n < CLASSI) {
         if (scanf("%7s", classi[n]) != 1 || strcmp(classi[n], "FINE") == 0) {
             finito = 1;
-        } else if (scanf("%lf", &kg[n]) != 1 || kg[n] < 0) {
-            printf("  chili non validi per %s\n", classi[n]);
-            finito = 1;
         } else {
-            n++;
+            letti = scanf("%lf", &kg[n]);
+            if (letti == EOF) {
+                printf("  mancano i chili di %s\n", classi[n]);
+                finito = 1;
+            } else if (letti == 0 || kg[n] < 0) {
+                printf("  chili non validi per %s: classe scartata\n", classi[n]);
+                if (letti == 0) {
+                    scanf("%*s");   /* si scarta il valore non numerico */
+                }
+            } else {
+                n++;
+            }
         }
+    }
+    if (!finito) {
+        printf("  raggiunto il massimo di %d classi\n", CLASSI);
     }
 
     if (n > 0) {
@@ -85,8 +97,8 @@ int main(void)
         if (storico == NULL) {
             fprintf(stderr, "Impossibile aprire storico-carta.txt\n");
         } else {
-            fprintf(storico, "settimana %d: %d classi, %.1f kg, migliore %s\n", settimana, n,
-                    totale, classi[migliore]);
+            fprintf(storico, "settimana %d: %d %s, %.1f kg, migliore %s\n", settimana, n,
+                    n == 1 ? "classe" : "classi", totale, classi[migliore]);
             fclose(storico);
             printf("Storico aggiornato:\n");
             ricopia("storico-carta.txt");

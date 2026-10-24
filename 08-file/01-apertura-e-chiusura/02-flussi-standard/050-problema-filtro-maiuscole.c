@@ -44,7 +44,8 @@ int main(void)
     }
     fprintf(stderr, "[filtro] caratteri letti: %d, lettere convertite: %d\n", letti, convertite);
     if (non_ascii > 0) {
-        fprintf(stderr, "[filtro] attenzione: %d byte non ASCII (lettere accentate?) non convertiti\n",
+        fprintf(stderr,
+                "[filtro] attenzione: %d byte non ASCII (lettere accentate?) non convertiti\n",
                 non_ascii);
     }
 

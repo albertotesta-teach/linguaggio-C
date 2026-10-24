@@ -31,10 +31,15 @@ int main(void)
     FILE *validi = NULL;
     FILE *errori = NULL;
     char cognome[30];
+    char riga[100];
     char testo_voto[16];
     char dopo;
+    char altro;
+    int campi;
+    int resto;
     int voto;
-    int riga = 0;
+    int riga_n = 0;     /* numero della riga di dati */
+    const char *motivo; /* motivo dello scarto, NULL se valida */
     int caricati = 0;
     int scartati = 0;
     int finito = 0;
@@ -56,23 +61,40 @@ int main(void)
         printf("Voti (cognome voto, FINE per terminare):\n");
     }
     while (!finito) {
-        if (scanf("%29s", cognome) != 1 || strcmp(cognome, "FINE") == 0) {
-            finito = 1;
-        } else if (scanf("%15s", testo_voto) != 1) {
+        if (fgets(riga, sizeof riga, stdin) == NULL) {
             finito = 1;
         } else {
-            riga++;
-            if (sscanf(testo_voto, "%d%c", &voto, &dopo) != 1) {
-                segnala(stderr, riga, cognome, "il voto non e' un numero intero");
-                segnala(errori, riga, cognome, "il voto non e' un numero intero");
-                scartati++;
-            } else if (voto < 1 || voto > 10) {
-                segnala(stderr, riga, cognome, "voto fuori dall'intervallo 1-10");
-                segnala(errori, riga, cognome, "voto fuori dall'intervallo 1-10");
-                scartati++;
-            } else {
-                fprintf(validi, "%s %d\n", cognome, voto);
-                caricati++;
+            if (strchr(riga, '\n') == NULL) {
+                /* riga troppo lunga: si scarta il resto */
+                resto = getchar();
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
+            campi = sscanf(riga, "%29s %15s %c", cognome, testo_voto, &altro);
+            if (campi >= 1 && strcmp(cognome, "FINE") == 0) {
+                finito = 1;
+            } else if (campi >= 1) {
+                /* riga vuota (campi < 1): ignorata e non numerata */
+                riga_n++;
+                motivo = NULL;
+                if (campi == 1) {
+                    motivo = "manca il voto";
+                } else if (campi == 3) {
+                    motivo = "dati in piu' dopo il voto";
+                } else if (sscanf(testo_voto, "%d%c", &voto, &dopo) != 1) {
+                    motivo = "il voto non e' un numero intero";
+                } else if (voto < 1 || voto > 10) {
+                    motivo = "voto fuori dall'intervallo 1-10";
+                }
+                if (motivo != NULL) {
+                    segnala(stderr, riga_n, cognome, motivo);
+                    segnala(errori, riga_n, cognome, motivo);
+                    scartati++;
+                } else {
+                    fprintf(validi, "%s %d\n", cognome, voto);
+                    caricati++;
+                }
             }
         }
     }

@@ -72,7 +72,9 @@ int main(void)
         fclose(secondo);
 
         if (a == b) {
-            printf("I file sono identici. Righe confrontate: %d\n", riga - 1);
+            /* l'ultima riga conta anche se non finisce con a capo */
+            printf("I file sono identici. Righe confrontate: %d\n",
+                   colonna > 1 ? riga : riga - 1);
         } else {
             printf("Prima differenza alla riga %d, colonna %d:\n", riga, colonna);
             printf("  %-20s ", nome_primo);

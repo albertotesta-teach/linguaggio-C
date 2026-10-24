@@ -21,6 +21,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 
 #define MATERIE 6
 
@@ -58,6 +59,7 @@ int main(void)
         if (scanf(" %c", &risposta) != 1) {
             risposta = 'n';
         }
+        risposta = (char) tolower((unsigned char) risposta);
     }
     if (ok && risposta == 's') {
         sprintf(nome_file, "pagella-%s.txt", cognome);
@@ -76,17 +78,20 @@ int main(void)
     return 0;
 }
 
-/* Voto da 1 a 10, ripetendo la domanda; 0 se l'input finisce. */
+/* Voto intero da 1 a 10, ripetendo la domanda; 0 se l'input finisce.
+ * Il voto si legge come parola e si converte con sscanf: "7.5" o "8a"
+ * vengono rifiutati per intero, senza lasciare caratteri in sospeso. */
 int leggi_voto(const char *materia)
 {
+    char testo[16];
+    char dopo;
     int voto = 0;
     int letti = 0;
 
     while (letti != EOF && (voto < 1 || voto > 10)) {
         printf("  %s: ", materia);
-        letti = scanf("%d", &voto);
-        if (letti == 0) {
-            scanf("%*s");
+        letti = scanf("%15s", testo);
+        if (letti == 1 && sscanf(testo, "%d%c", &voto, &dopo) != 1) {
             voto = 0;
         }
         if (letti != EOF && (voto < 1 || voto > 10)) {

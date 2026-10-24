@@ -25,7 +25,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
+int data_valida(int giorno, int mese);
 int esiste(const char *nome);
 void stampa(const char *nome);
 
@@ -41,8 +43,7 @@ int main(void)
     int finito = 0;
 
     printf("Data (gg mm): ");
-    if (scanf("%d %d", &giorno, &mese) != 2 || giorno < 1 || giorno > 31 || mese < 1 ||
-        mese > 12) {
+    if (scanf("%d %d", &giorno, &mese) != 2 || !data_valida(giorno, mese)) {
         printf("Data non valida.\n");
         scelta = 'N';
     } else {
@@ -52,6 +53,7 @@ int main(void)
             if (scanf(" %c", &scelta) != 1) {
                 scelta = 'N';
             }
+            scelta = (char) toupper((unsigned char) scelta);
         }
     }
     if (scelta == 'A' || scelta == 'S') {
@@ -81,6 +83,13 @@ int main(void)
     }
 
     return 0;
+}
+
+int data_valida(int giorno, int mese)
+{
+    const int giorni_mese[13] = {0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+    return mese >= 1 && mese <= 12 && giorno >= 1 && giorno <= giorni_mese[mese];
 }
 
 int esiste(const char *nome)

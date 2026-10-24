@@ -2,63 +2,103 @@
 
 ## 1. Problema
 
-Gli iscritti al corso di primo soccorso arrivano in un unico elenco "classe cognome", in ordine sparso. Il programma tiene aperti insieme i file di tutte le classi incontrate (classe-3A.txt, ...): per ogni riga cerca la classe, apre il suo file se è nuova e vi scrive il cognome. Alla fine chiude tutti i file e ne stampa il contenuto.
+Gli iscritti al corso di primo soccorso arrivano in un unico elenco
+`classe cognome`, in ordine sparso. Il programma tiene aperti insieme i
+file di tutte le classi incontrate (`classe-3A.txt`, ...): per ogni
+iscritto cerca la classe, apre il suo file se la classe è nuova e vi
+scrive il cognome. Alla fine chiude tutti i file e ne stampa il contenuto.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `classi` | `char[][8]` | 8 | Classi incontrate |
-| `file` | `FILE *[]` | 8 | Un file aperto per classe |
-| `conta` | `int[]` | 8 | Iscritti per classe |
-| `classe`, `cognome`, `nome_file` | `char[]` | 8, 30, 30 | Riga letta e nome del file |
-| `n`, `scartati` | `int` | — | Classi aperte e righe scartate |
+### Input
+
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `classe` | testo | Classe dell'iscritto, fino a 7 caratteri; `FINE` termina |
+| `cognome` | testo | Cognome, senza spazi, fino a 29 caratteri |
+
+### Output
+
+- Un file `classe-XX.txt` per classe, con un cognome per riga.
+- `File creati: N, iscritti scartati: S`, poi per ogni classe
+  `--- classe-XX.txt (iscritti: K) ---` e il contenuto del file.
+- Su `stderr`: `  scartato COGNOME (CLASSE)` quando non si può aprire un
+  altro file, `  impossibile creare NOME`.
+
+### Vincoli
+
+- I file aperti sono al massimo 8 (`MAX_CLASSI`): un array di `FILE *`
+  tiene un file aperto per classe fino alla fine; un iscritto di una nona
+  classe si scarta.
+- Il nome della classe si converte in maiuscolo: `3a` e `3A` finiscono
+  nello stesso file.
+- Il nome del file si costruisce con `sprintf` in 30 caratteri.
+- Tutti i file si chiudono con `fclose` prima di rileggerli.
+- I file si aprono in `"w"`: ogni esecuzione rifà gli elenchi.
+
+### Assunzioni
+
+- L'input contiene coppie complete classe-cognome; una classe senza
+  cognome alla fine dell'input si ignora.
+
+### Variabili di supporto
+
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `classi` | `char[8][8]` | Classi incontrate |
+| `file` | `FILE *[8]` | File aperto di ogni classe |
+| `conta` | `int[8]` | Iscritti scritti in ogni file |
+| `n` | `int` | Classi (file aperti) |
+| `k` | `int` | Indice della classe cercata, -1 se nuova |
+| `nome_file` | `char[30]` | Nome costruito con `sprintf` |
+| `scartati` | `int` | Iscritti non scritti |
 
 | Funzione | Compito |
 |----------|---------|
-| `cerca(classi, n, classe)` | Indice della classe o -1 |
-| `ricopia(nome)` | Stampa un file a video |
+| `cerca(classi, n, classe)` | Indice della classe, -1 se non c'è |
+| `ricopia(nome)` | Stampa il contenuto di un file |
 
-## 3. Casi d'uso e funzionalità
+### Algoritmo in linguaggio naturale
 
-### Caso d'uso 1 – Corso di primo soccorso
+1. Leggere coppie classe-cognome fino a `FINE` o alla fine dell'input.
+2. Convertire la classe in maiuscolo e cercarla; se è nuova e c'è posto,
+   aprire il suo file in `"w"` e aggiungerla.
+3. Se la classe ha un file, scrivere il cognome e contarlo; altrimenti
+   scartare l'iscritto.
+4. Chiudere tutti i file, stampare il riepilogo e il contenuto di ogni
+   file.
 
-**a) Input** – 7 iscritti di 3A, 4B e 5C, poi `FINE`
+## 3. Casi di test
 
-**b) Output** – 3 file; 3A con 3 iscritti, 4B e 5C con 2
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**c) Variabili di supporto** – `file`
+### Test 1 – Iscritti al corso
 
-**d) Vincoli** – al massimo 8 classi
+- **Input:** `3A Rossi 4B Bianchi 3A Verdi 5C Neri`,
+  `4B Russo 3A Gallo 5C Costa FINE`
+- **Output atteso:**
+  ```
+  Iscritti (classe cognome, FINE per terminare):
 
-**e) Assunzioni** – classi senza spazi
+  File creati: 3, iscritti scartati: 0
+  --- classe-3A.txt (iscritti: 3) ---
+  Rossi
+  Verdi
+  Gallo
+  --- classe-4B.txt (iscritti: 2) ---
+  Bianchi
+  Russo
+  --- classe-5C.txt (iscritti: 2) ---
+  Neri
+  Costa
+  ```
 
-**f) Algoritmo in linguaggio naturale** – cerca; se -1 fopen "w" e nuova classe; fprintf nel file della classe.
+### Test 2 – Minuscole e troppe classi
 
-### Caso d'uso 2 – Troppe classi
-
-**a) Input** – una nona classe
-
-**b) Output** – "scartato ..." su stderr
-
-**c) Variabili di supporto** – `scartati`
-
-**d) Vincoli** – MAX_CLASSI e FOPEN_MAX
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuno spazio nell'array: la riga si scarta.
-
-### Caso d'uso 3 – Chiusura
-
-**a) Input** – —
-
-**b) Output** – —
-
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – fclose di tutti gli n file prima di rileggerli.
+- **Input:** `3a Rossi 3A Verdi 1A x 2A x 3B x 4B x 5B x 1C x 2C x 9Z Neri`,
+  poi fine input
+- **Valori intermedi attesi:** `3a` diventa `3A`; le classi 3A, 1A, 2A,
+  3B, 4B, 5B, 1C, 2C occupano gli 8 file; 9Z non ha posto.
+- **Output atteso:** `  scartato Neri (9Z)` su `stderr`;
+  `File creati: 8, iscritti scartati: 1`; `classe-3A.txt` contiene
+  `Rossi` e `Verdi`.

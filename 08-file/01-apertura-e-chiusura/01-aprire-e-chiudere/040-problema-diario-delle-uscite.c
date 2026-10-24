@@ -14,8 +14,9 @@
  * esiste ancora, "a" lo crea. Con "w" ogni esecuzione cancellerebbe
  * il diario.
  *
- * Il programma legge da tastiera "gg/mm meta" (la meta può contenere
- * spazi) fino a FINE, scarta le date non valide, chiude il file e lo
+ * Il programma legge da tastiera una riga "gg/mm meta" alla volta (la
+ * meta può contenere spazi) fino a FINE, scarta le righe senza meta e le
+ * date non valide, chiude il file e lo
  * riapre in lettura per stampare tutto il diario con le righe numerate.
  */
 
@@ -28,10 +29,14 @@ int stampa_numerata(const char *nome);
 int main(void)
 {
     FILE *diario;
+    char riga[100];
     char data[16];
     char meta[60];
     int giorno;
     int mese;
+    char extra;
+    int campi;
+    int resto;
     int aggiunte = 0;
     int finito = 0;
 
@@ -43,15 +48,32 @@ int main(void)
         printf("Uscite (gg/mm meta, FINE per terminare):\n");
     }
     while (!finito) {
-        if (scanf("%15s", data) != 1 || strcmp(data, "FINE") == 0) {
+        if (fgets(riga, sizeof riga, stdin) == NULL) {
             finito = 1;
-        } else if (scanf(" %59[^\n]", meta) != 1) {
-            finito = 1;
-        } else if (sscanf(data, "%d/%d", &giorno, &mese) != 2 || !data_valida(giorno, mese)) {
-            printf("  data non valida: %s\n", data);
         } else {
-            fprintf(diario, "%02d/%02d %s\n", giorno, mese, meta);
-            aggiunte++;
+            if (strchr(riga, '\n') == NULL) {
+                /* riga troppo lunga: si scarta il resto */
+                resto = getchar();
+                while (resto != '\n' && resto != EOF) {
+                    resto = getchar();
+                }
+            }
+            campi = sscanf(riga, "%15s %59[^\n]", data, meta);
+            if (campi >= 1 && strcmp(data, "FINE") == 0) {
+                finito = 1;
+            } else if (campi == 1) {
+                printf("  manca la meta: %s\n", data);
+            } else if (campi == 2) {
+                /* extra: la data deve finire subito dopo il mese */
+                if (sscanf(data, "%d/%d%c", &giorno, &mese, &extra) != 2 ||
+                    !data_valida(giorno, mese)) {
+                    printf("  data non valida: %s\n", data);
+                } else {
+                    fprintf(diario, "%02d/%02d %s\n", giorno, mese, meta);
+                    aggiunte++;
+                }
+            }
+            /* campi < 1: riga vuota, ignorata */
         }
     }
     if (diario != NULL) {

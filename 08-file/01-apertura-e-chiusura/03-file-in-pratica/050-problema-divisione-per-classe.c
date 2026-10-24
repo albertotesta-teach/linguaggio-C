@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MAX_CLASSI 8
 
@@ -45,6 +46,7 @@ int main(void)
     int k;
     int scartati = 0;
     int finito = 0;
+    int i;
 
     printf("Iscritti (classe cognome, FINE per terminare):\n");
     while (!finito) {
@@ -53,6 +55,10 @@ int main(void)
         } else if (scanf("%29s", cognome) != 1) {
             finito = 1;
         } else {
+            /* 3a e 3A sono la stessa classe */
+            for (i = 0; classe[i] != '\0'; i++) {
+                classe[i] = (char) toupper((unsigned char) classe[i]);
+            }
             k = cerca(classi, n, classe);
             if (k == -1 && n < MAX_CLASSI) {
                 sprintf(nome_file, "classe-%s.txt", classe);

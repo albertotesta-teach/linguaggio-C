@@ -2,58 +2,101 @@
 
 ## 1. Problema
 
-Prima di consegnare la relazione di laboratorio gli studenti controllano il testo. Il programma legge il file una sola volta, carattere per carattere, e conta lettere, cifre, spazi, altri caratteri e righe; trova la riga più lunga e segnala quante righe superano gli 80 caratteri.
+Prima di consegnare la relazione di laboratorio gli studenti controllano
+il testo. Il programma legge il file una sola volta, carattere per
+carattere, e conta lettere, cifre, spazi, altri caratteri e righe; trova
+la riga più lunga e dice quante righe superano gli 80 caratteri.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `f` | `FILE *` | — | File da analizzare |
-| `nome` | `char[]` | 60 | Nome letto |
-| `lettere`, `cifre`, `spazi`, `altri` | `int` | — | Conteggi per tipo di carattere |
-| `righe`, `lunghezza` | `int` | — | Righe e lunghezza della riga corrente |
-| `massima`, `riga_massima`, `troppo_lunghe` | `int` | — | Statistiche sulle righe |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| `nome` | testo | Nome del file, senza spazi, fino a 59 caratteri |
+| file | file di testo | Testo da analizzare |
 
-### Caso d'uso 1 – Diario
+### Output
 
-**a) Input** – `diario.txt`
+- `Statistiche di NOME` con i conteggi di lettere, cifre, spazi, altri
+  caratteri e righe, incolonnati su 6 cifre.
+- `riga piu' lunga: la R, con L caratteri` (solo se il file ha almeno una
+  riga) e `righe oltre 80 caratteri: K`.
+- `Impossibile leggere "NOME"` su `stderr`.
 
-**b) Output** – 68 lettere, 12 cifre, 10 spazi, 5 altri; 3 righe; la più lunga è la 2 (44 caratteri)
+### Vincoli
 
-**c) Variabili di supporto** – `lunghezza`
+- Il file si legge una sola volta con `fgetc`, fino a `EOF`.
+- L'a capo chiude una riga e non si conta tra i caratteri; un'ultima
+  riga senza a capo si conta lo stesso.
+- Lettere e cifre si riconoscono con `isalpha` e `isdigit`; spazi sono
+  `' '` e `'\t'`; tutto il resto è "altro".
+- A parità di lunghezza resta la prima riga più lunga; "oltre 80" vuol
+  dire più di 80 caratteri.
 
-**d) Vincoli** – —
+### Assunzioni
 
-**e) Assunzioni** – le lettere accentate sono "altri caratteri"
+- Il testo è ASCII: una lettera accentata in UTF-8 occupa due byte e
+  viene contata tra gli altri caratteri.
 
-**f) Algoritmo in linguaggio naturale** – a ogni '\n' si confronta lunghezza con il massimo e la si azzera.
+### Variabili di supporto
 
-### Caso d'uso 2 – Ultima riga senza a capo
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `f` | `FILE *` | File aperto in `"r"` |
+| `c` | `int` | Carattere letto, può valere `EOF` |
+| `lettere`, `cifre`, `spazi`, `altri`, `righe` | `int` | Contatori |
+| `lunghezza` | `int` | Caratteri della riga in corso |
+| `massima`, `riga_massima` | `int` | Riga più lunga trovata finora |
+| `troppo_lunghe` | `int` | Righe oltre il limite |
+| `LIMITE` | `#define` | 80 |
 
-**a) Input** – file che non termina con '\n'
+### Algoritmo in linguaggio naturale
 
-**b) Output** – l'ultima riga è contata
+1. Leggere il nome e aprire il file; se non si apre, segnalarlo.
+2. Per ogni carattere: se è un a capo, chiudere la riga (contarla,
+   aggiornare la più lunga e quelle oltre il limite, azzerare la
+   lunghezza); altrimenti aumentare la lunghezza e il contatore della sua
+   categoria.
+3. A fine file chiudere l'eventuale ultima riga senza a capo.
+4. Stampare le statistiche.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+Nell'output i dati inseriti non compaiono (input da pipe).
 
-**e) Assunzioni** – nessuna
+### Test 1 – Statistiche del diario
 
-**f) Algoritmo in linguaggio naturale** – dopo il ciclo, se lunghezza > 0 si conta un'altra riga.
+- **Cosa si verifica:** i conteggi sul `diario.txt` di 3 righe prodotto
+  da `040`.
+- **Input:** `diario.txt`
+- **Valori intermedi attesi:** righe di 28, 44 e 23 caratteri; la più
+  lunga è la seconda.
+- **Output atteso:**
+  ```
+  File da analizzare: Statistiche di diario.txt
+    lettere              68
+    cifre                12
+    spazi                10
+    altri caratteri       5
+    righe                 3
+    riga piu' lunga: la 2, con 44 caratteri
+    righe oltre 80 caratteri: 0
+  ```
 
-### Caso d'uso 3 – File mancante
+### Test 2 – Ultima riga senza a capo
 
-**a) Input** – `relazione.txt`
+- **Input:** `senza-a-capo.txt` (`riga uno`, a capo, `riga due`)
+- **Output atteso:** lettere 14, spazi 2, righe 2,
+  `riga piu' lunga: la 1, con 8 caratteri`.
 
-**b) Output** – "Impossibile leggere" su stderr
+### Test 3 – File vuoto
 
-**c) Variabili di supporto** – —
+- **Input:** un file `vuoto.txt` di 0 byte
+- **Output atteso:** tutti i conteggi a 0, nessuna riga "piu' lunga",
+  `righe oltre 80 caratteri: 0`.
 
-**d) Vincoli** – —
+### Test 4 – File mancante
 
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – nessuna statistica.
+- **Input:** `nessuno.txt`
+- **Output atteso:** `Impossibile leggere "nessuno.txt"` (su `stderr`).

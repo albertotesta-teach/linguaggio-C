@@ -2,56 +2,82 @@
 
 ## 1. Problema
 
-Per discutere in classe un testo serve poter citare le righe. Il filtro copia stdin su stdout mettendo il numero davanti a ogni riga non vuota; le righe vuote restano vuote e non consumano un numero. Il totale va su stderr.
+Per discutere in classe un testo serve poter citare le righe. Il filtro
+copia `stdin` su `stdout` mettendo il numero davanti a ogni riga non
+vuota; le righe vuote restano vuote e non consumano un numero. Il totale
+va su `stderr`.
 
-## 2. Analisi generale e struttura dati
+## 2. Analisi
 
-| Variabile | Tipo | Dimensione | Motivazione |
-|-----------|------|------------|-------------|
-| `c` | `int` | — | Carattere letto o EOF |
-| `inizio_riga` | `int` | — | 1 se il prossimo carattere apre una riga |
-| `numero`, `vuote` | `int` | — | Righe numerate e righe vuote |
+### Input
 
-## 3. Casi d'uso e funzionalità
+| Dato | Tipo | Descrizione |
+|------|------|-------------|
+| testo | flusso `stdin` | Qualunque testo, fino alla fine dell'input |
 
-### Caso d'uso 1 – Strofa
+### Output
 
-**a) Input** – tre versi con una riga vuota, poi Ctrl+D
+- Su `stdout` il testo con `%4d` e due spazi davanti a ogni riga non
+  vuota.
+- Su `stderr`: `[numerazione] righe numerate: N, righe vuote: V`.
 
-**b) Output** – versi numerati 1, 2, 3; "righe numerate: 3, righe vuote: 1"
+### Vincoli
 
-**c) Variabili di supporto** – `inizio_riga`
+- Lettura con `fgetc(stdin)` fino a `EOF`, scrittura con `fputc` su
+  `stdout`.
+- Una riga è vuota se il suo primo carattere è l'a capo; una riga di soli
+  spazi si numera.
+- Il numero si stampa all'inizio di ogni riga non vuota, anche l'ultima
+  senza a capo.
 
-**d) Vincoli** – —
+### Assunzioni
 
-**e) Assunzioni** – nessuna
+- Nessuna.
 
-**f) Algoritmo in linguaggio naturale** – se inizio_riga e c != '\n' si stampa il numero.
+### Variabili di supporto
 
-### Caso d'uso 2 – Con redirezione
+| Variabile | Tipo | Motivazione |
+|-----------|------|-------------|
+| `c` | `int` | Carattere letto, può valere `EOF` |
+| `inizio_riga` | `int` | 1 se il prossimo carattere apre una riga |
+| `numero`, `vuote` | `int` | Righe numerate e righe vuote |
 
-**a) Input** – `< saluto.txt`
+### Algoritmo in linguaggio naturale
 
-**b) Output** – le due righe numerate
+1. Leggere un carattere alla volta fino a `EOF`.
+2. All'inizio di una riga: se il carattere non è un a capo, aumentare il
+   numero e stamparlo; altrimenti contare una riga vuota.
+3. Copiare il carattere e ricordare se era un a capo.
+4. A fine input stampare il totale su `stderr`.
 
-**c) Variabili di supporto** – —
+## 3. Casi di test
 
-**d) Vincoli** – —
+### Test 1 – Una strofa con una riga vuota
 
-**e) Assunzioni** – nessuna
+- **Input:** `Nel mezzo del cammin di nostra vita`, riga vuota,
+  `mi ritrovai per una selva oscura,`,
+  `che' la diritta via era smarrita.`
+- **Output atteso:**
+  ```
+     1  Nel mezzo del cammin di nostra vita
 
-**f) Algoritmo in linguaggio naturale** – il totale su stderr non entra nel file.
+     2  mi ritrovai per una selva oscura,
+     3  che' la diritta via era smarrita.
+  [numerazione] righe numerate: 3, righe vuote: 1
+  ```
 
-### Caso d'uso 3 – Testo vuoto
+### Test 2 – Redirezione con stderr scartato
 
-**a) Input** – solo Ctrl+D
+- **Input:** `saluto.txt` creato da `01-aprire-e-chiudere/010`
+- **Output atteso:**
+  ```
+     1  Benvenuti al corso di C!
+     2  Lezione 1: apertura e chiusura dei file.
+  ```
+- **Procedura:** `./070-problema-numerazione-delle-righe < saluto.txt
+  2> /dev/null`: il totale non compare.
 
-**b) Output** – righe numerate: 0
+### Test 3 – Input vuoto
 
-**c) Variabili di supporto** – —
-
-**d) Vincoli** – —
-
-**e) Assunzioni** – nessuna
-
-**f) Algoritmo in linguaggio naturale** – il ciclo non parte.
+- **Input:** nessun carattere
+- **Output atteso:** `[numerazione] righe numerate: 0, righe vuote: 0`

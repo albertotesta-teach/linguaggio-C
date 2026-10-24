@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 int esiste(const char *nome);
 
@@ -41,6 +42,7 @@ int main(void)
     int righe = 0;
     int letti;
     int c;
+    int ultimo = '\n';
 
     printf("File da copiare: ");
     letti = scanf("%59s", nome_origine);
@@ -62,6 +64,7 @@ int main(void)
             if (scanf(" %c", &risposta) != 1) {
                 risposta = 'n';
             }
+            risposta = (char) tolower((unsigned char) risposta);
         }
     }
     if (origine != NULL && risposta == 's') {
@@ -79,7 +82,11 @@ int main(void)
             if (c == '\n') {
                 righe++;
             }
+            ultimo = c;
             c = fgetc(origine);
+        }
+        if (ultimo != '\n') {
+            righe++;    /* ultima riga senza a capo */
         }
         fclose(destinazione);
         printf("Copiati %d caratteri e %d righe da %s a %s\n", caratteri, righe, nome_origine,
